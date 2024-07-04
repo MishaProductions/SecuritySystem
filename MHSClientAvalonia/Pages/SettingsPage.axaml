@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.SettingsPage"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls">
+	<ScrollViewer>
+		<StackPanel Spacing="20">
+			<ui:SettingsExpander Header="Version: loading"
+		 Name="SettingsExpander1">
+				<ui:SettingsExpander.Footer>
+					<Button x:Name="CheckForUpdatesButton" Click="CheckForUpdatesButton_Click">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="auto"></ColumnDefinition>
+								<ColumnDefinition Width="5"></ColumnDefinition>
+								<ColumnDefinition Width="*"></ColumnDefinition>
+							</Grid.ColumnDefinitions>
+							<ui:ProgressRing x:Name="runner" Grid.Column="0" IsIndeterminate="True" IsVisible="False" BorderThickness="5" />
+							<TextBlock x:Name="UpdateChkText" Grid.Column="2" VerticalAlignment="Center">Check for updates</TextBlock>
+						</Grid>
+					</Button>
+				</ui:SettingsExpander.Footer>
+			</ui:SettingsExpander>
+
+			<ui:SettingsExpander Header="Automatically check for updates"
+						 Name="SettingsExpander2">
+				<ui:SettingsExpander.Footer>
+					<ToggleSwitch x:Name="AutomaticUpdateCheck" Click="AutomaticUpdateCheck_Checked"></ToggleSwitch>
+				</ui:SettingsExpander.Footer>
+			</ui:SettingsExpander>
+
+			<ui:SettingsExpander Header="Play a noise when a zone is opened"
+				 Name="SettingsExpander3">
+				<ui:SettingsExpander.Footer>
+					<ToggleSwitch x:Name="ZoneNoiseCheck" Click="ZoneNoiseCheck_Checked"></ToggleSwitch>
+				</ui:SettingsExpander.Footer>
+			</ui:SettingsExpander>
+
+			<ui:SettingsExpander Header="Play a noise when the system is arming"
+			 Name="SettingsExpander4">
+				<ui:SettingsExpander.Footer>
+					<ToggleSwitch x:Name="BeepCheck" Click="BeepCheck_Checked"></ToggleSwitch>
+				</ui:SettingsExpander.Footer>
+			</ui:SettingsExpander>
+
+			<ui:SettingsExpander Header="Start when windows starts"
+	 Name="SettingsExpanderWindowsStart">
+				<ui:SettingsExpander.Footer>
+					<ToggleSwitch x:Name="StartWithWindows" Click="StartWithWindows_Checked"></ToggleSwitch>
+				</ui:SettingsExpander.Footer>
+			</ui:SettingsExpander>
+
+			<ui:SettingsExpander Header="Hide on startup"
+	 Name="SettingsExpanderStartMinimized">
+				<ui:SettingsExpander.Footer>
+					<ToggleSwitch x:Name="StartMinmized" Click="StartMinimized_Checked"></ToggleSwitch>
+				</ui:SettingsExpander.Footer>
+			</ui:SettingsExpander>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.HomePage">
+	<ScrollViewer>
+		<Grid>
+			<StackPanel Spacing="4">
+				<ContentControl>
+					<StackPanel>
+						<TextBlock x:Name="zone1" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone2" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone3" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone4" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone5" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone6" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone7" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone8" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone9" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone10" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+					</StackPanel>
+				</ContentControl>
+			</StackPanel>
+		</Grid>
+	</ScrollViewer>
+</UserControl>

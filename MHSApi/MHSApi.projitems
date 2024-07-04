@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>a1f716c9-6246-4a58-898a-858e2ccd4f19</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MHSApi</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)API\LoginRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\RequestWithCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\Core.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\Endpoints.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\FirmwareUpdateProgressResponseContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\LoginResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\MusicListResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\NotificationSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\SaveSysConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\StartAnnc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\SystemInfoResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\SystemStatusResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\UserUpdateRequests.cs" />
+    <Compile Include="..\MHSApi\API\ApiUser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\Zone.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\AuthenticationFail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\AuthenticationOK.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicPlayerVolumeChange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\SystemStateChange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\ZoneUpdate.cs" />
+    <Compile Include="..\MHSApi\WebSocket\ClientWelcomeReply.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\Hello.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\Message.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MessageType.cs" />
+  </ItemGroup>
+</Project>

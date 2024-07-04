@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.InitialSetup">
+	<Grid>
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="auto"></RowDefinition>
+		</Grid.RowDefinitions>
+
+
+		<StackPanel x:Name="Pg0Welcome" IsVisible="True"  Grid.Row="0" Margin="5">
+			<TextBlock TextWrapping="Wrap" FontSize="24">Welcome</TextBlock>
+			<TextBlock TextWrapping="Wrap">Welcome to your new MHS Security system. This wizard will guide you how to setup up your brand new system. Click next to continue</TextBlock>
+		</StackPanel>
+
+		<StackPanel x:Name="Pg1UserCfg" IsVisible="False"  Grid.Row="0" Margin="5">
+			<TextBlock TextWrapping="Wrap" FontSize="24">Create Administrator account</TextBlock>
+			<TextBlock TextWrapping="Wrap">MHS Security system controller features an account system with 2 permissions - administrator and user. Users cannot modify any settings.</TextBlock>
+			<TextBlock TextWrapping="Wrap">Enter the username and password for your administrator account. We do not recommend using any simple user names or passwords</TextBlock>
+
+			<Grid x:Name="LoginBox">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="auto"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<Label x:Name="lblUsername" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Username: </Label>
+				<TextBox x:Name="txtUsername" Margin="5" Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="1" Watermark="Enter username" TextChanged="Username_TextChanged">a</TextBox>
+
+				<Label x:Name="lblNewPw" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">New password: </Label>
+				<TextBox x:Name="txtNewPw1" Margin="5" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="1" PasswordChar="*" Watermark="Enter password" TextChanged="TextBox_TextChanged">a</TextBox>
+
+				<Label x:Name="lblNewPw3" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Repeat new password:</Label>
+				<TextBox x:Name="txtNewPw2" Margin="5" Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="1" PasswordChar="*" Watermark="Repeat password" TextChanged="TextBox_TextChanged">a</TextBox>
+			</Grid>
+			<Label x:Name="lbl3" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" IsVisible="False" Margin="5">Passwords do not match</Label>
+		</StackPanel>
+
+		<StackPanel x:Name="Pg2Gpio" IsVisible="False"  Grid.Row="0" Margin="5">
+			<TextBlock TextWrapping="Wrap" FontSize="24">Zone GPIO Configuration</TextBlock>
+
+			<WrapPanel>
+				<TextBlock VerticalAlignment="Center" Margin="5">GPIO Driver: </TextBlock>
+				<ComboBox SelectedIndex="0" Margin="5" x:Name="CmbGpioDriver">
+					<ComboBox.Items>
+						<ComboBoxItem>Default</ComboBoxItem>
+						<ComboBoxItem>Orange PI PC(+)</ComboBoxItem>
+					</ComboBox.Items>
+				</ComboBox>
+			</WrapPanel>
+			<TextBlock  Margin="5" TextWrapping="Wrap">Currently, GPIO pins cannot be changed via this interface. After system setup is complete, please review/edit the users.json file via ssh and restart the secsys service.</TextBlock>
+		</StackPanel>
+
+		<StackPanel x:Name="Pg3Completion" IsVisible="False"  Grid.Row="0" Margin="5">
+			<TextBlock TextWrapping="Wrap" FontSize="24">Configuration complete</TextBlock>
+
+			<TextBlock  Margin="5" TextWrapping="Wrap">You have finished the configuration wizard. Press Finish to write the changes to the controller.</TextBlock>
+		</StackPanel>
+		
+		<WrapPanel Grid.Row="1" HorizontalAlignment="Right" Margin="5">
+			<Button x:Name="BtnBack" Click="BtnBack_Click" IsEnabled="False" Margin="5">Back</Button>
+			<Button x:Name="BtnNext" Click="BtnNext_Click" Margin="5">Next</Button>
+		</WrapPanel>
+	
+</Grid>
+</UserControl>

@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.NewUserView">
+	<ScrollViewer>
+		<Grid x:Name="LoginBox">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="auto"></ColumnDefinition>
+				<ColumnDefinition Width="*"></ColumnDefinition>
+			</Grid.ColumnDefinitions>
+			<Label x:Name="lblUsername" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Username: </Label>
+			<TextBox x:Name="txtUsername" Margin="5" Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="1" Watermark="Enter username" TextChanged="Username_TextChanged"></TextBox>
+
+			<Label x:Name="lblNewPw" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">New password: </Label>
+			<TextBox x:Name="txtNewPw1" Margin="5" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="1" PasswordChar="*" Watermark="Enter password" TextChanged="TextBox_TextChanged"></TextBox>
+
+			<Label x:Name="lblNewPw3" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Repeat new password:</Label>
+			<TextBox x:Name="txtNewPw2" Margin="5" Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="1" PasswordChar="*" Watermark="Repeat password" TextChanged="TextBox_TextChanged"></TextBox>
+
+			<Label x:Name="lblPerm" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center">Permissions:</Label>
+			<ComboBox x:Name="cmbPermissions" Grid.Row="3" Grid.Column="2" SelectedIndex="0" Margin="5">
+				<ComboBoxItem>User</ComboBoxItem>
+				<ComboBoxItem>Administrator</ComboBoxItem>
+			</ComboBox>
+			<TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" TextWrapping="Wrap" HorizontalAlignment="Center">
+				The controller provides multiple permission levels. With user permission, the user can only view the system status and arm and disarm the system.
+				With administrator permission, the user can also change the system configuration.
+				User accounts are stored inside of controller users.json file, with passwords being hashed using SHA256.
+			</TextBlock>
+
+			<Label x:Name="lbl3" Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Foreground="Red" IsVisible="False" Margin="5">Passwords do not match</Label>
+		</Grid>
+	</ScrollViewer>
+</UserControl>

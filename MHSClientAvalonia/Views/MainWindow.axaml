@@ -1,0 +1,14 @@
+<wnd:AppWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="MHSClientAvalonia.MainWindow"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+		xmlns:wnd="using:FluentAvalonia.UI.Windowing"
+		 xmlns:views="clr-namespace:MHSClientAvalonia"
+        Title="MHS Client"
+	    Closing="AppWindow_Closing" Icon="/Assets/mhs-nor.ico">
+	<views:MainView></views:MainView>
+</wnd:AppWindow>

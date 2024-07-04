@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.MainView"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+			 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+			xmlns:wnd="using:FluentAvalonia.UI.Windowing">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"></RowDefinition>
+			<RowDefinition Height="*"></RowDefinition>
+		</Grid.RowDefinitions>
+		<ui:NavigationView x:Name="navigationView" ItemInvoked="NavigationView_ItemInvoked" Grid.Row="1" IsBackEnabled="{Binding #FrameView.CanGoBack}">
+			<ui:NavigationView.MenuItems>
+				<ui:NavigationViewItem Content="Home" Tag="HomePage" IconSource="HomeFilled" />
+				<ui:NavigationViewItem Content="Alarm History" Tag="AlarmHistory" IconSource="BulletList" />
+				<ui:NavigationViewItem Content="Music Manager" Tag="MusicManager" IconSource="Speaker2Filled" />
+
+				<ui:NavigationViewItem Content="Configuration" Tag="CfgOverview" IconSource="SettingsFilled">
+					<ui:NavigationViewItem.MenuItems>
+						<ui:NavigationViewItem x:Name="ZonesTab" Content="Zones" IconSource="HomeFilled" Tag="ZonesCfg" />
+						<ui:NavigationViewItem x:Name="UsersTab" Content="Users" IconSource="OtherUser" Tag="UsersCfg" />
+						<ui:NavigationViewItem x:Name="NotificationsTab" Content="Notifications" IconSource="AlertFilled" Tag="NotificationsCfg" />
+						<ui:NavigationViewItem Content="About" IconSource="ClipboardCodeFilled" Tag="AboutPage" />
+					</ui:NavigationViewItem.MenuItems>
+				</ui:NavigationViewItem>
+				<ui:NavigationViewItem Content="Maintenance" Tag="MaintenanceOverview" IconSource="ReportHacked">
+					<ui:NavigationViewItem.MenuItems>
+						<ui:NavigationViewItem x:Name="FwUpdateTab" Content="Update firmware" IconSource="Download" Tag="FirmwareUpdate" />
+						<ui:NavigationViewItem Content="Event log" IconSource="ClipboardFilled" Tag="EventLog" />
+					</ui:NavigationViewItem.MenuItems>
+				</ui:NavigationViewItem>
+			</ui:NavigationView.MenuItems>
+			<Grid>
+				<Grid Margin="25,25,25,25">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="auto"></RowDefinition>
+						<RowDefinition Height="20"></RowDefinition>
+						<RowDefinition Height="*"></RowDefinition>
+					</Grid.RowDefinitions>
+
+					<Grid Grid.Row="0">
+						<TextBlock x:Name="PageTitle" Theme="{StaticResource TitleTextBlockStyle}">Login</TextBlock>
+
+						<Grid x:Name="pnlControls"  VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="auto"></ColumnDefinition>
+								<ColumnDefinition Width="25"></ColumnDefinition>
+								<ColumnDefinition Width="auto"></ColumnDefinition>
+								<ColumnDefinition Width="auto"></ColumnDefinition>
+							</Grid.ColumnDefinitions>
+
+							<TextBlock x:Name="SystemStatusLabel" Grid.Column="0" VerticalAlignment="Center" Text="Unknown system status"></TextBlock>
+							<Button x:Name="ArmButton" Grid.Column="2" Content="Arm System" Click="ArmDisarmBtn_Click"></Button>
+							<HyperlinkButton x:Name="UserPopupButton" Grid.Column="3" Click="CurrentUser_Clicked">
+								<FlyoutBase.AttachedFlyout>
+									<Flyout>
+										<Grid>
+											<Grid.RowDefinitions>
+												<RowDefinition Height="auto"></RowDefinition>
+												<RowDefinition Height="auto"></RowDefinition>
+											</Grid.RowDefinitions>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*"></ColumnDefinition>
+											</Grid.ColumnDefinitions>
+
+											<Button Click="ChangePW_Click" Grid.Row="0" Grid.Column="1" Margin="5">Change password</Button>
+											<Button Click="Logout_Click" Grid.Row="1" Grid.Column="1"  Margin="5">Logout</Button>
+										</Grid>
+									</Flyout>
+								</FlyoutBase.AttachedFlyout>
+							</HyperlinkButton>
+						</Grid>
+					</Grid>
+
+
+					<Grid Grid.Row="2">
+						<WrapPanel Orientation="Vertical" x:Name="runnerBox"  VerticalAlignment="Center" HorizontalAlignment="Center">
+							<ui:ProgressRing x:Name="runner" IsIndeterminate="True"  Width="50" Height="50" />
+							<TextBlock x:Name="LoadingDescription">Loading</TextBlock>
+						</WrapPanel>
+						<Grid x:Name="MainFrameBox" IsVisible="False">
+							<ui:Frame Name="FrameView"></ui:Frame>
+						</Grid>
+					</Grid>
+
+				</Grid>
+			</Grid>
+		</ui:NavigationView>
+
+		<ui:InfoBar x:Name="ReconnectDialogue"
+    Title="Attempting to reconnect"
+    Message="Disconnected from the device. We are trying to reconnect."
+    IsClosable="False" IsOpen="False" Grid.Row="0">
+			<ui:InfoBar.Content>
+				<ProgressBar IsIndeterminate="True" Margin="0,0,0,6"/>
+			</ui:InfoBar.Content>
+		</ui:InfoBar>
+	</Grid>
+</UserControl>

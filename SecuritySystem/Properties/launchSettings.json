@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SecuritySystem": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false
+    }
+  }
+}

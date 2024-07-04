@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.AuthenticatePage"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls">
+	<Grid Margin="25,25,25,25">
+		<WrapPanel Orientation="Vertical" x:Name="runnerBox"  VerticalAlignment="Center" HorizontalAlignment="Center">
+			<ui:ProgressRing x:Name="runner" IsIndeterminate="True"  Width="50" Height="50" />
+			<TextBlock x:Name="LoadingDescription">Loading</TextBlock>
+		</WrapPanel>
+	</Grid>
+</UserControl>

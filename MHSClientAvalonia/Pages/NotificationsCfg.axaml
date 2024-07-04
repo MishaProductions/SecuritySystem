@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:vm="using:MHSClientAvalonia.Pages"
+             x:Class="MHSClientAvalonia.Pages.NotificationsCfg">
+	<StackPanel>
+
+
+		<Expander Header="SMTP">
+			<WrapPanel Orientation="Vertical">
+				<WrapPanel>
+					<CheckBox x:Name="chkEnableSmtp" IsChecked="{Binding SMTPEnabled, DataType={x:Type vm:NotificationsCfg}}">Enable SMTP</CheckBox>
+				</WrapPanel>
+
+				<WrapPanel>
+					<TextBlock VerticalAlignment="Center" Padding="5">Send an email when the followng occurs: </TextBlock>
+					<ComboBox Padding="5" MinWidth="250" x:Name="cmbNotifSettings">
+						<ComboBox.Items>
+							<ComboBoxItem>Nothing</ComboBoxItem>
+							<ComboBoxItem>Alarm only</ComboBoxItem>
+							<ComboBoxItem>Alarm + zone activity</ComboBoxItem>
+						</ComboBox.Items>
+					</ComboBox>
+				</WrapPanel>
+
+				<WrapPanel>
+					<TextBlock VerticalAlignment="Center" Margin="5">SMTP Server: </TextBlock>
+					<TextBox Text="" Margin="5" MinWidth="300" x:Name="txtSmtpServer" Watermark="SMTP server hostname (ex: smtp.gmail.com)"/>
+				</WrapPanel>
+
+				<WrapPanel>
+					<TextBlock VerticalAlignment="Center" Margin="5">SMTP Username: </TextBlock>
+					<TextBox Text="" Margin="5" MinWidth="300" x:Name="txtSmtpUser"  Watermark="Enter SMTP username (ex: bob@gmail.com)"/>
+				</WrapPanel>
+				<WrapPanel>
+					<TextBlock VerticalAlignment="Center" Margin="5">SMTP Password: </TextBlock>
+					<TextBox Text="" Margin="5" PasswordChar="*" MinWidth="300" x:Name="txtSmtpPw" Watermark="Enter SMTP password (write only)"/>
+				</WrapPanel>
+
+				<WrapPanel>
+					<TextBlock VerticalAlignment="Center" Margin="5">Recipients (seperated by ;) :</TextBlock>
+					<TextBox Text="" Margin="5" MinWidth="300" x:Name="txtSmtpRecipients" Watermark="Enter email recipient(s)"/>
+				</WrapPanel>
+			</WrapPanel>
+		</Expander>
+
+		<WrapPanel Orientation="Horizontal">
+			<Button Margin="5" Click="BtnSave_Click" Classes="accent">Save</Button>
+			<Button Margin="5" Click="BtnCancel_Click">Cancel</Button>
+			<Button x:Name="BtnSendTestEmail" Margin="5" Click="BtnSendTestEmail_Click">Send test email</Button>
+		</WrapPanel>
+	</StackPanel>
+</UserControl>

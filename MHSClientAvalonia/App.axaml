@@ -1,0 +1,46 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MHSClientAvalonia.App"
+             RequestedThemeVariant="Default"
+             xmlns:sty="using:FluentAvalonia.Styling"
+			 xmlns:aedit2="using:AvaloniaEdit.Editing">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+		<sty:FluentAvaloniaTheme PreferSystemTheme="True" PreferUserAccentColor="True" UseSystemFontOnWindows="True" />
+
+	</Application.Styles>
+
+	<Application.Resources>
+		<Color x:Key="SystemAccentColor">Green</Color>
+		
+		<Color x:Key="SystemAccentColorLight1">LightGreen</Color>
+		<Color x:Key="SystemAccentColorLight2">LightGreen</Color>
+		<Color x:Key="SystemAccentColorLight3">LightGreen</Color>
+		
+		
+		<Color x:Key="SystemAccentColorDark1">DarkGreen</Color>
+		<Color x:Key="SystemAccentColorDark2">DarkGreen</Color>
+		<Color x:Key="SystemAccentColorDark3">DarkGreen</Color>
+
+		<FontFamily x:Key="NunitoFont">avares://GoogleFonts/Assets/Segoe-UI-Variable-Static-Text</FontFamily>
+		<FontFamily x:Key="ContentControlThemeFontFamily">Segoe UI Variable Text</FontFamily>
+
+	</Application.Resources>
+
+	<TrayIcon.Icons>
+		<TrayIcons>
+			<TrayIcon Icon="/Assets/mhs-nor.ico"
+					  ToolTipText="MHS Client" Clicked="ShowMainWindow_Click">
+				<TrayIcon.Menu>
+					<NativeMenu>
+						<NativeMenuItem Header="Show Main Window" Click="ShowMainWindow_Click"/>
+						<NativeMenuItemSeparator />
+						<NativeMenuItem Header="Logout" Click="Logout_Click"/>
+						<NativeMenuItem Header="Quit"  Click="Quit_Click"/>
+					</NativeMenu>
+				</TrayIcon.Menu>
+			</TrayIcon>
+		</TrayIcons>
+	</TrayIcon.Icons>
+</Application>

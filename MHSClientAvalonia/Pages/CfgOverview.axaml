@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.CfgOverview"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
+		xmlns:wnd="using:FluentAvalonia.UI.Windowing">
+	<UserControl.Resources>
+		<ui:SymbolIconSource x:Key="ZonesIcon" Symbol="Home" />
+		<ui:SymbolIconSource x:Key="UsersIcon" Symbol="OtherUser" />
+		<ui:SymbolIconSource x:Key="NotificationsIcon" Symbol="Alert" />
+		<ui:SymbolIconSource x:Key="AboutIcon" Symbol="ClipboardCode" />
+		<ui:SymbolIconSource x:Key="GoIcon" Symbol="ChevronRight" />
+	</UserControl.Resources>
+
+	<ScrollViewer>
+		<Grid>
+			<StackPanel Spacing="20">
+				<ui:SettingsExpander Header="Zones"
+					IconSource="{StaticResource ZonesIcon}"
+					Description="Change the names, types and pins of a zone"
+					IsClickEnabled="True"
+					ActionIconSource="{StaticResource GoIcon}"
+					Click="Zones_Click"/>
+				<ui:SettingsExpander Header="User settings"
+					IconSource="{StaticResource UsersIcon}"
+					Description="Add or remove users"
+					IsClickEnabled="True"
+					ActionIconSource="{StaticResource GoIcon}"
+					Click="Users_Click"/>
+				<ui:SettingsExpander Header="Notification settings"
+					IconSource="{StaticResource NotificationsIcon}"
+					Description="Configure SMTP email settings"
+					IsClickEnabled="True"
+					ActionIconSource="{StaticResource GoIcon}"
+					Click="NotificationSettings_Click"/>
+				<ui:SettingsExpander Header="About"
+					IconSource="{StaticResource AboutIcon}"
+					Description="Show system information"
+					IsClickEnabled="True"
+					ActionIconSource="{StaticResource GoIcon}"
+					Click="About_Click" />
+			</StackPanel>
+		</Grid>
+	</ScrollViewer>
+</UserControl>

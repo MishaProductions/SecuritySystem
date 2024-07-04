@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+	<PropertyGroup>
+		<TargetFramework>net8.0-browser</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+		<DebuggerSupport>true</DebuggerSupport>
+		<WasmDebugLevel>5</WasmDebugLevel>
+	</PropertyGroup>
+	
+	<ItemGroup>
+	  <PackageReference Include="Avalonia.Browser" Version="11.2.999-cibuild0049756-alpha" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MHSClientAvalonia\MHSClientAvalonia.csproj" />
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="xcopy /E /H /C /I /Y &quot;$(TargetDir)wwwroot&quot; &quot;$(SolutionDir)SecuritySystem\www\modernclient\&quot; &amp;&amp; xcopy /E /H /C /I /Y &quot;$(SolutionDir)MHSClientAvalonia.Browser\wwwroot\&quot; &quot;$(SolutionDir)SecuritySystem\www\modernclient\&quot;" />
+	</Target>
+</Project>

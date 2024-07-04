@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.MaintenanceOverview"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls">
+	<UserControl.Resources>
+		<ui:SymbolIconSource x:Key="UpdateIcon" Symbol="Download" />
+		<ui:SymbolIconSource x:Key="EventLogIcon" Symbol="Clipboard" />
+		<ui:SymbolIconSource x:Key="GoIcon" Symbol="ChevronRight" />
+	</UserControl.Resources>
+
+	<ScrollViewer>
+		<Grid>
+			<StackPanel Spacing="20">
+				<ui:SettingsExpander Header="Update firmware"
+					IconSource="{StaticResource UpdateIcon}"
+					Description="Update the firmware of the security system and the devices that are connected to it"
+					IsClickEnabled="True"
+					ActionIconSource="{StaticResource GoIcon}"
+					Click="FirmwareUpdate_Click"/>
+				<ui:SettingsExpander Header="Event log"
+					IconSource="{StaticResource EventLogIcon}"
+					Description="View system event log"
+					IsClickEnabled="True"
+					ActionIconSource="{StaticResource GoIcon}"
+					Click="EventLog_Click"/>
+			</StackPanel>
+		</Grid>
+	</ScrollViewer>
+</UserControl>

@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             x:Class="MHSClientAvalonia.Pages.LoginPage">
+	<Grid>
+		<ui:InfoBar x:Name="AutoLoginBar" IsClosable="False" Title="Connection to server failed" IsOpen="False" Severity="Error" Message="We have encountered a error while trying to sign in. Verify that the IP address is correct, web interface is accessible, and the device's network configuration is correct.">
+			<ui:InfoBar.ActionButton>
+				<Button Content="Retry" Click="BtnRetryLogin_Click" />
+			</ui:InfoBar.ActionButton>
+		</ui:InfoBar>
+		<ui:InfoBar x:Name="BarWrongPassword" Title="Error" IsOpen="False" Severity="Error" Message="Incorrect username or password."/>
+		<ui:InfoBar x:Name="BarHostError" Title="Error" IsOpen="False" Severity="Error" Message="An error has occured while communicating to the device. Make sure that the IP/host is correct, and that the device is powered on."/>
+		<ui:InfoBar x:Name="BarSessionExpire" Title="Warning" IsOpen="False" Severity="Warning" Message="Your session has expired, please login again"/>
+
+		<StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+			<WrapPanel x:Name="runner" Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+				<ui:ProgressRing IsIndeterminate="True"  Width="50" Height="50" />
+				<TextBlock x:Name="LoadingDescription">Loading</TextBlock>
+			</WrapPanel>
+			<Grid x:Name="LoginBox" Width="300" IsVisible="False">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+					<RowDefinition Height="auto"></RowDefinition>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="auto"></ColumnDefinition>
+					<ColumnDefinition Width="*"></ColumnDefinition>
+				</Grid.ColumnDefinitions>
+				<Label x:Name="lblIp" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">IP address: </Label>
+				<TextBox x:Name="txtIp" Margin="5" Grid.Row="0" Grid.ColumnSpan="2" Grid.Column="1" Watermark="Enter MHS IP address/hostname"></TextBox>
+
+				<Label x:Name="lblUser" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Username: </Label>
+				<TextBox x:Name="txtUser" Margin="5" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="1" Watermark="Enter your username"></TextBox>
+
+				<Label x:Name="lbl2" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Password:</Label>
+				<TextBox Margin="5"  x:Name="txtPw" Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="1" PasswordChar="*" Watermark="Enter your password"></TextBox>
+
+				<Button Grid.Row="3" Grid.ColumnSpan="2" Margin="5,5,5,5" HorizontalAlignment="Center" Click="Login_Click">Login</Button>
+			</Grid>
+		</StackPanel>
+	</Grid>
+</UserControl>

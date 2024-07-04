@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.UsersCfg"
+			 xmlns:cl="using:MHSApi.API">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"></RowDefinition>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="auto"></RowDefinition>
+		</Grid.RowDefinitions>
+
+		<DataGrid Name="TargetDataGrid" x:DataType="cl:ApiUser" Grid.Row="1"  IsReadOnly="True">
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="6*" IsReadOnly="True"/>
+				<DataGridTextColumn Header="Permissions" Binding="{Binding Permissions}" Width="4*"  IsReadOnly="True"/>
+			</DataGrid.Columns>
+		</DataGrid>
+
+		<StackPanel Grid.Row="2">
+			<WrapPanel>
+				<Button x:Name="btnNewUser" Margin="5" Click="BtnNewUser_Click" Classes="accent">New user</Button>
+				<Button x:Name="btnDeleteUser" Margin="5" Click="BtnDeleteUser_Click">Delete</Button>
+				<Button x:Name="btnChangePerms" Margin="5" Click="BtnChangePerms_Click">Change permissions</Button>
+				<Button x:Name="btnResetPass" Margin="5" Click="BtnResetPass_Click">Change password</Button>
+
+			</WrapPanel>
+			<WrapPanel>
+				<Button Grid.Row="2" Click="Reload_Click" Margin="5">Reload</Button>
+			</WrapPanel>
+		</StackPanel>
+		
+	</Grid>
+</UserControl>

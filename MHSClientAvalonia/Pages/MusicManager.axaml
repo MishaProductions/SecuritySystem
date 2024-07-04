@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.MusicManager"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition MinWidth="300"></ColumnDefinition>
+			<ColumnDefinition MinWidth="300"></ColumnDefinition>
+			<ColumnDefinition Width="auto"></ColumnDefinition>
+			<ColumnDefinition Width="auto"></ColumnDefinition>
+		</Grid.ColumnDefinitions>
+
+		<Grid Grid.Column="0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+			</Grid.RowDefinitions>
+
+			<ListBox x:Name="listMusic" Grid.Row="0" DoubleTapped="listMusic_DoubleTapped"></ListBox>
+
+			<StackPanel Grid.Row="1">
+				<StackPanel Orientation="Horizontal">
+					<Button Click="StopMusic_Click">Stop music</Button>
+					<Button>Play All</Button>
+					<Button>Back</Button>
+					<Button>Next</Button>
+				</StackPanel>
+				<TextBlock x:Name="TxtCurrentlyPlayingMusic">Playing: Loading</TextBlock>
+				<Slider x:Name="MusicVolumeSlider" Orientation="Horizontal" Minimum="0" Maximum="130" ValueChanged="MusicVol_ValueChanged"></Slider>
+			</StackPanel>
+		</Grid>
+
+		<Grid Grid.Column="1">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"></RowDefinition>
+				<RowDefinition Height="auto"></RowDefinition>
+			</Grid.RowDefinitions>
+
+			<ListBox x:Name="listAnnc" Grid.Row="0" DoubleTapped="listAnnc_DoubleTapped"></ListBox>
+
+			<StackPanel Grid.Row="1">
+				<StackPanel Orientation="Horizontal">
+					<Button Click="StopAnnc_Click">Stop annc</Button>
+					<Button x:Name="BtnPlayAnncFromMic" Click="PlayAnncFromMic_Click">Start asynchronous microphone stream operation</Button>
+				</StackPanel>
+				<TextBlock x:Name="TxtCurrentlyPlayingAnnc">Playing: Loading</TextBlock>
+				<Slider x:Name="AnncVolumeSlider" Orientation="Horizontal" Minimum="0" Maximum="130" ValueChanged="AnncVol_ValueChanged"></Slider>
+			</StackPanel>
+		</Grid>
+	</Grid>
+</UserControl>
