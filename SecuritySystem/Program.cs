@@ -44,7 +44,7 @@ namespace SecuritySystem
             //Console.WriteLine("NetworkManager...");
             //NetworkManager.Initialize();
 
-            Console.WriteLine("Loading ZoneController");
+            Console.WriteLine("Probing zones (this might take some time)...");
             ZoneController.Initialize();
 
             Console.WriteLine("Loading SMTP module");

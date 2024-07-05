@@ -18,7 +18,7 @@ namespace SecuritySystem.Utils
                     return;
                 }
                 HttpClient httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.Add("User-agent", "SecuritySystem-app");
+                httpClient.DefaultRequestHeaders.Add("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
                 var data = await httpClient.GetAsync("https://api.weather.gov/points/" + Configuration.Instance.WeatherCords);
                 if (data.IsSuccessStatusCode)
                 {
@@ -26,9 +26,10 @@ namespace SecuritySystem.Utils
                     var url = (string)fs.properties.forecastHourly;
 
                     var data2 = await httpClient.GetAsync(url);
+                    dynamic fs2 = JObject.Parse(await data2.Content.ReadAsStringAsync());
                     if (data2.IsSuccessStatusCode)
                     {
-                        dynamic fs2 = JObject.Parse(await data2.Content.ReadAsStringAsync());
+                   
 
                         var today = fs2.properties.periods[0];
                         InternetWeather = "";
@@ -48,13 +49,13 @@ namespace SecuritySystem.Utils
                     }
                     else
                     {
-                        InternetWeather = "weather.gov failed to get forecast info with code " + data2.StatusCode;
+                        InternetWeather = "weather.gov failed to get forecast info with code:\r\n" + (string)fs2.detail + "\r\n";
                         Console.WriteLine("weather: failed to get forecast api");
                     }
                 }
                 else
                 {
-                    InternetWeather = "weather.gov get point api FAIL";
+                    InternetWeather = "weather.gov get point api FAIL\r\n";
                     Console.WriteLine("weather: failed to get point api");
                 }
 

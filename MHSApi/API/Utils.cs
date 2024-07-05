@@ -104,6 +104,8 @@ namespace MHSApi.API
                             return JsonConvert.DeserializeObject<AnncPlayerVolumeChange>(str);
                         case MessageType.MusicVolumeChange:
                             return JsonConvert.DeserializeObject<MusicPlayerVolumeChange>(str);
+                        case MessageType.FwUpdate:
+                            return JsonConvert.DeserializeObject<FwUpdateMsg>(str);
                         default:
                             throw new Exception("unknown message type");
                     }

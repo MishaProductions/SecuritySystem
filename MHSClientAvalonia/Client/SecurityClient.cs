@@ -8,6 +8,7 @@ using SecuritySystemApi;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -42,6 +43,7 @@ namespace MHSClientAvalonia.Client
         public event EventHandler? OnWSClose;
         public event EventHandler? OnMusicVolChanged;
         public event EventHandler? OnAnncVolChanged;
+        public event OnSystemUpdateProgress? OnFwUpdateProgress;
 
         private string Token = ""; //insecure!
         public bool IsConnected { get; private set; } = false;
@@ -122,6 +124,10 @@ namespace MHSClientAvalonia.Client
                     {
                         AnncVol = ((AnncPlayerVolumeChange)msg).AnncVolume;
                         OnAnncVolChanged?.Invoke(this, new EventArgs());
+                    }
+                    else if (msg.type == MessageType.FwUpdate)
+                    {
+                        OnFwUpdateProgress?.Invoke((FwUpdateMsg)msg);
                     }
                 }
             }
@@ -575,8 +581,37 @@ namespace MHSClientAvalonia.Client
             return Result.Success;
         }
 
+        public async Task<Result> UploadNextionKeypadFirmware(byte[] file)
+        {
+            try
+            {
+                MultipartFormDataContent form = new MultipartFormDataContent
+                {
+                    { new ByteArrayContent(file), "fw", "fw" }
+                };
+                var contentType = form.Headers.ContentType.Parameters.First();
+                contentType.Value = "multipart/form-data; " + contentType.Value;
+                var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + Endpoints.UploadFirmware, form).ConfigureAwait(false);
+                var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                ApiResponse? contents = JsonConvert.DeserializeObject<ApiResponse?>(responseStr);
+                if (contents == null)
+                {
+                    return Result.EmptyResponse;
+                }
+                else
+                {
+                    return new Result(contents.code, contents.message, null);
+                }
+            }
+            catch
+            {
+                return Result.Exception;
+            }
+        }
+
         public delegate void ProgressEventHandler(int progress);
         public delegate void OnSystemTimer(bool arming, int timer);
+        public delegate void OnSystemUpdateProgress(FwUpdateMsg msg);
     }
     public class Result
     {

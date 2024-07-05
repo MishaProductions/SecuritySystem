@@ -8,5 +8,20 @@
 		<TabItem Header="System">
 			<TextBlock>MHSClient does not support updating security system controller firmware. Use SSH to update it.</TextBlock>
 		</TabItem>
+		<TabItem Header="MHS Client">
+			<TextBlock>You can update MHS Client via the MHS Client settings page.</TextBlock>
+		</TabItem>
+		<TabItem Header="Generic Nextion Display">
+			<StackPanel Spacing="10">
+				<WrapPanel>
+					<TextBlock VerticalAlignment="Center" Margin="5">Select TFT file: </TextBlock>
+					<TextBox x:Name="TxtFilePath" Margin="5" Width="250"></TextBox>
+					<Button x:Name="BtnFilePick" Click="OpenFilePicker_Click">..</Button>
+				</WrapPanel>
+
+				<Button x:Name="btnFlash" Click="NextionFlash_Click">Flash</Button>
+				<TextBlock x:Name="txtFwUpload" IsVisible="False">The firmware is being uploaded, please wait</TextBlock>
+			</StackPanel>
+		</TabItem>
 	</TabControl>
 </UserControl>

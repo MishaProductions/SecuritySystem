@@ -25,14 +25,15 @@ namespace SecuritySystem
 
             var parser = await MultipartFormDataParser.ParseAsync(Request.InputStream);
             byte[]? fw = null;
+            Console.WriteLine("parser found:" + parser.Files.Count);
             foreach (var file in parser.Files)
             {
+                Console.WriteLine("file:" + file.Name);
                 if (file.Name == "fw")
                 {
-                    MemoryStream ms = new();
-
                     SystemManager.WriteToEventLog("User has began nextion keypad firmware update", currentUser);
 
+                    MemoryStream ms = new();
                     file.Data.CopyTo(ms);
                     fw = ms.ToArray();
                     Console.WriteLine(fw[0]);

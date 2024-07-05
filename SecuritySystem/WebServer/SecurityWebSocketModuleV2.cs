@@ -4,6 +4,7 @@ using MHSApi.WebSocket;
 using NAudio.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SecuritySystem.DeviceSubsys;
 using SecuritySystem.Utils;
 using System;
 using System.Collections.Generic;
@@ -43,6 +44,14 @@ namespace SecuritySystem
 
             MusicPlayer.OnMusicVolumeChanged += MusicPlayer_OnMusicVolumeChanged;
             MusicPlayer.OnAnncVolumeChanged += MusicPlayer_OnAnncVolumeChanged;
+
+            DeviceModel.FirmwareUpdateEvent += DeviceModel_OnFirmwareUpdateProgress;
+        }
+
+        private async void DeviceModel_OnFirmwareUpdateProgress(string devName, string desc, int percent)
+        {
+            Console.WriteLine("send " + devName + ", " + desc + ", " + percent);
+            await SendToAll(new FwUpdateMsg(devName, desc, percent));
         }
 
         private async void MusicPlayer_OnAnncVolumeChanged(object? sender, EventArgs e)

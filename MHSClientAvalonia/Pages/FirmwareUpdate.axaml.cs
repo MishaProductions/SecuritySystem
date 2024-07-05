@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
+using MHSClientAvalonia.Utils;
+using System.IO;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -14,5 +17,75 @@ public partial class FirmwareUpdate : SecurityPage
     {
         base.OnNavigateTo();
         HideLoadingBar();
+    }
+    private byte[]? Array;
+    private async void NextionFlash_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        byte[] file;
+        if (Array == null)
+        {
+            if (string.IsNullOrEmpty(TxtFilePath.Text))
+            {
+                Services.MainView.ShowMessage("No disk", "Please select a file");
+                return;
+            }
+
+            if (!File.Exists(TxtFilePath.Text))
+            {
+                Services.MainView.ShowMessage("No disk", "Specified file does not exist.");
+                return;
+            }
+
+            file = File.ReadAllBytes(TxtFilePath.Text);
+        }
+        else
+        {
+            file = Array;
+        }
+
+        txtFwUpload.IsVisible = true;
+        btnFlash.IsEnabled = false;
+
+        var res = await Services.SecurityClient.UploadNextionKeypadFirmware(file);
+        if (res.IsSuccess)
+        {
+            Services.MainView.ShowMessage("Success", "Firmware uploaded successfully");
+        }
+        else
+        {
+            Services.MainView.ShowMessage("Error", "Failed to upload firmware: " + res.ResultMessage);
+        }
+        txtFwUpload.IsVisible = false;
+        btnFlash.IsEnabled = true;
+    }
+
+    private async void OpenFilePicker_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        // Get top level from the current control. Alternatively, you can use Window reference instead.
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null)
+        {
+            Services.MainView.ShowMessage("No disk", "Platform is not supported");
+            return;
+        }
+
+        // Start async operation to open the dialog.
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Open Firmware TFT file",
+            AllowMultiple = false
+        });
+
+        if (files.Count >= 1)
+        {
+            // Open reading stream from the first file.
+            await using var stream = await files[0].OpenReadAsync();
+
+            using var ms = new MemoryStream();
+            stream.CopyTo(ms);
+
+            Array = ms.ToArray();
+            TxtFilePath.IsEnabled = false;
+        }
     }
 }

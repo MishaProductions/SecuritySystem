@@ -40,6 +40,7 @@ public partial class MainView : UserControl
         Services.SecurityClient.OnSystemDisarm += SecurityClient_OnSystemDisarm;
         Services.SecurityClient.OnMusicVolChanged += SecurityClient_OnMusicVolChanged;
         Services.SecurityClient.OnAnncVolChanged += SecurityClient_OnAnncVolChanged;
+        Services.SecurityClient.OnFwUpdateProgress += SecurityClient_OnFwUpdateProgress;
 
         _reconnectTimer.Interval = TimeSpan.FromSeconds(5);
         _reconnectTimer.Tick += ReconnectTimer_Tick;
@@ -55,6 +56,32 @@ public partial class MainView : UserControl
         }
 
         NavigateToInitialPage();
+    }
+
+    public static FwUpdateWindow? FwUpdateWindow;
+    private void SecurityClient_OnFwUpdateProgress(MHSApi.WebSocket.FwUpdateMsg msg)
+    {
+        Dispatcher.UIThread.Invoke(delegate
+        {
+            if (!BrowserUtils.IsBrowser)
+            {
+                if (FwUpdateWindow == null)
+                {
+                    FwUpdateWindow = new();
+                    FwUpdateWindow.Show();
+                    FwUpdateWindow.Activate();
+                }
+                FwUpdateWindow.FwUpdateView.ProgressDesc = msg.UpdateProgressDescription;
+                FwUpdateWindow.FwUpdateView.ProgressDeviceName = msg.DeviceName;
+                FwUpdateWindow.FwUpdateView.ProgressPercentage = msg.Percent;
+
+                if (msg.Percent == 100)
+                {
+                    FwUpdateWindow.Close();
+                    FwUpdateWindow = null;
+                }
+            }
+        });
     }
 
     private async void UpdateTimer_Tick(object? sender, EventArgs e)
@@ -250,7 +277,7 @@ public partial class MainView : UserControl
 
             SendNotification("MHS Client has successfully connected to the device");
 
-            
+
         });
     }
 
@@ -472,7 +499,7 @@ public partial class MainView : UserControl
                 if (clearBackStack)
                     FrameView.BackStack.Clear();
 
-              
+
                 // send navigation event
                 if (FrameView.Content is SecurityPage page2)
                 {

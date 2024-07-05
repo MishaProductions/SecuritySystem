@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="200"
+             x:Class="MHSClientAvalonia.FWUpdateView">
+	<Grid>
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="auto"></RowDefinition>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="auto"></RowDefinition>
+		</Grid.RowDefinitions>
+		<StackPanel Grid.Row="0">
+			<TextBlock x:Name="LblTitle" TextWrapping="Wrap" FontSize="20">The requested firmware update for [device] is being completed.</TextBlock>
+			<TextBlock TextWrapping="Wrap" Foreground="Red">DO NOT TURN OFF THE SECURITY SYSTEM OR THE CONNECTED DEVICES. DOING SO MAY RESULT IN IRREPARABLE DAMAGE</TextBlock>
+			<TextBlock x:Name="LblDesc">Initializing update</TextBlock>
+			<TextBlock x:Name="LblPercent">0% complete</TextBlock>
+		</StackPanel>
+
+		<ProgressBar x:Name="MainProgress" Value="0" IsIndeterminate="True" ShowProgressText="True" Grid.Row="2" Height="25"></ProgressBar>
+	</Grid>
+</UserControl>

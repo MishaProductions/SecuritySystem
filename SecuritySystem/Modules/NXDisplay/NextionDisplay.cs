@@ -1,5 +1,7 @@
 ﻿using MHSApi.API;
+using SecuritySystem.DeviceSubsys;
 using SecuritySystem.Utils;
+using System;
 using System.Device.Gpio;
 using System.Diagnostics;
 using System.IO.Ports;
@@ -191,185 +193,208 @@ namespace SecuritySystem.Modules.NXDisplay
             br.BaseStream.Position = 0x3C;
             return br.ReadUInt32();
         }
+        private byte[]? FirmwareData;
         public void UpdateFirmware(byte[] firmware)
         {
             //disable sending of commands and disable packetreader thread
             KeypadSendCommands = false;
             SerialPort?.Close();
             SerialPort = null;
-            UpdateProgressString = "Initializing...";
 
-            Console.WriteLine("updating comport of " + comport);
+            FirmwareData = firmware;
+
+            UpdateProgressString = "Initializing...";
+            DeviceModel.BroadcastFwUpdateProgress("Generic Nextion Display", UpdateProgressString, 0);
+
+            Console.WriteLine("Updating nextion display at " + comport);
             if (comport == null)
             {
                 throw new Exception("comport cannot be NULL");
             }
             //wait for other thread to die
             Thread.Sleep(2000);
-            Thread worker = new(delegate ()
+            Thread worker = new(FirmwareUpdateThread);
+            worker.Start();
+        }
+        private void FirmwareUpdateThread()
+        {
+            if (FirmwareData == null) throw new Exception("firmware to upload cannot be null");
+
+            // The code here is based on https://github.com/MMMZZZZ/Nexus/blob/master/Nexus.py
+            SerialPort = new SerialPort(comport, 9600)
             {
-                SerialPort = new SerialPort(comport, 9600)
-                {
-                    // This is very important when using any SerialPort methods that make use of string or char types
-                    // Byte values will be truncated to byte values allowed in codepage
-                    // \xff becomes \x3f for ASCII which is the default encoding
-                    // https://social.msdn.microsoft.com/Forums/en-US/efe127eb-b84b-4ae5-bd7c-a0283132f585/serial-port-sending-8-bit-problem?forum=Vsexpressvb
-                    Encoding = Encoding.GetEncoding(28591),
-                    ReadTimeout = 10000
-                };
-                SerialPort.Open();
+                // This is very important when using any SerialPort methods that make use of string or char types
+                // Byte values will be truncated to byte values allowed in codepage
+                // \xff becomes \x3f for ASCII which is the default encoding
+                // https://social.msdn.microsoft.com/Forums/en-US/efe127eb-b84b-4ae5-bd7c-a0283132f585/serial-port-sending-8-bit-problem?forum=Vsexpressvb
+                Encoding = Encoding.GetEncoding(28591),
+                ReadTimeout = 10000
+            };
+            SerialPort.Open();
 
-                //wait for it to open
-                Thread.Sleep(1000);
-                if (SerialPort == null)
+            if (SerialPort == null)
+            {
+                Console.WriteLine("the serial port is null after opening it");
+                return;
+            }
+            UpdateInProgress = true;
+            UpdateProgressString = "Communication with keypad in progress";
+            DeviceModel.BroadcastFwUpdateProgress("Generic Nextion Display", UpdateProgressString, 0);
+
+            //SendCommand("DRAKJHSUYDGBNCJHGJKSHBDN");
+            SendCommand("");
+            SendCommand("connect");
+
+            // Read connect handshake
+            var comok = ReadPacket();
+
+            // Example response: comok 2,1793-0,NX8048P070_011C,163,10501,C68A340174C5D077,128974848-0
+            Console.WriteLine(Encoding.ASCII.GetString(comok, 0, comok.Length - 3));
+            if (comok[0] != 'c')
+            {
+                UpdateProgressString = "Communication with keypad failed: incorrect response 1";
+                UpdateFail = true;
+                Console.WriteLine("FW update failed: incorrect data " + Encoding.ASCII.GetString(comok));
+                UpdateInProgress = false;
+                return;
+            }
+            SendCommand("");
+            var fwsize = ReadFileSize(FirmwareData);
+            Console.WriteLine($"firmware size: " + fwsize);
+
+            //For some reason the first command after self.connect() always fails. Can be anything.
+            SendCommand("bs=42");
+            SendCommand("dim=15");
+            SendCommand("sleep=0");
+            Console.WriteLine("Initiating upload...");
+            SendCommand($"whmi-wris {fwsize},9600,1");
+
+            SerialPort.Close();
+            SerialPort = new SerialPort(comport, 9600)
+            {
+                // This is very important when using any SerialPort methods that make use of string or char types
+                // Byte values will be truncated to byte values allowed in codepage
+                // \xff becomes \x3f for ASCII which is the default encoding
+                // https://social.msdn.microsoft.com/Forums/en-US/efe127eb-b84b-4ae5-bd7c-a0283132f585/serial-port-sending-8-bit-problem?forum=Vsexpressvb
+                Encoding = Encoding.GetEncoding(28591),
+                ReadTimeout = 10000
+            };
+            SerialPort.Open();
+
+            UpdateProgressString = "Waiting for keypad";
+            DeviceModel.BroadcastFwUpdateProgress("Generic Nextion Display", UpdateProgressString, 0);
+            var lastval = 0;
+            try
+            {
+                while ((lastval = SerialPort.ReadByte()) != 0x05)
                 {
-                    Console.WriteLine("the serial port is null after opening it");
-                    return;
+
                 }
-                UpdateInProgress = true;
-                UpdateProgressString = "Communication with keypad in progress";
-                // The reference says: "It is suggested to send an empty instruction before the connect instruction."
-                SendCommand("");
-                SendCommand("connect");
+            }
+            catch (Exception ex)
+            {
+                //timeout
+                Console.WriteLine(ex.Message);
+            }
+            if (lastval != 0x05)
+            {
+                Console.WriteLine("Expected acknowledge (0x05) but got " + lastval);
+                return;
+            }
+            Console.WriteLine("Handshake result:" + lastval);
+            var blockSize = 4096;
+            var remainingBlocks = (int)Math.Ceiling((double)(fwsize / blockSize));
+            int blocksSent = 0;
+            BinaryReader fw = new(new MemoryStream(FirmwareData));
+            DateTime starttime = DateTime.Now;
+            UpdateProgressString = "Sending data";
+            DeviceModel.BroadcastFwUpdateProgress("Generic Nextion Display", UpdateProgressString, 0);
+            while (remainingBlocks != 0)
+            {
+                var b = fw.ReadBytes(blockSize);
+                SerialPort.Write(b, 0, b.Length);
 
-                // Read connect handshake
-                var comok = ReadPacket();
+                remainingBlocks--;
+                blocksSent++;
 
-                // Example response: comok 2,1793-0,NX8048P070_011C,163,10501,C68A340174C5D077,128974848-0
-                Console.WriteLine(Encoding.ASCII.GetString(comok, 0, comok.Length - 3));
-                if (comok[0] != 'c')
+
+                Console.WriteLine("proceed start");
+                var proceed = SerialPort.ReadByte();
+                Console.WriteLine("proceed end");
+                if (proceed == 0x08)
                 {
-                    UpdateProgressString = "Communication with keypad failed: incorrect response 1";
-                    UpdateFail = true;
-                    Console.WriteLine("FW update failed: incorrect data");
-                    UpdateInProgress = false;
-                    return;
-                }
-                SendCommand("");
-                var fwsize = ReadFileSize(firmware);
-                Console.WriteLine($"firmware size: " + fwsize);
+                    //NXSKIP
+                    byte[] buf = new byte[4];
+                    SerialPort.Read(buf, 0, 4);
+                    var offset = BitConverter.ToInt32(buf);
 
-                //For some reason the first command after self.connect() always fails. Can be anything.
-                SendCommand("bs=42");
-                SendCommand("dim=100");
-                SendCommand("sleep=0");
-                Console.WriteLine("Initiating upload...");
-                SendCommand($"whmi-wris {fwsize},9600,1");
-
-                Thread.Sleep(2000);
-                UpdateProgressString = "Waiting for keypad";
-                var lastval = 0;
-                try
-                {
-                    while ((lastval = SerialPort.ReadByte()) != 0x05)
+                    if (offset != 0)
                     {
-
+                        //# A value of 0 doesn't mean "seek to position 0" but "don't seek anywhere".
+                        var org = fw.BaseStream.Position;
+                        var jumpSize = offset - fw.BaseStream.Position;
+                        fw.BaseStream.Position = offset;
+                        //We need to round up if we need to send part of a chunk
+                        remainingBlocks = (int)Math.Ceiling((double)((fwsize - offset) / blockSize)) + 1;
+                        Console.WriteLine($"Skipped {jumpSize} bytes,org={org} and there are now {remainingBlocks} remaining blocks");
                     }
-                }
-                catch (Exception ex)
-                {
-                    //timeout
-                    Console.WriteLine(ex.Message);
-                }
-                if (lastval != 0x05)
-                {
-                    Console.WriteLine("Expected acknowledge (0x05) but got " + lastval);
-                    return;
-                }
-                Console.WriteLine("Handshake result:" + lastval);
-                var blockSize = 4096;
-                var remainingBlocks = Math.Ceiling((decimal)(fwsize / blockSize));
-                int blocksSent = 0;
-                BinaryReader fw = new(new MemoryStream(firmware));
-                DateTime starttime = DateTime.Now;
-                UpdateProgressString = "Sending data";
-                while (remainingBlocks != 0)
-                {
-                    var b = fw.ReadBytes(blockSize);
-                    SerialPort.Write(b, 0, b.Length);
-
-                    remainingBlocks--;
-                    blocksSent++;
-
-
-                    Console.WriteLine("proceed start");
-                    var proceed = SerialPort.ReadByte();
-                    Console.WriteLine("proceed end");
-                    if (proceed == 0x08)
-                    {
-                        //NXSKIP
-                        byte[] buf = new byte[4];
-                        SerialPort.Read(buf, 0, 4);
-                        var offset = BitConverter.ToInt32(buf);
-                        Console.WriteLine("skip to offset " + offset);
-                        if (offset != 0)
-                        {
-                            //# A value of 0 doesn't mean "seek to position 0" but "don't seek anywhere".
-                            var org = fw.BaseStream.Position;
-                            var jumpSize = offset - fw.BaseStream.Position;
-                            fw.BaseStream.Position = offset;
-                            //We need to round up if we need to send part of a chunk
-                            remainingBlocks = Math.Ceiling((decimal)((fwsize - offset) / blockSize)) + 1;
-                            Console.WriteLine($"skipped {jumpSize} bytes,org={org} and there are now {remainingBlocks} remaining blocks");
-
-                        }
-                    }
-                    else
-                    {
-                        // if not a:
-                        // a = self.ser.read_until(self.NXACK)
-
-                        if (proceed == 0)
-                        {
-                            var lastval2 = 0;
-                            try
-                            {
-                                while ((lastval2 = SerialPort.ReadByte()) != 0x05)
-                                {
-
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                //timeout
-                                Console.WriteLine(ex.Message);
-                            }
-                            if (lastval2 != 0x05)
-                            {
-                                Console.WriteLine("Expected acknowledge (0x05) but got " + lastval2);
-                            }
-                        }
-                    }
-
-                    var progress = Math.Ceiling((decimal)(100 * fw.BaseStream.Position / fwsize));
-                    UpdateProgress = (int)progress;
-                    Console.WriteLine($"progress: {progress}% RemainingBlocks:" + remainingBlocks + ",sent=" + blocksSent);
-
-                    if (remainingBlocks == 0 && UpdateProgress != 100)
-                    {
-                        Console.WriteLine("!!!ERROR: UPDATE SIZE MISCALCULATION!!! Increasing size of remainingBlocks");
-                        remainingBlocks++;
-                    }
-                }
-                SerialPort.Close();
-                //We have finished
-                if (UpdateProgress == 100)
-                {
-                    UpdateProgressString = "Finished.";
-                    UpdateFinish = true;
-                    Console.WriteLine("Firmware upgrade finished. Using " + comport);
-                    KeypadSendCommands = true;
-                    UpdateInProgress = false;
-                    //wait for the keypad to fully reboot
-                    Thread.Sleep(2000);
-                    Init();
                 }
                 else
                 {
-                    Console.WriteLine("update fail: not actually finished");
+                    // if not a:
+                    // a = self.ser.read_until(self.NXACK)
+
+                    if (proceed == 0)
+                    {
+                        var lastval2 = 0;
+                        try
+                        {
+                            while ((lastval2 = SerialPort.ReadByte()) != 0x05)
+                            {
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            //timeout
+                            Console.WriteLine(ex.Message);
+                        }
+                        if (lastval2 != 0x05)
+                        {
+                            Console.WriteLine("Expected acknowledge (0x05) but got " + lastval2);
+                        }
+                    }
                 }
-            });
-            worker.Start();
+
+                var progress = Math.Ceiling((double)(100 * fw.BaseStream.Position / fwsize));
+
+                DeviceModel.BroadcastFwUpdateProgress("Generic Nextion Display", UpdateProgressString, (int)progress);
+                UpdateProgress = (int)progress;
+                Console.WriteLine($"progress: {progress}% RemainingBlocks:" + remainingBlocks + ",sent=" + blocksSent);
+
+                if (remainingBlocks == 0 && UpdateProgress != 100)
+                {
+                    Console.WriteLine("!!!ERROR: UPDATE SIZE MISCALCULATION!!! Increasing size of remainingBlocks");
+                    remainingBlocks++;
+                }
+            }
+            SerialPort.Close();
+            //We have finished
+            if (UpdateProgress == 100)
+            {
+                UpdateProgressString = "Finished.";
+                UpdateFinish = true;
+                Console.WriteLine("Firmware upgrade finished. Using " + comport);
+                KeypadSendCommands = true;
+                UpdateInProgress = false;
+                //wait for the keypad to fully reboot
+                Thread.Sleep(2000);
+                Init();
+            }
+            else
+            {
+                Console.WriteLine("update fail: not actually finished");
+            }
         }
         #endregion
         private void InitKeypad(bool navigate = true)
@@ -405,7 +430,8 @@ namespace SecuritySystem.Modules.NXDisplay
                 Console.WriteLine("[weather] wrong page: " + currentPage);
                 return;
             }
-
+            if (!KeypadSendCommands)
+                return;
             SendCommand($"tWeather.txt=\"{await WeatherService.GetWeather()}\"");
         }
         public void UpdateStatusText()

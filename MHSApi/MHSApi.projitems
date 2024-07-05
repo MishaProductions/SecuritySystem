@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)API\SystemInfoResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\SystemStatusResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\UserUpdateRequests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\FwUpdateMsg.cs" />
     <Compile Include="..\MHSApi\API\ApiUser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\Zone.cs" />
