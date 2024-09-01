@@ -21,3 +21,33 @@ Nextion Display
 Web interface / Client
 
 ![image](https://github.com/MishaProductions/SecuritySystem/assets/106913236/1922e334-e2f7-42f4-bac8-75ac2193eb4d)
+
+## Installation
+Build solution in Visual Studio 2022, publish secsys project for your SOC architecture, and create /usr/lib/systemd/system/secsys.service: 
+```
+[Unit]
+Description=Starts security system
+After=multi-user.target
+[Service]
+ExecStart=/bin/bash /secsys/run.sh
+[Install]
+WantedBy=multi-user.target
+
+```
+
+Copy the published files to /secsys/ and create /secsys/run.sh:
+```
+#!/bin/bash
+export DOTNET_ROOT=/root/.dotnet
+export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
+
+# Start systemwide Audio server. This is done on boot to prevent noises from speaker
+systemctl start pulseaudio
+
+# Start controller
+/secsys/SecuritySystem
+
+# Cleanup
+systemctl stop pulseaudio
+```
+After that, create /musics/ and /musics/annc/ directories and install mpv. Enable and start the secsys service. I recommend to set pulseaudio dameon to run globally.
