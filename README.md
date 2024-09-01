@@ -52,7 +52,7 @@ systemctl stop pulseaudio
 ```
 After that, create /musics/ and /musics/annc/ directories and install mpv. Enable and start the secsys service. I recommend to set pulseaudio dameon to run globally.
 
-My armbian config:
+My armbian config (where PA21 is a 1 wire temperture sensor (optional)):
 ```
 root@securitysystem:~# cat /boot/armbianEnv.txt
 verbosity=1
