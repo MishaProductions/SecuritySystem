@@ -8,7 +8,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-	  <PackageReference Include="Avalonia.Browser" Version="11.2.999-cibuild0049756-alpha" />
+	  <PackageReference Include="Avalonia.Browser" Version="11.1.3" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -16,6 +16,6 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="xcopy /E /H /C /I /Y &quot;$(TargetDir)wwwroot&quot; &quot;$(SolutionDir)SecuritySystem\www\modernclient\&quot; &amp;&amp; xcopy /E /H /C /I /Y &quot;$(SolutionDir)MHSClientAvalonia.Browser\wwwroot\&quot; &quot;$(SolutionDir)SecuritySystem\www\modernclient\&quot;" />
+	
 	</Target>
 </Project>

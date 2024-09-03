@@ -34,7 +34,7 @@
 		</None>
 	</ItemGroup>
 	<ItemGroup>
-	  <Compile Update="WebServer\SecurityApiController.Settings.cs">
+	  <Compile Update="WebSrv\SecurityApiController.Settings.cs">
 	    <Generator></Generator>
 	  </Compile>
 	</ItemGroup>

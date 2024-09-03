@@ -1,5 +1,7 @@
 using Avalonia.Input;
 using MHSApi.API;
+using MHSApi.WebSocket.AudioIn;
+using MHSClientAvalonia.Client;
 using MHSClientAvalonia.Utils;
 using NAudio.Wave;
 using System;
@@ -16,7 +18,7 @@ public partial class MusicManager : SecurityPage
     private bool anncChanging = false;
     private bool musicChanging = false;
     static WaveInEvent? waveIn;
-    static TcpClient? streaming;
+    static PlugifyWebSocketClient? _audioOutSocket;
     public MusicManager()
     {
         InitializeComponent();
@@ -77,17 +79,22 @@ public partial class MusicManager : SecurityPage
             waveIn.Dispose();
             waveIn = null;
         }
-        if (streaming != null)
+        if (_audioOutSocket != null)
         {
             try
             {
-                streaming.GetStream().Close();
-                streaming.Close();
-                streaming = null;
+                if (_audioOutSocket.IsOpen)
+                {
+                    await _audioOutSocket.Send([(byte)AudioInMsgType.CloseAudioDevice]);
+                }
+
+
+                _audioOutSocket.Close();
+                _audioOutSocket = null;
             }
             catch
             {
-                streaming = null;
+                _audioOutSocket = null;
             }
         }
         BtnPlayAnncFromMic.IsEnabled = true;
@@ -141,22 +148,27 @@ public partial class MusicManager : SecurityPage
             waveIn.WaveFormat = new WaveFormat(44100, 16, 1);
             waveIn.BufferMilliseconds = 50;
             waveIn.NumberOfBuffers = 3;
-            streaming = await Services.SecurityClient.OpenAnncStream(waveIn.WaveFormat.SampleRate + "," + waveIn.WaveFormat.BitsPerSample + "," + waveIn.WaveFormat.BlockAlign);
-            if (streaming != null)
+            _audioOutSocket = await Services.SecurityClient.OpenAnncStream(waveIn.WaveFormat.SampleRate, waveIn.WaveFormat.BitsPerSample, waveIn.WaveFormat.BlockAlign);
+            if (_audioOutSocket != null)
             {
                 BtnPlayAnncFromMic.IsEnabled = false;
-                var ss = streaming.GetStream();
                 waveIn.StartRecording();
-                waveIn.DataAvailable += (s, a) =>
+                waveIn.DataAvailable += async (s, a) =>
                 {
                     Debug.WriteLine("wrote " + a.BytesRecorded);
-                    ss.Write(a.Buffer, 0, a.BytesRecorded);
+
+                    byte[] cmd = new byte[a.Buffer.Length + 1];
+                    cmd[0] = (byte)AudioInMsgType.WritePcm;
+                    Array.Copy(a.Buffer, 0, cmd, 1, a.Buffer.Length);
+
+                    await _audioOutSocket.Send(cmd);
                 };
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
+            Services.MainView.ShowMessage("System Error", ex.Message);
         }
     }
 }

@@ -13,12 +13,13 @@ namespace SecuritySystem
     public static class ZoneController
     {
         private static GpioController? controller;
-        public static PinValue[] ZoneStates = new PinValue[6];
+        public static PinValue[] ZoneStates = new PinValue[20];
 
         public static bool IsReady
         {
             get
             {
+                if (Configuration.Instance.Zones.Count == 0) return true;
                 foreach (var item in Configuration.Instance.Zones)
                 {
                     if (ZoneStates[item.Key] == PinValue.Low)

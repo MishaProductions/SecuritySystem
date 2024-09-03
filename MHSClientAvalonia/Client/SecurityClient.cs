@@ -1,17 +1,21 @@
 ﻿using MHSApi.API;
 using MHSApi.WebSocket;
+using MHSApi.WebSocket.AudioIn;
 using MHSClientAvalonia.Utils;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SecuritySystemApi;
 using System;
+using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -550,23 +554,43 @@ namespace MHSClientAvalonia.Client
             }
         }
 
-        public async Task<TcpClient> OpenAnncStream(string data)
+        public async Task<PlugifyWebSocketClient> OpenAnncStream(int sampleRate, int bitsPerSample, int blockAlign)
         {
-            TcpClient client = new TcpClient();
-            await client.ConnectAsync(Endpoint.Replace("https://", ""), 1234);
-            var s = client.GetStream();
+            var client = new PlugifyWebSocketClient();
+            string path = Endpoint.Replace("https://", "wss://") + "/mixer/audioin/ws";
+            client.SetUrl(path);
 
-            var bw = new BinaryWriter(s);
+            await client.Start(false);
 
-            bw.Write("AUTHORIZATION=" + Token);
 
-            var br = new BinaryReader(s);
-            if (br.ReadByte() != 1)
+            // send token
+            var tokenBytes = Encoding.ASCII.GetBytes(Token);
+            List<byte> TokenCmd = [(byte)AudioInMsgType.DoAuth, (byte)tokenBytes.Length];
+            TokenCmd.AddRange(tokenBytes);
+
+            await client.Send(TokenCmd.ToArray());
+
+            // recieve auth status
+            var authResult = await client.ReceiveBytes();
+            if (authResult != null && (AudioInMsgType)authResult[0] != AudioInMsgType.OK)
             {
-                throw new Exception("authentication FAIL");
+                throw new Exception("unexpected result " + (AudioInMsgType)authResult[0] + " after reading authentication response");
             }
 
-            bw.Write(data);
+            // open audio device
+            List<byte> AudioDevCmd = [(byte)AudioInMsgType.OpenAudioDevice];
+            AudioDevCmd.AddRange(BitConverter.GetBytes(sampleRate));
+            AudioDevCmd.AddRange(BitConverter.GetBytes(bitsPerSample));
+            AudioDevCmd.AddRange(BitConverter.GetBytes(blockAlign));
+
+            await client.Send(AudioDevCmd.ToArray());
+
+            // recieve audio device status
+            var devResult = await client.ReceiveBytes();
+            if (devResult != null && (AudioInMsgType)devResult[0] != AudioInMsgType.OK)
+            {
+                throw new Exception("unexpected result " + devResult[0] + " after reading OpenAudioDevice");
+            }
 
             return client;
         }

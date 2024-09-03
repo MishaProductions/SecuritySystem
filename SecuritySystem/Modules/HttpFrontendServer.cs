@@ -1,5 +1,6 @@
 ﻿using EmbedIO;
 using EmbedIO.WebApi;
+using SecuritySystem.WebSrv.Websocket;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -88,7 +89,8 @@ namespace SecuritySystem.Modules
              .WithStaticFolder("/client/", AppDomain.CurrentDomain.BaseDirectory + "/www/client/", true)
              .WithWebApi("/api", m => m
              .WithController<SecurityApiController>())
-             .WithModule(new SecurityWebSocketModuleV2("/wsv2"));
+             .WithModule(new SecurityWebSocketModuleV2("/wsv2"))
+             .WithModule(new AudioInputWebSocketModule("/mixer/audioin/ws"));
             server = server.WithStaticFolder("/", AppDomain.CurrentDomain.BaseDirectory + "/www/modernclient/", false);
             server.HandleHttpException(async (ctx, ex) =>
             {

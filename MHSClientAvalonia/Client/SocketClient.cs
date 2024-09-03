@@ -21,7 +21,7 @@ namespace MHSClientAvalonia.Client
         {
             this.URL = url;
         }
-        public async Task Start()
+        public async Task Start(bool recieveLoop = true)
         {
             if (string.IsNullOrEmpty(URL))
                 throw new Exception("url cannot be empty in PlugifyWebSocketClient");
@@ -37,7 +37,8 @@ namespace MHSClientAvalonia.Client
             await client.ConnectAsync(new Uri(URL), disposalTokenSource.Token);
             IsOpen = true;
 
-            _ = ReceiveLoop();
+            if (recieveLoop)
+                _ = ReceiveLoop();
         }
 
         private async Task ReceiveLoop()
@@ -74,6 +75,57 @@ namespace MHSClientAvalonia.Client
                     IsOpen = false;
                     OnClose?.Invoke(this, EventArgs.Empty);
                 }
+            }
+        }
+        public async Task Send(byte[] data)
+        {
+            if (client.State == WebSocketState.Open)
+            {
+                await client.SendAsync(data, WebSocketMessageType.Binary, true, CancellationToken.None);
+            }
+            else
+            {
+                // make sure that onclose is called once
+                if (IsOpen)
+                {
+                    IsOpen = false;
+                    OnClose?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        public async Task<byte[]?> ReceiveBytes()
+        {
+            try
+            {
+                var buffer = new ArraySegment<byte>(new byte[2048]);
+                do
+                {
+                    WebSocketReceiveResult result;
+                    using (var ms = new MemoryStream())
+                    {
+                        do
+                        {
+                            result = await client.ReceiveAsync(buffer, CancellationToken.None);
+                            if (buffer.Array != null)
+                                ms.Write(buffer.Array, buffer.Offset, result.Count);
+                        } while (!result.EndOfMessage);
+
+                        if (result.MessageType == WebSocketMessageType.Close)
+                            break;
+
+                        return ms.ToArray();
+                    }
+                } while (true);
+                IsOpen = false;
+                return null;
+            }
+            catch
+            {
+                if (IsOpen)
+                    OnClose?.Invoke(this, EventArgs.Empty);
+                IsOpen = false;
+                client.Dispose();
+                return null;
             }
         }
         public async Task<string?> Receive()
