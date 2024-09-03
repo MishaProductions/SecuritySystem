@@ -694,7 +694,7 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             if (page == 7) //music page
             {
-                MusicPlayer.PlayAnnc(componentID - 2);
+                MusicPlayer.PlayAnnc(componentID - 1);
             }
         }
         private void HandleStringCommand(string x)
