@@ -73,7 +73,7 @@ public partial class MusicManager : SecurityPage
 
     private async void StopAnnc_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (waveIn != null)
+        if (waveIn != null && OperatingSystem.IsWindows())
         {
             waveIn.StopRecording();
             waveIn.Dispose();
@@ -142,6 +142,11 @@ public partial class MusicManager : SecurityPage
 
     private async void PlayAnncFromMic_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            Services.MainView.ShowMessage("System Error", "Platform is not yet supported. Support for microphone input will be added soon.");
+            return;
+        }
         waveIn = new WaveInEvent();
         try
         {

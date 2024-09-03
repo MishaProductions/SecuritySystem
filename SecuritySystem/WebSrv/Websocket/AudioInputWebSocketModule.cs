@@ -125,6 +125,7 @@ namespace SecuritySystem.WebSrv.Websocket
                         PcmDevice.Open((ushort)bits, (uint)sampleRate, (ushort)blockAlignment);
                     else
                         Console.WriteLine("Simulating OpenAudioDevice");
+                    MusicPlayer.StartAsyncMicAnnc();
                     await SendCommandAsync(context, AudioInMsgType.OK);
                 }
             }
@@ -134,6 +135,7 @@ namespace SecuritySystem.WebSrv.Websocket
                     await SendCommandAsync(context, AudioInMsgType.CmdError);
                 else
                 {
+                    MusicPlayer.StopAsyncMicAnnc();
                     PcmDevice.Close();
                     PcmDevice = null;
                     await SendCommandAsync(context, AudioInMsgType.OK);
