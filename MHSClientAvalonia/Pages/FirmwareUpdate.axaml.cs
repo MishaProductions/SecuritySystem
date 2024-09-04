@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using MHSClientAvalonia.Utils;
+using SkiaSharp;
 using System.IO;
 
 namespace MHSClientAvalonia.Pages;
@@ -82,7 +83,17 @@ public partial class FirmwareUpdate : SecurityPage
             await using var stream = await files[0].OpenReadAsync();
 
             using var ms = new MemoryStream();
-            stream.CopyTo(ms);
+
+            // Copy file to MemoryStream. ReadAsync is used instead of CopyOf as Avalonia browser does not support it
+            byte[] buffer = new byte[8192]; // 8 KB buffer size
+
+            int bytesRead;
+            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                await ms.WriteAsync(buffer, 0, bytesRead);
+            }
+
+            ms.Seek(0, SeekOrigin.Begin);
 
             Array = ms.ToArray();
             TxtFilePath.IsEnabled = false;
