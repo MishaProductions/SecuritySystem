@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using MHSClientAvalonia.Utils;
 using SkiaSharp;
+using System;
 using System.IO;
 
 namespace MHSClientAvalonia.Pages;
@@ -19,7 +20,7 @@ public partial class FirmwareUpdate : SecurityPage
         base.OnNavigateTo();
         HideLoadingBar();
     }
-    private byte[]? Array;
+    private static byte[]? Array;
     private async void NextionFlash_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         byte[] file;
@@ -31,7 +32,7 @@ public partial class FirmwareUpdate : SecurityPage
                 return;
             }
 
-            if (!File.Exists(TxtFilePath.Text))
+            if (!File.Exists(TxtFilePath.Text) && !OperatingSystem.IsBrowser())
             {
                 Services.MainView.ShowMessage("No disk", "Specified file does not exist.");
                 return;
@@ -86,6 +87,12 @@ public partial class FirmwareUpdate : SecurityPage
 
             // Copy file to MemoryStream. ReadAsync is used instead of CopyOf as Avalonia browser does not support it
             byte[] buffer = new byte[8192]; // 8 KB buffer size
+
+            if (OperatingSystem.IsBrowser())
+            {
+                TxtFilePath.Text = "(selected in browser)";
+                TxtFilePath.IsReadOnly = true;
+            }
 
             int bytesRead;
             while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)

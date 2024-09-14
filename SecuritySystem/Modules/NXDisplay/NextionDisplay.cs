@@ -91,7 +91,6 @@ namespace SecuritySystem.Modules.NXDisplay
             var aTimer = new System.Timers.Timer(1000 * 60); // update every minute (in milliseconds)
             aTimer.Elapsed += new ElapsedEventHandler(HandleWeatherTimer);
             aTimer.Start();
-            SystemManager_OnZoneUpdate(false, 0, "", ZoneState.Unconfigured);
         }
         #endregion
         #region Event handlers
@@ -421,6 +420,7 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand($"rtc5={DateTime.Now.Second}");
             SendCommand($"vis pStatus,0");
             RefreshWeather();
+            SystemManager_OnZoneUpdate(false, 0, "", ZoneState.Unconfigured);
         }
 
         public async void RefreshWeather()
@@ -744,6 +744,24 @@ namespace SecuritySystem.Modules.NXDisplay
 
                 SendCommand("tBldDate.txt=\"Controller build time: " + new DateTime(Builtin.CompileTime) + "\"");
                 SendCommand("tSysUptime.txt=\"System uptime: " + TimeSpan.FromMilliseconds(Environment.TickCount64) + "\"");
+
+                if (OperatingSystem.IsLinux())
+                {
+                    double ramUse = CpuMemoryMetrics4LinuxUtils.GetOccupiedMemoryPercentage();
+                    double cpuUse = CpuMemoryMetrics4LinuxUtils.GetOverallCpuUsagePercentage();
+                    double temp = int.Parse(File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
+
+                    SendCommand("tRamUse.txt=\"RAM usage: " + ramUse + "%\"");
+                    SendCommand("tCpuUse.txt=\"CPU usage: " + cpuUse + "%\"");
+                    SendCommand("tCpuTemp.txt=\"CPU temp: " + temp + "C\"");
+                }
+                else
+                {
+                    SendCommand("tRamUse.txt=\"RAM usage: Unsupported\"");
+                    SendCommand("tCpuUse.txt=\"CPU usage: Unsupported\"");
+                    SendCommand("tCpuTemp.txt=\"CPU temp: Unsupported\"");
+                }
+
 
                 SendCommand("sw0.val=" + (DoorChime ? "1" : "0"));
             }
