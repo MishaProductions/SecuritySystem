@@ -4,10 +4,11 @@ using MHSApi.WebSocket.AudioIn;
 using MHSClientAvalonia.Client;
 using MHSClientAvalonia.Utils;
 using NAudio.Wave;
+using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Net.Sockets;
+using System.Threading;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -19,6 +20,10 @@ public partial class MusicManager : SecurityPage
     private bool musicChanging = false;
     static WaveInEvent? waveIn;
     static PlugifyWebSocketClient? _audioOutSocket;
+
+    private static ALCaptureDevice _captureDevice;
+    private static bool _shouldCapture = false;
+    private static byte[] buffer = new byte[100 * 41000];
     public MusicManager()
     {
         InitializeComponent();
@@ -78,6 +83,14 @@ public partial class MusicManager : SecurityPage
             waveIn.StopRecording();
             waveIn.Dispose();
             waveIn = null;
+        }
+
+        if (!OperatingSystem.IsWindows() && _captureDevice != null)
+        {
+            _shouldCapture = false;
+            ALC.CaptureStop(_captureDevice);
+
+            ALC.CaptureCloseDevice(_captureDevice);
         }
         if (_audioOutSocket != null)
         {
@@ -140,40 +153,86 @@ public partial class MusicManager : SecurityPage
         await Services.SecurityClient.SetMusicVolume((int)e.NewValue);
     }
 
-    private async void PlayAnncFromMic_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private static async void CapturingThread()
     {
-        if (!OperatingSystem.IsWindows())
+        while (_shouldCapture)
         {
-            Services.MainView.ShowMessage("System Error", "Platform is not yet supported. Support for microphone input will be added soon.");
-            return;
-        }
-        waveIn = new WaveInEvent();
-        try
-        {
-            waveIn.WaveFormat = new WaveFormat(44100, 16, 1);
-            waveIn.BufferMilliseconds = 50;
-            waveIn.NumberOfBuffers = 3;
-            _audioOutSocket = await Services.SecurityClient.OpenAnncStream(waveIn.WaveFormat.SampleRate, waveIn.WaveFormat.BitsPerSample, waveIn.WaveFormat.BlockAlign);
-            if (_audioOutSocket != null)
+            if (_audioOutSocket == null)
+                break;
+
+            int samplesAvailable = ALC.GetInteger(_captureDevice, AlcGetInteger.CaptureSamples);
+
+            if (samplesAvailable >= 2000)
             {
-                BtnPlayAnncFromMic.IsEnabled = false;
-                waveIn.StartRecording();
-                waveIn.DataAvailable += async (s, a) =>
-                {
-                    Debug.WriteLine("wrote " + a.BytesRecorded);
+                ALC.CaptureSamples(_captureDevice, buffer, samplesAvailable);
 
-                    byte[] cmd = new byte[a.Buffer.Length + 1];
-                    cmd[0] = (byte)AudioInMsgType.WritePcm;
-                    Array.Copy(a.Buffer, 0, cmd, 1, a.Buffer.Length);
 
-                    await _audioOutSocket.Send(cmd);
-                };
+                byte[] cmd = new byte[1 + samplesAvailable * 2];
+                cmd[0] = (byte)AudioInMsgType.WritePcm;
+                Array.Copy(buffer, 0, cmd, 1, samplesAvailable * 2);
+
+                await _audioOutSocket.Send(cmd);
+                Debug.WriteLine("Sent " + (samplesAvailable * 2) + " bytes");
             }
         }
-        catch (Exception ex)
+    }
+
+    private async void PlayAnncFromMic_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (OperatingSystem.IsWindows())
         {
-            Console.WriteLine(ex);
-            Services.MainView.ShowMessage("System Error", ex.Message);
+            waveIn = new WaveInEvent();
+            try
+            {
+                waveIn.WaveFormat = new WaveFormat(44100, 16, 1);
+                waveIn.BufferMilliseconds = 50;
+                waveIn.NumberOfBuffers = 3;
+                _audioOutSocket = await Services.SecurityClient.OpenAnncStream(waveIn.WaveFormat.SampleRate, waveIn.WaveFormat.BitsPerSample, waveIn.WaveFormat.BlockAlign);
+                if (_audioOutSocket != null)
+                {
+                    BtnPlayAnncFromMic.IsEnabled = false;
+                    waveIn.StartRecording();
+                    waveIn.DataAvailable += async (s, a) =>
+                    {
+                        Debug.WriteLine("wrote " + a.BytesRecorded);
+
+                        byte[] cmd = new byte[a.Buffer.Length + 1];
+                        cmd[0] = (byte)AudioInMsgType.WritePcm;
+                        Array.Copy(a.Buffer, 0, cmd, 1, a.Buffer.Length);
+
+                        await _audioOutSocket.Send(cmd);
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                Services.MainView.ShowMessage("System Error", ex.Message);
+            }
+        }
+        else
+        {
+            try
+            {
+                _captureDevice = ALC.CaptureOpenDevice(null, 44100, ALFormat.Mono16, 50);//opens default mic //null specifies default 
+
+                _audioOutSocket = await Services.SecurityClient.OpenAnncStream(44100, 16, 2);
+                if (_audioOutSocket != null)
+                {
+                    ALC.CaptureStart(_captureDevice);
+                    _shouldCapture = true;
+                    new Thread(CapturingThread).Start();
+                }
+                else
+                {
+                    Services.MainView.ShowMessage("System Error", "Opening remote annc stream input failed. Check network/authentication");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                Services.MainView.ShowMessage("System Error", ex.Message);
+            }
         }
     }
 }

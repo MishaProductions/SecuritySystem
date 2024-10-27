@@ -696,6 +696,7 @@ public partial class MainView : UserControl
             navigationView.IsEnabled = true;
             runnerBox.IsVisible = false;
             MainFrameBox.IsVisible = true;
+            
         }
     }
     private async void ChangePW_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

@@ -9,16 +9,16 @@
 			<StackPanel Spacing="4">
 				<ContentControl>
 					<StackPanel>
-						<TextBlock x:Name="zone1" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone2" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone3" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone4" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone5" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone6" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone7" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone8" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone9" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
-						<TextBlock x:Name="zone10" Theme="{StaticResource SubtitleTextBlockStyle}">Loading...</TextBlock>
+						<TextBlock x:Name="zone1" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone2" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone3" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone4" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone5" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone6" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone7" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone8" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone9" FontSize="20">Loading...</TextBlock>
+						<TextBlock x:Name="zone10" FontSize="20">Loading...</TextBlock>
 					</StackPanel>
 				</ContentControl>
 			</StackPanel>

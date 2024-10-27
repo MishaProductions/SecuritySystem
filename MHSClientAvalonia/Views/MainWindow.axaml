@@ -9,6 +9,7 @@
 		xmlns:wnd="using:FluentAvalonia.UI.Windowing"
 		 xmlns:views="clr-namespace:MHSClientAvalonia"
         Title="MHS Client"
-	    Closing="AppWindow_Closing" Icon="/Assets/mhs-nor.ico">
+	    Closing="AppWindow_Closing" Icon="/Assets/mhs-nor.ico"
+        FontFamily="Times New Roman">
 	<views:MainView></views:MainView>
 </wnd:AppWindow>

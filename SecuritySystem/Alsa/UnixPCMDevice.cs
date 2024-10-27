@@ -148,18 +148,19 @@ namespace SecuritySystem.Alsa
                             int received = wavStream.Read(readBuffer, (int)offset, (int)(bufferSize - offset));
                             if (received == 0)
                             {
-                                Console.WriteLine("failed to read wav stream: client disconnected");
-                                return false;
+                                Console.WriteLine("failed to read wav stream: buffer under-run");
+                                break;
+                               // return false;
                             }
                             offset += (ulong)received;
                         }
 
-                        Console.WriteLine("readed " + offset + " from buffer");
+                        //Console.WriteLine("readed " + offset + " from buffer");
                         _errorNum = snd_pcm_writei(_playbackPcm, (IntPtr)buffer, (ulong)frames);
 
                         if (_errorNum == -32)
                         {
-                            Console.WriteLine("buffer overran");
+                            //Console.WriteLine("buffer overran");
                             snd_pcm_prepare(_playbackPcm);
                             _errorNum = snd_pcm_writei(_playbackPcm, (IntPtr)buffer, (ulong)frames);
                         }

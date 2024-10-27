@@ -42,7 +42,7 @@
 					</Grid.RowDefinitions>
 
 					<Grid Grid.Row="0">
-						<TextBlock x:Name="PageTitle" Theme="{StaticResource TitleTextBlockStyle}">Login</TextBlock>
+						<TextBlock x:Name="PageTitle" FontSize="24">Login</TextBlock>
 
 						<Grid x:Name="pnlControls"  VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False">
 							<Grid.ColumnDefinitions>
