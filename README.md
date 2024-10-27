@@ -1,6 +1,6 @@
 # MHS - Mikhail Home Security
 
-This is the source code that I use for my DIY Security system in my home. 
+This is the source code that I use for my DIY Security system in my home. Discord server: https://discord.gg/eNwUWt62vF
 
 ## Background
 My home had an ADT BHS-4000 system originally.
