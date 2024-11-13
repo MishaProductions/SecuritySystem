@@ -60,7 +60,7 @@ namespace SecuritySystem
             Console.WriteLine("Starting webserver");
             HttpFrontendServer.Start();
 
-            Console.WriteLine("Starting annoucement server");
+            Console.WriteLine("Starting announcement server");
             MusicStreamServer.StartAnncHandlerServer();
 
             Console.WriteLine("Starting system timer");
@@ -114,11 +114,10 @@ namespace SecuritySystem
                         Console.WriteLine("[timer] detected that the system is disarmed");
                         goto SystemDisarmed;
                     }
-                    if (Configuration.Instance.Timer <= 0)
-                    {
-                        Configuration.Instance.InExitDelay = false;
-                        break;
-                    }
+
+                    if (Configuration.Instance.Timer > 0) continue;
+                    Configuration.Instance.InExitDelay = false;
+                    break;
                 }
                 Console.WriteLine("timer: Exit delay over - system is fully on");
 

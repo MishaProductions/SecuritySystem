@@ -171,7 +171,15 @@ public partial class MusicManager : SecurityPage
                 cmd[0] = (byte)AudioInMsgType.WritePcm;
                 Array.Copy(buffer, 0, cmd, 1, samplesAvailable * 2);
 
-                await _audioOutSocket.Send(cmd);
+                try
+                {
+                    await _audioOutSocket.Send(cmd);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    return;
+                }
                 Debug.WriteLine("Sent " + (samplesAvailable * 2) + " bytes");
             }
         }
@@ -179,6 +187,12 @@ public partial class MusicManager : SecurityPage
 
     private async void PlayAnncFromMic_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        if (_audioOutSocket != null)
+        {
+            Services.MainView.ShowMessage("System Error", "An audio input stream is already open on this device. Try speaking into the microphone, and then press Stop annc.");
+            return;
+        }
+
         if (OperatingSystem.IsWindows())
         {
             waveIn = new WaveInEvent();

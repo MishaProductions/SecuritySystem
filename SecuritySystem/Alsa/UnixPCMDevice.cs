@@ -116,7 +116,7 @@ namespace SecuritySystem.Alsa
             ClosePlaybackPcm();
         }
         private readonly BufferedWaveProvider waveProvider;
-        private unsafe bool WriteStream(Stream wavStream, WavHeader header)
+        private unsafe bool WriteStream(byte[] wavStream, WavHeader header)
         {
             ulong frames, bufferSize;
 
@@ -127,47 +127,23 @@ namespace SecuritySystem.Alsa
             }
 
             bufferSize = (ulong)frames * header.BlockAlign;
-            // In Interop, the frames is defined as ulong. But actucally, the value of bufferSize won't be too big.
-            byte[] readBuffer = new byte[(int)bufferSize];
+            Console.WriteLine("Expected Buffer Size: " + bufferSize + ", got " + wavStream.Length);
 
             try
             {
-                fixed (byte* buffer = readBuffer)
+                fixed (byte* buffer = wavStream)
                 {
-                    while (true)
+                    _errorNum = snd_pcm_writei(_playbackPcm, (IntPtr)buffer, (ulong)frames);
+
+                    if (_errorNum == -32)
                     {
-                        ulong offset = 0;
-
-                        // normally there will be only one iteration of this loop but
-                        // ReadAsync doesn't guarantee that 'received' will always match
-                        // requested bytes amount
-
-                        while (offset < bufferSize)
-                        {
-                            // read to the buffer until we read *bufferSize*
-                            int received = wavStream.Read(readBuffer, (int)offset, (int)(bufferSize - offset));
-                            if (received == 0)
-                            {
-                                Console.WriteLine("failed to read wav stream: buffer under-run");
-                                break;
-                               // return false;
-                            }
-                            offset += (ulong)received;
-                        }
-
-                        //Console.WriteLine("readed " + offset + " from buffer");
+                        //Console.WriteLine("buffer overran");
+                        snd_pcm_prepare(_playbackPcm);
                         _errorNum = snd_pcm_writei(_playbackPcm, (IntPtr)buffer, (ulong)frames);
-
-                        if (_errorNum == -32)
-                        {
-                            //Console.WriteLine("buffer overran");
-                            snd_pcm_prepare(_playbackPcm);
-                            _errorNum = snd_pcm_writei(_playbackPcm, (IntPtr)buffer, (ulong)frames);
-                        }
-                        else
-                        {
-                            ThrowErrorMessage("Can not write data to the device.");
-                        }
+                    }
+                    else
+                    {
+                        ThrowErrorMessage("Can not write data to the device.");
                     }
 
                     return false;
@@ -181,7 +157,7 @@ namespace SecuritySystem.Alsa
             return false;
         }
 
-        internal unsafe bool Write(Stream s)
+        internal unsafe bool Write(byte[] s)
         {
             return WriteStream(s, h);
         }

@@ -96,12 +96,20 @@ namespace SecuritySystem.WebSrv.Websocket
                 var pcm = buffer.Skip(1).ToArray(); // Skip command byte
                 if (PcmDevice == null)
                 {
+                    Console.WriteLine("AudioInputWebSocketModule: PcmDevice cannot be null");
                     await SendCommandAsync(context, AudioInMsgType.CmdError);
                 }
                 else
                 {
+                    if (pcm.Length == 1)
+                    {
+                        Console.WriteLine("!!Cannot have 1 sized PCM data!!");
+                        await SendCommandAsync(context, AudioInMsgType.CmdError);
+                        return;
+                    }
+
                     if (OperatingSystem.IsLinux())
-                        PcmDevice.Write(new MemoryStream(pcm));
+                        PcmDevice.Write(pcm);
                     else
                         Console.WriteLine("Simulating WritePcm");
                 }
@@ -141,6 +149,10 @@ namespace SecuritySystem.WebSrv.Websocket
                     await SendCommandAsync(context, AudioInMsgType.OK);
                 }
             }
+            else
+            {
+                Console.WriteLine("AudioInputWebSocketModule: unknown command");
+            }
         }
 
         private async Task<bool> IsAuthed(IWebSocketContext context)
@@ -167,6 +179,7 @@ namespace SecuritySystem.WebSrv.Websocket
 
         private async Task SendCommandAsync(IWebSocketContext context, AudioInMsgType authFail)
         {
+            Console.WriteLine("debug: send " + authFail);
             await SendAsync(context, [(byte)authFail]);
         }
     }

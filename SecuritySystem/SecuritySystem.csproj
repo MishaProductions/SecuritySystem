@@ -7,6 +7,7 @@
 		<Nullable>enable</Nullable>
 		<SelfContainained>True</SelfContainained>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<PublishSingleFile>true</PublishSingleFile>
 	</PropertyGroup>
 	<Target Name="Date" BeforeTargets="CoreCompile">
 		<WriteLinesToFile File="$(IntermediateOutputPath)gen.cs" Lines="static partial class Builtin { public static long CompileTime = $([System.DateTime]::Now.Ticks) %3B public static int BuildNum = $([System.IO.File]::ReadAllText($(MSBuildProjectDirectory)/build.txt)) %3B}" Overwrite="true" />

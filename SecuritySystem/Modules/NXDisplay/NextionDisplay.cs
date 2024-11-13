@@ -697,6 +697,136 @@ namespace SecuritySystem.Modules.NXDisplay
                 MusicPlayer.PlayAnnc(componentID - 1);
             }
         }
+        private void SetCmptText(string name, string text)
+        {
+            SendCommand($"{name}.txt=\"{text}\"");
+        }
+        // TODO: vis does not support page!
+        private void SetCmptVisible(string name, bool val)
+        {
+            int rawValue = val == true ? 1 : 0;
+            SendCommand($"vis {name},{rawValue}");
+        }
+        private void SetDispPage(string name)
+        {
+            SendCommand($"page {name}");
+            currentPage = name;
+        }
+        private void SetCmptPic(string name, int picIndex)
+        {
+            SendCommand($"{name}.pic={picIndex}");
+        }
+        private void SetCmptBGColor(string name, int bgColor)
+        {
+            SendCommand($"{name}.bco={bgColor}");
+        }
+
+        private readonly string[] WeatherLabels = ["t19", "t20", "t21", "t22", "t23", "t24", "t25"];
+        private readonly string[] TempLabels = ["t12", "t13", "t14", "t15", "t16", "t17", "t18"];
+        private readonly string[] WeekLabels = ["t5", "t6", "t7", "t8", "t9", "t10", "t11"];
+        private readonly string[] WeekLabelText = ["Saturday", "Monday", "Tuesday", "Wenesday", "Thursday", "Friday", "Sat"];
+        private bool PromptOpen = false;
+
+        private Action? PromptB1Action;
+        private Action? PromptB2Action;
+        private Action? PromptB3Action;
+        private bool ShowedFirmwareMismatch = false;
+
+        private void ShowPrompt(string title, string message, bool iconVisible, int icon, string b1Text, bool b1Visible, Action? b1Click, string b2Text, bool b2Visible, Action? b2Click, string b3Text, bool b3Visible, Action? b3Click, int bg = 16904)
+        {
+            SetDispPage("pageSysMsg");
+
+            // wait for navigation to complete
+            Thread.Sleep(500);
+
+            // setup basics
+            SetCmptText("pageSysMsg.tMsgTitle", title);
+            SetCmptText("pageSysMsg.tMsgTxt", message);
+            SetCmptVisible("pageSysMsg.pMsgPic", iconVisible);
+            SetCmptBGColor("pageSysMsg.tBg", bg);
+
+            if (iconVisible)
+                SetCmptPic("pageSysMsg.pMsgPic", icon);
+
+            // update button visibility
+            SetCmptVisible("b0", b1Visible);
+            SetCmptVisible("b1", b2Visible);
+            SetCmptVisible("b2", b3Visible);
+
+            // update button text
+            SetCmptText("pageSysMsg.b0", b1Text);
+            SetCmptText("pageSysMsg.b1", b2Text);
+            SetCmptText("pageSysMsg.b2", b3Text);
+
+            // update button handlers
+            PromptB1Action = b1Click;
+            PromptB2Action = b2Click;
+            PromptB3Action = b3Click;
+        }
+        // Shows a warning with OK button
+        private void ShowSimpleWarning(string title, string message, Action onOk)
+        {
+            ShowPrompt(title, message, true, 9,
+            "", false, null,
+            "OK", true, onOk,
+            "", false, null, 21152
+            );
+        }
+        private void ShowNotImpl(string detail)
+        {
+            ShowSimpleWarning("Communication Fail", "The requested action is not\r\nimplemented. Press OK to reload.\r\nDetails:" + detail, () =>
+            {
+                InitKeypad();
+            });
+        }
+        private void ShowBadOperation(string detail)
+        {
+            ShowSimpleWarning("Communication Fail", "The requested action is not currently\r\navailable. Press OK to reload. Details:\r\n" + detail, () =>
+            {
+                InitKeypad();
+            });
+        }
+        private void InitWeatherPage(bool show7Day)
+        {
+            if (currentPage != "pageWeather")
+            {
+                Console.WriteLine("nextion: attempted to init weather page when not weather page!");
+                return;
+            }
+
+            // Hide loader for now
+
+            SetCmptText("tCap1", "Snowing In Florida");
+            SetCmptText("tCap2", "High: 90f, Low: 85f");
+            SetCmptText("tOverallTemp", "70f");
+
+            if (show7Day)
+            {
+                SetCmptText("tViewText", "Week View");
+
+                // assign week labels
+                for (int i = 0; i > WeekLabelText.Length; i++)
+                {
+                    SetCmptText(WeekLabels[i], WeekLabelText[i]);
+                }
+            }
+            else
+            {
+                SetCmptText("tViewText", "7 Hour View");
+
+                for (int i = 0; i > WeekLabelText.Length; i++)
+                {
+                    SetCmptText(WeekLabels[i], "+" + (i + 1) + "hr");
+                }
+            }
+
+            SetCmptVisible("tLdr", false);
+
+            ShowSimpleWarning("Missing API key", "iMad has not given me\r\nthe API key", ()=>{
+                PromptOpen = false;
+                SetDispPage("pageHome");
+            });
+        }
         private void HandleStringCommand(string x)
         {
             if (x == "init")
@@ -824,6 +954,21 @@ namespace SecuritySystem.Modules.NXDisplay
                 {
                     SendCommand("tCurrentSong.txt=\"" + MusicPlayer.CurrentSongName + "\"");
                 }
+            }
+            else if (x == "init WeatherPage")
+            {
+                currentPage = "pageWeather";
+                InitWeatherPage(false);
+            }
+            else if (x == "weather setview 7hr")
+            {
+                currentPage = "pageWeather";
+                InitWeatherPage(false);
+            }
+            else if (x == "weather setview 7d")
+            {
+                currentPage = "pageWeather";
+                InitWeatherPage(true);
             }
             else if (x == "playall")
             {
@@ -977,14 +1122,92 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 ShufflePlaylist = true;
             }
+            else if (x == "sysmsg init")
+            {
+                PromptOpen = true;
+                currentPage = "pageSysMsg";
+            }
+            else if (x == "sysmsg 1")
+            {
+                if (PromptOpen && PromptB1Action != null)
+                {
+                    PromptB1Action();
+                }
+                else
+                {
+                    ShowNotImpl(x);
+                }
+            }
+            else if (x == "sysmsg 2")
+            {
+                if (PromptOpen && PromptB2Action != null)
+                {
+                    PromptB2Action();
+                }
+                else
+                {
+                    ShowNotImpl(x);
+                }
+            }
+            else if (x == "sysmsg 3")
+            {
+                if (PromptOpen && PromptB3Action != null)
+                {
+                    PromptB3Action();
+                }
+                else
+                {
+                    ShowNotImpl(x);
+                }
+            }
+            else if (x.StartsWith("dispversion "))
+            {
+                int a = int.Parse(x.Replace("dispversion ", ""));
+
+                if (a != 125 && !ShowedFirmwareMismatch)
+                {
+                    ShowPrompt("Firmware Mismatch", "The display firmware version does not\r\nmatch with the controller firmware\r\nversion. Problems may occur. ", true, 9,
+                    "OK", true, () =>
+                    {
+                        PromptOpen = false;
+                        ShowedFirmwareMismatch = true;
+                        SetPage("pageHome");
+                    },
+                    "", false, null,
+                    "Reload", true, () =>
+                    {
+                        SetPage("pagePreboot");
+                    }, 49152);
+                }
+            }
+            else if (x == "prompt weatherConfirm")
+            {
+                SetDispPage("pageWeather");
+            }
             else if (x == "doSystemRestart")
             {
                 if (!Configuration.Instance.SystemArmed)
                 {
-                    Console.WriteLine("System restarting...");
-                    SetPage("pageBoot");
-                    Configuration.Save();
-                    Process.Start("/sbin/reboot").WaitForExit();
+                    ShowPrompt("Warning", "System will not be monitoring during\r\nthe restart. Continue?", true, 9,
+                    "Yes", true, () =>
+                    {
+                        PromptOpen = false;
+                        SetPage("pageBoot");
+                        Thread.Sleep(1000);
+                        ShowPrompt("", "Restarting controller...", false, 0, "", false, null, "", false, null, "", false, null);
+                        Configuration.Save();
+                        Process.Start("/sbin/reboot").WaitForExit();
+                    },
+                    "", false, null,
+                    "No", true, () =>
+                    {
+                        PromptOpen = false;
+                        SetPage("pageHome");
+                    }, 49152);
+                }
+                else
+                {
+                    ShowNotImpl(x);
                 }
             }
             else
@@ -993,8 +1216,7 @@ namespace SecuritySystem.Modules.NXDisplay
                 //wrong password
                 //SendCommand($"click bCancel,1");
                 //SendCommand($"click bCancel,1");
-                SendCommand($"t2.txt=\"Incorrect passcode\"");
-                SendCommand($"t3.txt=\"\"");
+                ShowNotImpl(x);
             }
         }
         public void HideHud()
