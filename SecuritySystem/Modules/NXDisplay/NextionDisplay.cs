@@ -822,10 +822,14 @@ namespace SecuritySystem.Modules.NXDisplay
 
             SetCmptVisible("tLdr", false);
 
-            ShowSimpleWarning("Missing API key", "iMad has not given me\r\nthe API key", ()=>{
+            ShowPrompt("Not Implemented", "The requested function is\r\nnot implemented.", true, 9,
+            "", false, null,
+            "Reload", true, ()=>{
                 PromptOpen = false;
                 SetDispPage("pageHome");
-            });
+            },
+            "", false, null, 21152
+            );
         }
         private void HandleStringCommand(string x)
         {

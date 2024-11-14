@@ -64,7 +64,7 @@ namespace SecuritySystem.Utils
             }
             catch (Exception ex)
             {
-                InternetWeather = "failed to load weather info:\r\n" + ex.Message;
+                InternetWeather = "failed to load weather info:\r\n" + ex.Message+"\r\n";
             }
         }
 
