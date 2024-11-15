@@ -119,6 +119,11 @@ public partial class MusicManager : SecurityPage
         await Services.SecurityClient.StopCurrentMusic();
     }
 
+    private async void PlayAllMusic_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        await Services.SecurityClient.PlayAllMusic();
+    }
+
     public override void OnAnncVolChanged()
     {
         base.OnAnncVolChanged();

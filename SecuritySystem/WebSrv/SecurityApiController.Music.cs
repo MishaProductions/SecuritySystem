@@ -69,6 +69,16 @@ namespace SecuritySystem
             }
         }
 
+        [Route(HttpVerbs.Post, Endpoints.PlayAllMusic)]
+        public async Task PlayAllMusic()
+        {
+            User? currentUser = await GetUserFromToken();
+            if (currentUser == null) return;
+
+            MusicPlayer.PlayAllMusic(MusicPlayer.MusicFiles);
+            await SendGenericResponse(SecurityApiResult.Success);
+        }
+
 
         [Route(HttpVerbs.Post, "/music/stopmusic")]
         public async Task StopMusic()

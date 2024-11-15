@@ -13,19 +13,18 @@ namespace SecuritySystem.Utils
     }
     public class UsersDB
     {
-        public List<User> Users = new();
-        public List<EventLogEntry> EventLog = new();
+        public List<User> Users = [];
+        public List<EventLogEntry> EventLog = [];
         /// <summary>
         /// <Token, Username>
         /// </summary>
-        public Dictionary<string, string> Tokens = new();
+        public Dictionary<string, string> Tokens = [];
 
-        public Dictionary<int, Zone> Zones = new();
+        public Dictionary<int, Zone> Zones = [];
         /// <summary>
         /// Time, zone number
         /// </summary>
-        public Dictionary<DateTime, int> AlarmHistory = new();
-
+        public Dictionary<DateTime, int> AlarmHistory = [];
 
         public bool SmtpEnabled = false;
         public string SmtpSendTo = "";

@@ -33,10 +33,9 @@ namespace MHSApi.API
         public const string StartAnnc = "/music/startannc";
         public const string StartMusic = "/music/startmusic";
         public const string StopMusic = "/music/stopmusic";
+        public const string PlayAllMusic = "/music/playall";
         public const string StopAnnc = "/music/stopannc";
         public const string ListMusicAndAnnoucements = "/music/list";
-        public const string CreateAnncStream = "/music/openAnncStream";
-
         public const string CurrentUser = "/user/current";
         public const string AllUser = "/user/all";
         public const string UserMod = "/user/";

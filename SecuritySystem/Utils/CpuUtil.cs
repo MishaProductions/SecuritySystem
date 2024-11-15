@@ -48,7 +48,7 @@ namespace SecuritySystem.Utils
             var totalMemory = GetTotalMemoryInKb();
             var usedMemory = GetUsedMemoryForAllProcessesInKb();
 
-            var percentage = (usedMemory * 100) / totalMemory;
+            var percentage = usedMemory * 100 / totalMemory;
             return Math.Round(percentage, DigitsInResult);
         }
 
@@ -74,7 +74,7 @@ namespace SecuritySystem.Utils
 
             using (var reader = new StreamReader(path))
             {
-                string line = string.Empty;
+                string? line = string.Empty;
                 while (!string.IsNullOrWhiteSpace(line = reader.ReadLine()))
                 {
                     if (line.Contains("MemTotal", StringComparison.OrdinalIgnoreCase))

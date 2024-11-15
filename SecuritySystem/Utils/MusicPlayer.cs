@@ -67,6 +67,7 @@
                 musicProc.Volume = value;
             }
         }
+        private static int MusicFadeTime = 50;
 
         public static event EventHandler? OnMusicStop;
         public static event EventHandler? OnAnncStop;
@@ -124,7 +125,7 @@
 
             if (Directory.Exists("/musics/"))
             {
-                List<string> items = new List<string>();
+                List<string> items = [];
                 foreach (var item in Directory.GetFiles("/musics/"))
                 {
                     var name = Path.GetFileName(item);
@@ -140,7 +141,7 @@
 
             if (Directory.Exists("/musics/annc/"))
             {
-                List<string> items = new List<string>();
+                List<string> items = [];
                 foreach (var item in Directory.GetFiles("/musics/annc/"))
                 {
                     var name = Path.GetFileName(item);
@@ -154,7 +155,6 @@
                 }
             }
         }
-        private static int MusicFadeTime = 50;
         private static void AnncProc_OnStop(MpvEventEndFile data)
         {
             OnAnncStop?.Invoke(null, new());
@@ -207,7 +207,7 @@
         {
             PlaylistMode = true;
             string[] strings = new string[paths.Count];
-            for (int i = 0; i < strings.Count(); i++)
+            for (int i = 0; i < strings.Length i++)
             {
                 strings[i] = "/musics/" + paths[i];
                 Console.WriteLine(strings[i]);

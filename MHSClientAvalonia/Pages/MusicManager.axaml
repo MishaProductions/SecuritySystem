@@ -24,7 +24,7 @@
 			<StackPanel Grid.Row="1">
 				<StackPanel Orientation="Horizontal">
 					<Button Click="StopMusic_Click">Stop music</Button>
-					<Button>Play All</Button>
+					<Button Click="PlayAllMusic_Click">Play All</Button>
 					<Button>Back</Button>
 					<Button>Next</Button>
 				</StackPanel>

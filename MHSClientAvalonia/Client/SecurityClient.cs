@@ -335,6 +335,10 @@ namespace MHSClientAvalonia.Client
         {
             return await DoSimplePost<ApiResponse?>(Endpoints.StopMusic, "");
         }
+        public async Task<Result> PlayAllMusic()
+        {
+            return await DoSimplePost<ApiResponse?>(Endpoints.PlayAllMusic, "");
+        }
         /// <summary>
         /// NotificationSettings?
         /// </summary>
