@@ -45,7 +45,14 @@ namespace SecuritySystem.WebSrv.Websocket
             MusicPlayer.OnMusicVolumeChanged += MusicPlayer_OnMusicVolumeChanged;
             MusicPlayer.OnAnncVolumeChanged += MusicPlayer_OnAnncVolumeChanged;
 
+            MusicPlayer.OnMusicStop += MusicPlayer_OnMusicStopped;
+
             DeviceModel.FirmwareUpdateEvent += DeviceModel_OnFirmwareUpdateProgress;
+        }
+
+        private async void MusicPlayer_OnMusicStopped(object? sender, EventArgs e)
+        {
+            await SendToAll(new MHSApi.WebSocket.MusicStopped());
         }
 
         private async void DeviceModel_OnFirmwareUpdateProgress(string devName, string desc, int percent)

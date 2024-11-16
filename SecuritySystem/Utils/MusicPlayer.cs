@@ -207,7 +207,7 @@
         {
             PlaylistMode = true;
             string[] strings = new string[paths.Count];
-            for (int i = 0; i < strings.Length i++)
+            for (int i = 0; i < strings.Length; i++)
             {
                 strings[i] = "/musics/" + paths[i];
                 Console.WriteLine(strings[i]);
