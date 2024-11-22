@@ -23,6 +23,8 @@ namespace MHSApi.WebSocket
         AnncVolumeChange = 11,
         MusicStarted = 13,
         MusicStopped = 14,
+        AnncStarted = 15,
+        AnncStopped = 16,
 
         // Devices
         FwUpdate = 12,

@@ -40,19 +40,28 @@ namespace SecuritySystem.WebSrv.Websocket
             SystemManager.OnSysTimerEvent += SystemManager_SysTimerEvent;
 
             MusicPlayer.OnAnncStop += MusicPlayer_OnAnncStop;
-            MusicPlayer.OnMusicStop += MusicPlayer_OnMusicStop;
+            MusicPlayer.OnAnncStarted += MusicPlayer_OnAnncStarted;
 
             MusicPlayer.OnMusicVolumeChanged += MusicPlayer_OnMusicVolumeChanged;
             MusicPlayer.OnAnncVolumeChanged += MusicPlayer_OnAnncVolumeChanged;
 
             MusicPlayer.OnMusicStop += MusicPlayer_OnMusicStopped;
+            MusicPlayer.OnMusicStarted += MusicPlayer_OnMusicStarted;
 
             DeviceModel.FirmwareUpdateEvent += DeviceModel_OnFirmwareUpdateProgress;
         }
 
         private async void MusicPlayer_OnMusicStopped(object? sender, EventArgs e)
         {
-            await SendToAll(new MHSApi.WebSocket.MusicStopped());
+            await SendToAll(new MusicStopped());
+        }
+        private async void MusicPlayer_OnMusicStarted(string fileName)
+        {
+            await SendToAll(new MusicStarted() { MusicFileName = fileName});
+        }
+        private async void MusicPlayer_OnAnncStarted(string fileName)
+        {
+            await SendToAll(new AnncStarted() { AnncFileName = fileName, IsLive = false});
         }
 
         private async void DeviceModel_OnFirmwareUpdateProgress(string devName, string desc, int percent)
@@ -71,14 +80,9 @@ namespace SecuritySystem.WebSrv.Websocket
             await SendToAll(new MusicPlayerVolumeChange(MusicPlayer.MusicVol));
         }
 
-        private void MusicPlayer_OnMusicStop(object? sender, EventArgs e)
+        private async void MusicPlayer_OnAnncStop(object? sender, EventArgs e)
         {
-
-        }
-
-        private void MusicPlayer_OnAnncStop(object? sender, EventArgs e)
-        {
-
+            await SendToAll(new AnncStopped());
         }
 
         private string Serialize(object obj)

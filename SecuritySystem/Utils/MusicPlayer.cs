@@ -74,6 +74,8 @@
 
         public static event EventHandler? OnMusicVolumeChanged;
         public static event EventHandler? OnAnncVolumeChanged;
+        public static event MusicStartedEventArgs? OnMusicStarted;
+        public static event MusicStartedEventArgs? OnAnncStarted;
         private static int MusicIdx = 0;
         static MusicPlayer()
         {
@@ -87,7 +89,7 @@
             SystemManager.OnAlarm += SystemManager_OnAlarm;
             SystemManager.OnSystemDisarm += SystemManager_OnSystemDisarm;
 
-            MusicPlayer.ScanFiles();
+            ScanFiles();
         }
 
         private static void SystemManager_OnSystemDisarm(object? sender, EventArgs e)
@@ -212,6 +214,7 @@
                 strings[i] = "/musics/" + paths[i];
                 Console.WriteLine(strings[i]);
             }
+            OnMusicStarted?.Invoke("Playlist");
             musicProc.PlaylistPlay(strings, true);
         }
         internal static void PlayMusic(int a)
@@ -220,10 +223,12 @@
             {
                 musicProc.Stop();
             }
+            string fileName = MusicFiles[a];
             MusicIdx = a;
             PlaylistMode = false;
-            Console.WriteLine("[music] PlayMusic() with " + MusicFiles[a]);
-            musicProc.Play("/musics/" + MusicFiles[a]);
+            Console.WriteLine("[music] PlayMusic() with " + fileName);
+            musicProc.Play("/musics/" + fileName);
+            OnMusicStarted?.Invoke(fileName);
         }
         private static bool IsFadingMusic = false;
         private static bool FadeBackMusic;
@@ -289,6 +294,7 @@
             if (!MusicPlaying)
             {
                 anncProc.Play("/musics/annc/" + AnncFiles[idx]);
+                OnAnncStarted?.Invoke(AnncFiles[idx]);
                 return;
             }
 
@@ -320,6 +326,7 @@
 
                     IsFadingMusic = false;
                     FadeBackMusic = true;
+                    OnAnncStarted?.Invoke(AnncFiles[idx]);
 
                     // Play the annoucement
                     anncProc.Play("/musics/annc/" + AnncFiles[idx]);
@@ -330,20 +337,26 @@
         internal static void StopMusic()
         {
             musicProc.Stop();
+            OnMusicStop?.Invoke(null, new());
         }
         internal static void StopAnnc()
         {
             anncProc.Stop();
+            OnAnncStop?.Invoke(null, new());
         }
 
         public static void PlaylistBack()
         {
             musicProc.PlaylistBack();
+            OnMusicStarted?.Invoke(MusicFiles[(int)musicProc.PlaylistIndex]);
         }
 
         public static void PlaylistForward()
         {
             musicProc.PlaylistNext();
+            OnMusicStarted?.Invoke(MusicFiles[(int)musicProc.PlaylistIndex]);
         }
+
+        public delegate void MusicStartedEventArgs(string fileName);
     }
 }

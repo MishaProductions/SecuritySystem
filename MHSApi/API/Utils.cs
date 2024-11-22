@@ -104,6 +104,14 @@ namespace MHSApi.API
                             return JsonConvert.DeserializeObject<AnncPlayerVolumeChange>(str);
                         case MessageType.MusicVolumeChange:
                             return JsonConvert.DeserializeObject<MusicPlayerVolumeChange>(str);
+                        case MessageType.MusicStarted:
+                            return JsonConvert.DeserializeObject<MusicStarted>(str);
+                        case MessageType.MusicStopped:
+                            return JsonConvert.DeserializeObject<MusicStopped>(str);
+                        case MessageType.AnncStarted:
+                            return JsonConvert.DeserializeObject<AnncStarted>(str);
+                        case MessageType.AnncStopped:
+                            return JsonConvert.DeserializeObject<AnncStopped>(str);
                         case MessageType.FwUpdate:
                             return JsonConvert.DeserializeObject<FwUpdateMsg>(str);
                         default:

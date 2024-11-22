@@ -34,6 +34,8 @@ namespace MHSApi.API
         public const string StartMusic = "/music/startmusic";
         public const string StopMusic = "/music/stopmusic";
         public const string PlayAllMusic = "/music/playall";
+        public const string PlayNextMusic = "/music/playnext";
+        public const string PlayPreviousMusic = "/music/playprevious";
         public const string StopAnnc = "/music/stopannc";
         public const string ListMusicAndAnnoucements = "/music/list";
         public const string CurrentUser = "/user/current";

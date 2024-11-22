@@ -79,6 +79,26 @@ namespace SecuritySystem
             await SendGenericResponse(SecurityApiResult.Success);
         }
 
+        [Route(HttpVerbs.Post, Endpoints.PlayNextMusic)]
+        public async Task PlayNextMusic()
+        {
+            User? currentUser = await GetUserFromToken();
+            if (currentUser == null) return;
+
+            MusicPlayer.PlaylistForward();
+            await SendGenericResponse(SecurityApiResult.Success);
+        }
+
+        [Route(HttpVerbs.Post, Endpoints.PlayPreviousMusic)]
+        public async Task PlayPreviousMusic()
+        {
+            User? currentUser = await GetUserFromToken();
+            if (currentUser == null) return;
+
+            MusicPlayer.PlaylistBack();
+            await SendGenericResponse(SecurityApiResult.Success);
+        }
+
 
         [Route(HttpVerbs.Post, "/music/stopmusic")]
         public async Task StopMusic()

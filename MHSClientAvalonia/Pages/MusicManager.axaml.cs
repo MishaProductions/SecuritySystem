@@ -123,6 +123,14 @@ public partial class MusicManager : SecurityPage
     {
         await Services.SecurityClient.PlayAllMusic();
     }
+    private async void MusicBack_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        await Services.SecurityClient.PlayPreviousMusic();
+    }
+    private async void MusicNext_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        await Services.SecurityClient.PlayNextMusic();
+    }
 
     public override void OnAnncVolChanged()
     {
@@ -136,6 +144,27 @@ public partial class MusicManager : SecurityPage
         base.OnMusicVolChanged();
         musicChanging = true;
         MusicVolumeSlider.Value = Services.SecurityClient.MusicVol;
+    }
+
+    public override void OnMusicFileChanged(string? fileName)
+    {
+        if (fileName != null)
+            TxtCurrentlyPlayingMusic.Text = "Playing: " + fileName;
+        else
+            TxtCurrentlyPlayingMusic.Text = "Playing: no file";
+    }
+    public override void OnAnncChanged(string? fileName, bool isLive)
+    {
+        if (isLive)
+        {
+            TxtCurrentlyPlayingAnnc.Text = "Microphone input";
+            return;
+        }
+
+        if (fileName != null)
+            TxtCurrentlyPlayingAnnc.Text = "Playing: " + fileName;
+        else
+            TxtCurrentlyPlayingAnnc.Text = "Playing: no file";
     }
 
     private async void AnncVol_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -171,7 +200,6 @@ public partial class MusicManager : SecurityPage
             {
                 ALC.CaptureSamples(_captureDevice, buffer, samplesAvailable);
 
-
                 byte[] cmd = new byte[1 + samplesAvailable * 2];
                 cmd[0] = (byte)AudioInMsgType.WritePcm;
                 Array.Copy(buffer, 0, cmd, 1, samplesAvailable * 2);
@@ -180,7 +208,7 @@ public partial class MusicManager : SecurityPage
                 {
                     await _audioOutSocket.Send(cmd);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
                     return;

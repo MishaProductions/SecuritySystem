@@ -51,6 +51,16 @@ namespace MHSClientAvalonia.Pages
 
         }
 
+        public virtual void OnMusicFileChanged(string? fileName)
+        {
+
+        }
+        public virtual void OnAnncChanged(string? fileName, bool isLive)
+        {
+
+        }
+        
+
         public virtual void HideLoadingBar()
         {
             OnHideLoadingBar?.Invoke(this, EventArgs.Empty);

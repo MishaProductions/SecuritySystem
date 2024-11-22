@@ -41,6 +41,10 @@ public partial class MainView : UserControl
         Services.SecurityClient.OnMusicVolChanged += SecurityClient_OnMusicVolChanged;
         Services.SecurityClient.OnAnncVolChanged += SecurityClient_OnAnncVolChanged;
         Services.SecurityClient.OnFwUpdateProgress += SecurityClient_OnFwUpdateProgress;
+        Services.SecurityClient.OnMusicStarted += SecurityClient_OnMusicStarted;
+        Services.SecurityClient.OnMusicStopped += SecurityClient_OnMusicStopped;
+        Services.SecurityClient.OnAnncStarted += SecurityClient_OnAnncStarted;
+        Services.SecurityClient.OnAnncStopped += SecurityClient_OnAnncStopped;
 
         _reconnectTimer.Interval = TimeSpan.FromSeconds(5);
         _reconnectTimer.Tick += ReconnectTimer_Tick;
@@ -83,8 +87,39 @@ public partial class MainView : UserControl
             }
         });
     }
-
-    private async void UpdateTimer_Tick(object? sender, EventArgs e)
+    private void SecurityClient_OnMusicStarted(string fileName)
+    {
+        Dispatcher.UIThread.Invoke(delegate
+        {
+            var page = GetCurrentPage();
+            page?.OnMusicFileChanged(fileName);
+        });
+    }
+    private void SecurityClient_OnMusicStopped(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Invoke(delegate
+        {
+            var page = GetCurrentPage();
+            page?.OnMusicFileChanged(null);
+        });
+    }
+    private void SecurityClient_OnAnncStarted(string fileName)
+    {
+        Dispatcher.UIThread.Invoke(delegate
+        {
+            var page = GetCurrentPage();
+            page?.OnAnncChanged(fileName, false);
+        });
+    }
+    private void SecurityClient_OnAnncStopped(object? sender, EventArgs e)
+    {
+        Dispatcher.UIThread.Invoke(delegate
+        {
+            var page = GetCurrentPage();
+            page?.OnAnncChanged(null, false);
+        });
+    }
+    private void UpdateTimer_Tick(object? sender, EventArgs e)
     {
         if (!Services.Preferences.GetBool("autoupdate", true))
             return;

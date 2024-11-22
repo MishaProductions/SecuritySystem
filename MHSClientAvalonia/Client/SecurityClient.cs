@@ -48,6 +48,10 @@ namespace MHSClientAvalonia.Client
         public event EventHandler? OnMusicVolChanged;
         public event EventHandler? OnAnncVolChanged;
         public event OnSystemUpdateProgress? OnFwUpdateProgress;
+        public event MusicStartedEventHandler? OnMusicStarted;
+        public event EventHandler? OnMusicStopped;
+        public event MusicStartedEventHandler? OnAnncStarted;
+        public event EventHandler? OnAnncStopped;
 
         private string Token = ""; //insecure!
         public bool IsConnected { get; private set; } = false;
@@ -132,6 +136,22 @@ namespace MHSClientAvalonia.Client
                     else if (msg.type == MessageType.FwUpdate)
                     {
                         OnFwUpdateProgress?.Invoke((FwUpdateMsg)msg);
+                    }
+                    else if (msg.type == MessageType.MusicStarted)
+                    {
+                        OnMusicStarted?.Invoke(((MusicStarted)msg).MusicFileName);
+                    }
+                    else if (msg.type == MessageType.MusicStopped)
+                    {
+                        OnMusicStopped?.Invoke(this, new EventArgs());
+                    }
+                    else if (msg.type == MessageType.AnncStarted)
+                    {
+                        OnAnncStarted?.Invoke(((AnncStarted)msg).AnncFileName);
+                    }
+                    else if (msg.type == MessageType.AnncStopped)
+                    {
+                        OnAnncStopped?.Invoke(this, new EventArgs());
                     }
                 }
             }
@@ -339,6 +359,15 @@ namespace MHSClientAvalonia.Client
         {
             return await DoSimplePost<ApiResponse?>(Endpoints.PlayAllMusic, "");
         }
+        public async Task<Result> PlayPreviousMusic()
+        {
+            return await DoSimplePost<ApiResponse?>(Endpoints.PlayPreviousMusic, "");
+        }
+        public async Task<Result> PlayNextMusic()
+        {
+            return await DoSimplePost<ApiResponse?>(Endpoints.PlayNextMusic, "");
+        }
+        
         /// <summary>
         /// NotificationSettings?
         /// </summary>
@@ -640,6 +669,7 @@ namespace MHSClientAvalonia.Client
         public delegate void ProgressEventHandler(int progress);
         public delegate void OnSystemTimer(bool arming, int timer);
         public delegate void OnSystemUpdateProgress(FwUpdateMsg msg);
+        public delegate void MusicStartedEventHandler(string fileName);
     }
     public class Result
     {

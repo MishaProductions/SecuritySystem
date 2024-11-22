@@ -72,7 +72,7 @@ namespace MHSClientAvalonia
             var result = await new ContentDialog()
             {
                 Title = "WARNING",
-                Content = "Are you sure you want to exit MHS Client? If you exit the application, you may no longer safe inside of your home.",
+                Content = "Are you sure you want to exit MHS Client? If you exit the application, you will not be  safe inside of your home.",
                 PrimaryButtonText = "Yes",
                 SecondaryButtonText = "No!"
             }.ShowAsync(Services.MainWindow);

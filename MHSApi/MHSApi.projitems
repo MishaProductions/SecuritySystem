@@ -27,9 +27,13 @@
     <Compile Include="..\MHSApi\API\ApiUser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\Zone.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\AnncStarted.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\AnncStopped.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\AuthenticationFail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\AuthenticationOK.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicPlayerVolumeChange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicStarted.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicStopped.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\SystemStateChange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\ZoneUpdate.cs" />
     <Compile Include="..\MHSApi\WebSocket\ClientWelcomeReply.cs" />
