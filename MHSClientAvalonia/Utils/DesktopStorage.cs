@@ -23,7 +23,7 @@ namespace MHSClientAvalonia.Utils
             try
             {
                 using var stream = Store.OpenFile(key, FileMode.Open);
-                return JsonSerializer.Deserialize<string>(stream, (JsonSerializerOptions?)null);
+                return JsonSerializer.Deserialize<string>(stream, (JsonSerializerOptions?)null) ?? "";
             }
             catch (Exception)
             {

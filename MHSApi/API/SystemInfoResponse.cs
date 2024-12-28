@@ -6,7 +6,7 @@ namespace MHSApi.API
 {
     public class SystemInfoResponse
     {
-        public string model { get; set; }
+        public string model { get; set; } = "";
         public DateTime fwBuildTime { get; set; }
         public SystemInfoResponse(string model, DateTime fwBuildTime)
         {

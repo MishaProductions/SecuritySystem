@@ -80,43 +80,28 @@ namespace MHSApi.API
         {
             try
             {
-                var obj = JsonObject.Parse(str);
+                var obj = JsonNode.Parse(str) ?? throw new Exception("failed to parse websocket");
                 var type = obj["type"];
                 if (type != null)
                 {
-                    switch ((MessageType)type.AsValue().GetValue<int>())
+                    return (MessageType)type.AsValue().GetValue<int>() switch
                     {
-                        case MessageType.None:
-                            return null;
-                        case MessageType.ServerHello:
-                            return JsonSerializer.Deserialize<Hello>(str);
-                        case MessageType.ClientWelcomeReply:
-                            return JsonSerializer.Deserialize<ClientWelcomeReply>(str);
-                        case MessageType.AuthError:
-                            return JsonSerializer.Deserialize<AuthenticationFail>(str);
-                        case MessageType.AuthOK:
-                            return JsonSerializer.Deserialize<AuthenticationOK>(str);
-                        case MessageType.SystemStateChange:
-                            return JsonSerializer.Deserialize<SystemStateChange>(str);
-                        case MessageType.ZoneUpdate:
-                            return JsonSerializer.Deserialize<ZoneUpdate>(str);
-                        case MessageType.AnncVolumeChange:
-                            return JsonSerializer.Deserialize<AnncPlayerVolumeChange>(str);
-                        case MessageType.MusicVolumeChange:
-                            return JsonSerializer.Deserialize<MusicPlayerVolumeChange>(str);
-                        case MessageType.MusicStarted:
-                            return JsonSerializer.Deserialize<MusicStarted>(str);
-                        case MessageType.MusicStopped:
-                            return JsonSerializer.Deserialize<MusicStopped>(str);
-                        case MessageType.AnncStarted:
-                            return JsonSerializer.Deserialize<AnncStarted>(str);
-                        case MessageType.AnncStopped:
-                            return JsonSerializer.Deserialize<AnncStopped>(str);
-                        case MessageType.FwUpdate:
-                            return JsonSerializer.Deserialize<FwUpdateMsg>(str);
-                        default:
-                            throw new Exception("unknown message type");
-                    }
+                        MessageType.None => null,
+                        MessageType.ServerHello => JsonSerializer.Deserialize<Hello>(str),
+                        MessageType.ClientWelcomeReply => JsonSerializer.Deserialize<ClientWelcomeReply>(str),
+                        MessageType.AuthError => JsonSerializer.Deserialize<AuthenticationFail>(str),
+                        MessageType.AuthOK => JsonSerializer.Deserialize<AuthenticationOK>(str),
+                        MessageType.SystemStateChange => JsonSerializer.Deserialize<SystemStateChange>(str),
+                        MessageType.ZoneUpdate => JsonSerializer.Deserialize<ZoneUpdate>(str),
+                        MessageType.AnncVolumeChange => JsonSerializer.Deserialize<AnncPlayerVolumeChange>(str),
+                        MessageType.MusicVolumeChange => JsonSerializer.Deserialize<MusicPlayerVolumeChange>(str),
+                        MessageType.MusicStarted => JsonSerializer.Deserialize<MusicStarted>(str),
+                        MessageType.MusicStopped => JsonSerializer.Deserialize<MusicStopped>(str),
+                        MessageType.AnncStarted => JsonSerializer.Deserialize<AnncStarted>(str),
+                        MessageType.AnncStopped => JsonSerializer.Deserialize<AnncStopped>(str),
+                        MessageType.FwUpdate => JsonSerializer.Deserialize<FwUpdateMsg>(str),
+                        _ => throw new Exception("unknown message type"),
+                    };
                 }
             }
             catch

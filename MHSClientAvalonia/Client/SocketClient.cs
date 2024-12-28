@@ -12,10 +12,10 @@ namespace MHSClientAvalonia.Client
     {
         private string URL = "";
         public bool IsOpen { get; set; }
-        private ClientWebSocket client = new ClientWebSocket();
+        private ClientWebSocket client = new();
         public event EventHandler<string>? OnMessage;
         public event EventHandler? OnClose;
-        CancellationTokenSource disposalTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource disposalTokenSource = new();
 
         public void SetUrl(string url)
         {
@@ -50,8 +50,7 @@ namespace MHSClientAvalonia.Client
                     var message = await Receive();
                     if (message != null)
                     {
-                        if (OnMessage != null)
-                            OnMessage.Invoke(this, message);
+                        OnMessage?.Invoke(this, message);
                     }
                 }
                 else
@@ -101,20 +100,18 @@ namespace MHSClientAvalonia.Client
                 do
                 {
                     WebSocketReceiveResult result;
-                    using (var ms = new MemoryStream())
+                    using var ms = new MemoryStream();
+                    do
                     {
-                        do
-                        {
-                            result = await client.ReceiveAsync(buffer, CancellationToken.None);
-                            if (buffer.Array != null)
-                                ms.Write(buffer.Array, buffer.Offset, result.Count);
-                        } while (!result.EndOfMessage);
+                        result = await client.ReceiveAsync(buffer, CancellationToken.None);
+                        if (buffer.Array != null)
+                            ms.Write(buffer.Array, buffer.Offset, result.Count);
+                    } while (!result.EndOfMessage);
 
-                        if (result.MessageType == WebSocketMessageType.Close)
-                            break;
+                    if (result.MessageType == WebSocketMessageType.Close)
+                        break;
 
-                        return ms.ToArray();
-                    }
+                    return ms.ToArray();
                 } while (true);
                 IsOpen = false;
                 return null;
@@ -136,22 +133,20 @@ namespace MHSClientAvalonia.Client
                 do
                 {
                     WebSocketReceiveResult result;
-                    using (var ms = new MemoryStream())
+                    using var ms = new MemoryStream();
+                    do
                     {
-                        do
-                        {
-                            result = await client.ReceiveAsync(buffer, CancellationToken.None);
-                            if (buffer.Array != null)
-                                ms.Write(buffer.Array, buffer.Offset, result.Count);
-                        } while (!result.EndOfMessage);
+                        result = await client.ReceiveAsync(buffer, CancellationToken.None);
+                        if (buffer.Array != null)
+                            ms.Write(buffer.Array, buffer.Offset, result.Count);
+                    } while (!result.EndOfMessage);
 
-                        if (result.MessageType == WebSocketMessageType.Close)
-                            break;
+                    if (result.MessageType == WebSocketMessageType.Close)
+                        break;
 
-                        ms.Seek(0, SeekOrigin.Begin);
-                        using (var reader = new StreamReader(ms, Encoding.UTF8))
-                            return await reader.ReadToEndAsync();
-                    }
+                    ms.Seek(0, SeekOrigin.Begin);
+                    using var reader = new StreamReader(ms, Encoding.UTF8);
+                    return await reader.ReadToEndAsync();
                 } while (true);
                 IsOpen = false;
                 return null;

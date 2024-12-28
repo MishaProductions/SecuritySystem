@@ -1,18 +1,10 @@
 ﻿using EmbedIO.WebSockets;
 using MHSApi.API;
 using MHSApi.WebSocket;
-using NAudio.Utils;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SecuritySystem.DeviceSubsys;
 using SecuritySystem.Utils;
-using System;
-using System.Collections.Generic;
-using System.Device.Gpio;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace SecuritySystem.WebSrv.Websocket
 {
@@ -220,7 +212,7 @@ namespace SecuritySystem.WebSrv.Websocket
             return new AuthenticationOK(BuildSystemStateChange(false), BuildZoneUpdate());
         }
 
-        private ZoneUpdate BuildZoneUpdate()
+        private static ZoneUpdate BuildZoneUpdate()
         {
             ZoneUpdate zones = new();
             JsonZoneWithReady[] zonesContent = new JsonZoneWithReady[Configuration.Instance.Zones.Count];
@@ -232,7 +224,7 @@ namespace SecuritySystem.WebSrv.Websocket
                 obj.idx = item.Value.ZoneNumber;
                 obj.name = item.Value.Name;
                 obj.type = item.Value.Type;
-                obj.ready = ZoneController.ZoneStates[item.Key] == PinValue.Low;
+                obj.ready = ZoneController.ZoneStates[item.Key] == System.Device.Gpio.PinValue.Low;
                 zonesContent[i++] = obj;
             }
 

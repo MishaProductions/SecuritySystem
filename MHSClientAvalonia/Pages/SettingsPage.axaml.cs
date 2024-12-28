@@ -54,30 +54,30 @@ public partial class SettingsPage : SecurityPage
 
     private void AutomaticUpdateCheck_Checked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Services.Preferences.SetBool("autoupdate", AutomaticUpdateCheck.IsChecked.Value);
+        Services.Preferences.SetBool("autoupdate", AutomaticUpdateCheck.IsChecked.GetValueOrDefault());
     }
 
     private void ZoneNoiseCheck_Checked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Services.Preferences.SetBool("zonenoise", ZoneNoiseCheck.IsChecked.Value);
+        Services.Preferences.SetBool("zonenoise", ZoneNoiseCheck.IsChecked.GetValueOrDefault());
     }
 
     private void BeepCheck_Checked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Services.Preferences.SetBool("armnoise", BeepCheck.IsChecked.Value);
+        Services.Preferences.SetBool("armnoise", BeepCheck.IsChecked.GetValueOrDefault());
     }
 
     private void StartMinimized_Checked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        Services.Preferences.SetBool("hideonstartup", StartMinmized.IsChecked.Value);
+        Services.Preferences.SetBool("hideonstartup", StartMinmized.IsChecked.GetValueOrDefault());
     }
     private void StartWithWindows_Checked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        SetStartup(StartWithWindows.IsChecked.Value);
+        SetStartup(StartWithWindows.IsChecked.GetValueOrDefault());
     }
 
 
-    private bool GetStartup()
+    private static bool GetStartup()
     {
         if (OperatingSystem.IsWindows())
         {
@@ -93,7 +93,7 @@ public partial class SettingsPage : SecurityPage
             return false;
         }
     }
-    private void SetStartup(bool startWithWindows)
+    private static void SetStartup(bool startWithWindows)
     {
         if (OperatingSystem.IsWindows())
         {

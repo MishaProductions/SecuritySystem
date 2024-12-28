@@ -206,8 +206,6 @@ namespace SecuritySystem
                 Configuration.Instance.IsZoneOpenedWhenSystemArmed = false;
                 Configuration.Save();
             }
-
-            Console.WriteLine("TIMER: exited while loop");
         }
     }
 }

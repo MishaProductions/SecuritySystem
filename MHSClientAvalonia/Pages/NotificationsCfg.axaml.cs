@@ -61,9 +61,9 @@ public partial class NotificationsCfg : SecurityPage
         {
             notificationLevel = cmbNotifSettings.SelectedIndex,
             smtpEnabled = chkEnableSmtp.IsChecked ?? false,
-            smtpHost = txtSmtpServer.Text,
-            smtpSendTo = txtSmtpRecipients.Text,
-            smtpUsername = txtSmtpUser.Text
+            smtpHost = txtSmtpServer.Text ?? "",
+            smtpSendTo = txtSmtpRecipients.Text ?? "",
+            smtpUsername = txtSmtpUser.Text ?? ""
         };
 
         if (!string.IsNullOrEmpty(txtSmtpPw.Text))

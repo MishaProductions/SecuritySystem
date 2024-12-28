@@ -14,7 +14,10 @@ namespace MHSApi.API
     {
         public bool ready { get; set; }
     }
-    public class JsonZones { public JsonZone[] zones { get; set; }  }
+    public class JsonZones
+    {
+        public JsonZone[] zones { get; set; } = null!;
+    }
     public enum ZoneType
     {
         /// <summary>

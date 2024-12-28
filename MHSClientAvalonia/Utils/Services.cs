@@ -40,8 +40,8 @@ namespace MHSClientAvalonia.Utils
                 return _preferences;
             }
         }
-        public static MainWindow MainWindow { get; set; }
-        public static MainView MainView { get; set; }
-        public static DesktopNotifications.INotificationManager NotificationManager;
+        public static MainWindow MainWindow { get; set; } = null!;
+        public static MainView MainView { get; set; } = null!;
+        public static DesktopNotifications.INotificationManager NotificationManager = null!;
     }
 }

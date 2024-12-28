@@ -70,13 +70,13 @@ namespace SecuritySystem.Modules
                 var exportedCert = cert.Export(X509ContentType.Pkcs12);
                 File.WriteAllBytes(certPath, exportedCert);
 
-                cert = new X509Certificate2(exportedCert);
+                cert = X509CertificateLoader.LoadCertificate(exportedCert);
             }
             else
             {
                 var certBytes = File.ReadAllBytes(certPath);
 
-                cert = new X509Certificate2(certBytes);
+                cert = X509CertificateLoader.LoadCertificate(certBytes);
             }
 
             var server = new WebServer(o => o

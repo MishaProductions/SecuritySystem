@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+rm -rf MHSClientAvalonia/bin/
+rm -rf MHSClientAvalonia/obj/
+rm -rf MHSClientAvalonia.Android/bin/
+rm -rf MHSClientAvalonia.Android/obj/
+#rm -rf MHSClientAvalonia.Browser/bin/
+#rm -rf MHSClientAvalonia.Browser/obj/
+rm -rf MHSClientAvalonia.Desktop/bin/
+rm -rf MHSClientAvalonia.Desktop/obj/
+
 dotnet publish MHSClientAvalonia.Browser
 cp -r MHSClientAvalonia.Browser/bin/Release/net9.0-browser/publish/wwwroot/* SecuritySystem/www/modernclient/
 cp SecuritySystem/www/modernclient/*.js SecuritySystem/www/modernclient/_framework/

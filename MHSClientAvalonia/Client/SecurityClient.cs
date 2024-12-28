@@ -19,7 +19,7 @@ namespace MHSClientAvalonia.Client
         /// HTTP client for Security Client. SSL is bypassed.
         /// </summary>
         public HttpClient Client;
-        private PlugifyWebSocketClient ws = new PlugifyWebSocketClient();
+        private PlugifyWebSocketClient ws = new();
         /// <summary>
         /// Gets the system model
         /// </summary>
@@ -138,7 +138,8 @@ namespace MHSClientAvalonia.Client
                     }
                     else if (msg.type == MessageType.AnncStarted)
                     {
-                        OnAnncStarted?.Invoke(((AnncStarted)msg).AnncFileName);
+                        var msg2 = ((AnncStarted)msg) ?? throw new Exception("cannot be null");
+                        OnAnncStarted?.Invoke(msg2.AnncFileName ?? "null");
                     }
                     else if (msg.type == MessageType.AnncStopped)
                     {
@@ -487,7 +488,7 @@ namespace MHSClientAvalonia.Client
             ApiResponse? responseJson = JsonSerializer.Deserialize<ApiResponse>(response);
             if (responseJson == null)
                 return Result.EmptyResponse;
-            Result res = new Result(responseJson.code, responseJson.message, null);
+            Result res = new(responseJson.code, responseJson.message, null);
             if (responseJson != null)
             {
                 if (responseJson.success)
@@ -633,11 +634,13 @@ namespace MHSClientAvalonia.Client
         {
             try
             {
-                MultipartFormDataContent form = new MultipartFormDataContent
+                MultipartFormDataContent form = new()
                 {
                     { new ByteArrayContent(file), "fw", "fw" }
                 };
-                var contentType = form.Headers.ContentType.Parameters.First();
+
+                var contentTypeHeader = form.Headers.ContentType ?? throw new Exception("content-type header cannot be null");
+                var contentType = contentTypeHeader.Parameters.First();
                 contentType.Value = "multipart/form-data; " + contentType.Value;
                 var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + Endpoints.UploadFirmware, form).ConfigureAwait(false);
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -662,10 +665,10 @@ namespace MHSClientAvalonia.Client
         public delegate void OnSystemUpdateProgress(FwUpdateMsg msg);
         public delegate void MusicStartedEventHandler(string fileName);
     }
-    public class Result
+    public class Result(SecurityApiResult result, string message, object? value)
     {
-        public SecurityApiResult ResultCode;
-        public string ResultMessage;
+        public SecurityApiResult ResultCode = result;
+        public string ResultMessage = message;
         public bool IsSuccess
         {
             get
@@ -681,17 +684,10 @@ namespace MHSClientAvalonia.Client
                 return !IsSuccess;
             }
         }
-        public object? Value;
+        public object? Value = value;
 
-        public static Result Exception = new Result(SecurityApiResult.ConnectionFailed, "Network operation failed. Check internet connection.", default);
-        public static Result EmptyResponse = new Result(SecurityApiResult.ConnectionFailed, "Server returned invalid/empty response to the request", default);
-        public static Result Success = new Result(SecurityApiResult.Success, "Operation is successful", default);
-
-        public Result(SecurityApiResult result, string message, object? value)
-        {
-            ResultCode = result;
-            ResultMessage = message;
-            Value = value;
-        }
+        public static readonly Result Exception = new(SecurityApiResult.ConnectionFailed, "Network operation failed. Check internet connection.", default);
+        public static readonly Result EmptyResponse = new(SecurityApiResult.ConnectionFailed, "Server returned invalid/empty response to the request", default);
+        public static readonly Result Success = new(SecurityApiResult.Success, "Operation is successful", default);
     }
 }

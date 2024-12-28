@@ -11,27 +11,9 @@ namespace MHSClientAvalonia.Pages
 {
     public partial class LoginPage : UserControl
     {
-        private bool IsIpStage = true;
         public LoginPage()
         {
             InitializeComponent();
-        }
-        public bool ValidateIPv4(string ipString)
-        {
-            if (string.IsNullOrWhiteSpace(ipString))
-            {
-                return false;
-            }
-
-            string[] splitValues = ipString.Split('.');
-            if (splitValues.Length != 4)
-            {
-                return false;
-            }
-
-            byte tempForParsing;
-
-            return splitValues.All(r => byte.TryParse(r, out tempForParsing));
         }
         public async Task StartLoginProcess()
         {
@@ -166,7 +148,7 @@ namespace MHSClientAvalonia.Pages
             try
             {
                 // Validate username/password
-                var data = await Services.SecurityClient.Login(txtUser.Text, txtPw.Text);
+                var data = await Services.SecurityClient.Login(txtUser.Text ?? "", txtPw.Text ?? "");
                 if (data.Item1 == SecurityApiResult.Success)
                 {
                     LoadingDescription.Text = "Authentication OK";

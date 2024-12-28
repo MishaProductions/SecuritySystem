@@ -1,14 +1,5 @@
 ﻿using Iot.Device.Media;
-using NAudio.Wave;
-using System;
-using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using TagLib.Id3v2;
 using static SecuritySystem.Alsa.Interop;
 
 namespace SecuritySystem.Alsa
@@ -115,7 +106,7 @@ namespace SecuritySystem.Alsa
         {
             ClosePlaybackPcm();
         }
-        private readonly BufferedWaveProvider waveProvider;
+
         private unsafe bool WriteStream(byte[] wavStream, WavHeader header)
         {
             ulong frames, bufferSize;
@@ -377,10 +368,9 @@ namespace SecuritySystem.Alsa
             if (_errorNum < 0)
             {
                 int code = _errorNum;
-                string errorMsg = Marshal.PtrToStringAnsi(Interop.snd_strerror(_errorNum));
+                string? errorMsg = Marshal.PtrToStringAnsi(Interop.snd_strerror(_errorNum));
 
                 throw new Exception($"{message}\nError {code}. {errorMsg}.");
-                Dispose();
             }
         }
 

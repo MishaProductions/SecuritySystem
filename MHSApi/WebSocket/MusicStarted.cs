@@ -10,6 +10,6 @@ namespace MHSApi.WebSocket
     public class MusicStarted : WebSocketMessage
     {
         public override MessageType type { get; } = MessageType.MusicStarted;
-        public string MusicFileName { get; set; }
+        public string MusicFileName { get; set; } = "";
     }
 }

@@ -147,20 +147,21 @@ namespace MHSClientAvalonia
         /// <param name="args"></param>
         private static async void Dialog_Opened(TaskDialog sender, EventArgs args)
         {
+            if (info == null || info.files == null) throw new Exception("invalid data");
             string[]? files = OperatingSystem.IsWindows() ? info.files.win64 : info.files.linux64;
             string arch = OperatingSystem.IsWindows() ? "win64" : "linux64";
             // ensure that update info is valid
             if (info == null || info.files == null || files == null || files.Length == 0)
             {
                 sender.Hide();
-                var error = new TaskDialog
+                TaskDialog error = new()
                 {
                     Title = "Error",
                     SubHeader = "We have encountered a error",
                     Content = "Failed to retrieve update information - no valid response from server. Try updating the server firmware.",
-                    Buttons = { TaskDialogButton.OKButton }
+                    Buttons = { TaskDialogButton.OKButton },
+                    XamlRoot = Services.MainView.VisualForUpdate
                 };
-                error.XamlRoot = Services.MainView.VisualForUpdate;
                 await error.ShowAsync(true);
                 return;
             }
@@ -317,14 +318,14 @@ namespace MHSClientAvalonia
                     if (result == 0)
                     {
                         sender.Hide();
-                        var error = new TaskDialog
+                        TaskDialog error = new()
                         {
                             Title = "Error",
                             SubHeader = "We have encountered a error",
                             Content = $"When we have tried to move {newFilePath} to {realPath}, we failed. This was part of step 3. Kill all other instances of MHSClient. DO NOT CLOSE THIS INSTACNE AS IT WILL LEAVE YOU WITH A BROKEN INSTALLATION AS I WAS TOO LAZY TO IMPLEMENT THE ROLL BACK FUNCTION!!!!!!!!!!!",
-                            Buttons = { TaskDialogButton.OKButton }
+                            Buttons = { TaskDialogButton.OKButton },
+                            XamlRoot = Services.MainView.VisualForUpdate
                         };
-                        error.XamlRoot = Services.MainView.VisualForUpdate;
                         await error.ShowAsync(true);
                         return;
                     }

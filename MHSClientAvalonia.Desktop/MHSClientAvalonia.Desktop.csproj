@@ -15,6 +15,7 @@
 		<Nullable>enable</Nullable>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<IncludeNativeLibrariesForSelfExtract>True</IncludeNativeLibrariesForSelfExtract>
+		<PublishTrimmed>false</PublishTrimmed> <!--TODO: Fix-->
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -36,6 +37,4 @@
 	<ItemGroup>
 		<ProjectReference Include="..\MHSClientAvalonia\MHSClientAvalonia.csproj" />
 	</ItemGroup>
-
-	<Import Project="..\MHSApi\MHSApi.projitems" Label="Shared" />
 </Project>

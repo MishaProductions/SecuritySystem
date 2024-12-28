@@ -12,7 +12,6 @@ using MHSClientAvalonia.Pages;
 using MHSClientAvalonia.Utils;
 using MHSClientAvalonia.Views;
 using NAudio.Wave;
-using SecuritySystemApi;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,9 +21,9 @@ namespace MHSClientAvalonia;
 
 public partial class MainView : UserControl
 {
-    private DispatcherTimer _reconnectTimer = new DispatcherTimer();
-    private DispatcherTimer? _updateTimer;
-    internal Visual VisualForUpdate { get { return (Visual)VisualRoot; } }
+    private readonly DispatcherTimer _reconnectTimer = new();
+    private readonly DispatcherTimer? _updateTimer;
+    internal Visual VisualForUpdate { get { return (Visual?)VisualRoot ?? throw new Exception(); } }
     public MainView()
     {
         InitializeComponent();
@@ -53,10 +52,10 @@ public partial class MainView : UserControl
 
         if (!BrowserUtils.IsBrowser && Services.Preferences.GetBool("autoupdate", true))
         {
-            DispatcherTimer updateTimer = new DispatcherTimer();
-            updateTimer.Interval = TimeSpan.FromMinutes(5);
-            updateTimer.Tick += UpdateTimer_Tick;
-            updateTimer.Start();
+            _updateTimer = new();
+            _updateTimer.Interval = TimeSpan.FromMinutes(5);
+            _updateTimer.Tick += UpdateTimer_Tick;
+            _updateTimer.Start();
         }
 
         NavigateToInitialPage();

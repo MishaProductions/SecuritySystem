@@ -42,8 +42,8 @@ namespace SecuritySystem.Utils
         {
             yield return new KeyValuePair<string, object>(nameof(NetworkingEnabled), NetworkingEnabled);
             yield return new KeyValuePair<string, object>(nameof(WirelessEnabled), WirelessEnabled);
-            yield return new KeyValuePair<string, object>(nameof(ActiveConnections), ActiveConnections);
-            yield return new KeyValuePair<string, object>(nameof(Version), Version);
+            yield return new KeyValuePair<string, object>(nameof(ActiveConnections), ActiveConnections ?? throw new Exception());
+            yield return new KeyValuePair<string, object>(nameof(Version), Version ?? "");
             yield return new KeyValuePair<string, object>(nameof(State), State);
             yield return new KeyValuePair<string, object>(nameof(Connectivity), Connectivity);
         }
@@ -104,10 +104,10 @@ namespace SecuritySystem.Utils
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            yield return new KeyValuePair<string, object>(nameof(DebugLevel), DebugLevel);
+            yield return new KeyValuePair<string, object>(nameof(DebugLevel), DebugLevel ?? "");
             yield return new KeyValuePair<string, object>(nameof(DebugTimestamp), DebugTimestamp);
             yield return new KeyValuePair<string, object>(nameof(DebugShowKeys), DebugShowKeys);
-            yield return new KeyValuePair<string, object>(nameof(Interfaces), Interfaces);
+            yield return new KeyValuePair<string, object>(nameof(Interfaces), Interfaces ?? throw new Exception());
         }
     }
 
@@ -129,7 +129,7 @@ namespace SecuritySystem.Utils
 
     public class NetworkManager
     {
-        private static Connection connection = new Connection(Address.System);
+        private static readonly Connection connection = new(Address.System);
         public static NetworkManagerConnectivity ConnectivityStatus { get; set; }
 
         private static INetworkManager? NetworkManagerObject;
@@ -153,10 +153,10 @@ namespace SecuritySystem.Utils
             var io = await wpa.GetAllAsync();
 
 
-            var tinterface = io.Interfaces[1];
-            var device = connection.CreateProxy<IWPASupplicantInterface>("fi.w1.wpa_supplicant1", tinterface);
-            Console.WriteLine("Interface: " + await device.GetAsync("Ifname"));
-            Console.WriteLine("WLAN state: " + await device.GetAsync("State"));
+            //var tinterface = io.Interfaces[1];
+            //var device = connection.CreateProxy<IWPASupplicantInterface>("fi.w1.wpa_supplicant1", tinterface);
+            //Console.WriteLine("Interface: " + await device.GetAsync("Ifname"));
+            //Console.WriteLine("WLAN state: " + await device.GetAsync("State"));
             //  var poll= await device.SignalPollAsync();
             //  foreach (var item in poll)
             // {

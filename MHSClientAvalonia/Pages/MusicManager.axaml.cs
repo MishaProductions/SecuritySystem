@@ -3,7 +3,6 @@ using MHSApi.API;
 using MHSApi.WebSocket.AudioIn;
 using MHSClientAvalonia.Client;
 using MHSClientAvalonia.Utils;
-using NAudio.Wave;
 using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.ObjectModel;
@@ -18,7 +17,6 @@ public partial class MusicManager : SecurityPage
     private ObservableCollection<string> AnncFiles = new ObservableCollection<string>();
     private bool anncChanging = false;
     private bool musicChanging = false;
-    static WaveInEvent? waveIn;
     static PlugifyWebSocketClient? _audioOutSocket;
 
     private static ALCaptureDevice _captureDevice;
@@ -78,14 +76,9 @@ public partial class MusicManager : SecurityPage
 
     private async void StopAnnc_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        if (waveIn != null && OperatingSystem.IsWindows())
-        {
-            waveIn.StopRecording();
-            waveIn.Dispose();
-            waveIn = null;
-        }
-
-        if (!OperatingSystem.IsWindows() && _captureDevice != null)
+#pragma warning disable CS8073 // The result of the expression is always 'true' since a value of type 'ALCaptureDevice' is never equal to 'null' of type 'ALCaptureDevice?'
+        if (_captureDevice != null!)
+#pragma warning restore CS8073 // The result of the expression is always 'true' since a value of type 'ALCaptureDevice' is never equal to 'null' of type 'ALCaptureDevice?'
         {
             _shouldCapture = false;
             ALC.CaptureStop(_captureDevice);
@@ -226,60 +219,26 @@ public partial class MusicManager : SecurityPage
             return;
         }
 
-        if (OperatingSystem.IsWindows())
+        try
         {
-            waveIn = new WaveInEvent();
-            try
+            _captureDevice = ALC.CaptureOpenDevice(null, 44100, ALFormat.Mono16, 50);//opens default mic //null specifies default 
+
+            _audioOutSocket = await Services.SecurityClient.OpenAnncStream(44100, 16, 2);
+            if (_audioOutSocket != null)
             {
-                waveIn.WaveFormat = new WaveFormat(44100, 16, 1);
-                waveIn.BufferMilliseconds = 50;
-                waveIn.NumberOfBuffers = 3;
-                _audioOutSocket = await Services.SecurityClient.OpenAnncStream(waveIn.WaveFormat.SampleRate, waveIn.WaveFormat.BitsPerSample, waveIn.WaveFormat.BlockAlign);
-                if (_audioOutSocket != null)
-                {
-                    BtnPlayAnncFromMic.IsEnabled = false;
-                    waveIn.StartRecording();
-                    waveIn.DataAvailable += async (s, a) =>
-                    {
-                        Debug.WriteLine("wrote " + a.BytesRecorded);
-
-                        byte[] cmd = new byte[a.Buffer.Length + 1];
-                        cmd[0] = (byte)AudioInMsgType.WritePcm;
-                        Array.Copy(a.Buffer, 0, cmd, 1, a.Buffer.Length);
-
-                        await _audioOutSocket.Send(cmd);
-                    };
-                }
+                ALC.CaptureStart(_captureDevice);
+                _shouldCapture = true;
+                new Thread(CapturingThread).Start();
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine(ex);
-                Services.MainView.ShowMessage("System Error", ex.Message);
+                Services.MainView.ShowMessage("System Error", "Opening remote annc stream input failed. Check network/authentication");
             }
         }
-        else
+        catch (Exception ex)
         {
-            try
-            {
-                _captureDevice = ALC.CaptureOpenDevice(null, 44100, ALFormat.Mono16, 50);//opens default mic //null specifies default 
-
-                _audioOutSocket = await Services.SecurityClient.OpenAnncStream(44100, 16, 2);
-                if (_audioOutSocket != null)
-                {
-                    ALC.CaptureStart(_captureDevice);
-                    _shouldCapture = true;
-                    new Thread(CapturingThread).Start();
-                }
-                else
-                {
-                    Services.MainView.ShowMessage("System Error", "Opening remote annc stream input failed. Check network/authentication");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                Services.MainView.ShowMessage("System Error", ex.Message);
-            }
+            Console.WriteLine(ex);
+            Services.MainView.ShowMessage("System Error", ex.Message);
         }
     }
 }

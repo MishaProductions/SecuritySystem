@@ -11,6 +11,6 @@ xcopy /Y /e /k /h /i MHSClientAvalonia.Desktop\bin\Release\net9.0\linux-x64\publ
 dotnet publish MHSClientAvalonia.Desktop --runtime win-x64
 xcopy /Y /e /k /h /i MHSClientAvalonia.Desktop\bin\Release\net9.0-windows10.0.17763.0\publish\win-x64\MHSClientAvalonia.Desktop.exe SecuritySystem\www\client\win64\
 
-REM dotnet publish MHSClientAvalonia.Android
+dotnet publish MHSClientAvalonia.Android
 
 dotnet publish SecuritySystem --runtime linux-arm
