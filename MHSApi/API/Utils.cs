@@ -1,8 +1,8 @@
 ﻿
 using MHSApi.WebSocket;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace MHSApi.API
 {
@@ -80,40 +80,40 @@ namespace MHSApi.API
         {
             try
             {
-                var obj = JObject.Parse(str);
+                var obj = JsonObject.Parse(str);
                 var type = obj["type"];
                 if (type != null)
                 {
-                    switch ((MessageType)type.Value<int>())
+                    switch ((MessageType)type.AsValue().GetValue<int>())
                     {
                         case MessageType.None:
                             return null;
                         case MessageType.ServerHello:
-                            return JsonConvert.DeserializeObject<Hello>(str);
+                            return JsonSerializer.Deserialize<Hello>(str);
                         case MessageType.ClientWelcomeReply:
-                            return JsonConvert.DeserializeObject<ClientWelcomeReply>(str);
+                            return JsonSerializer.Deserialize<ClientWelcomeReply>(str);
                         case MessageType.AuthError:
-                            return JsonConvert.DeserializeObject<AuthenticationFail>(str);
+                            return JsonSerializer.Deserialize<AuthenticationFail>(str);
                         case MessageType.AuthOK:
-                            return JsonConvert.DeserializeObject<AuthenticationOK>(str);
+                            return JsonSerializer.Deserialize<AuthenticationOK>(str);
                         case MessageType.SystemStateChange:
-                            return JsonConvert.DeserializeObject<SystemStateChange>(str);
+                            return JsonSerializer.Deserialize<SystemStateChange>(str);
                         case MessageType.ZoneUpdate:
-                            return JsonConvert.DeserializeObject<ZoneUpdate>(str);
+                            return JsonSerializer.Deserialize<ZoneUpdate>(str);
                         case MessageType.AnncVolumeChange:
-                            return JsonConvert.DeserializeObject<AnncPlayerVolumeChange>(str);
+                            return JsonSerializer.Deserialize<AnncPlayerVolumeChange>(str);
                         case MessageType.MusicVolumeChange:
-                            return JsonConvert.DeserializeObject<MusicPlayerVolumeChange>(str);
+                            return JsonSerializer.Deserialize<MusicPlayerVolumeChange>(str);
                         case MessageType.MusicStarted:
-                            return JsonConvert.DeserializeObject<MusicStarted>(str);
+                            return JsonSerializer.Deserialize<MusicStarted>(str);
                         case MessageType.MusicStopped:
-                            return JsonConvert.DeserializeObject<MusicStopped>(str);
+                            return JsonSerializer.Deserialize<MusicStopped>(str);
                         case MessageType.AnncStarted:
-                            return JsonConvert.DeserializeObject<AnncStarted>(str);
+                            return JsonSerializer.Deserialize<AnncStarted>(str);
                         case MessageType.AnncStopped:
-                            return JsonConvert.DeserializeObject<AnncStopped>(str);
+                            return JsonSerializer.Deserialize<AnncStopped>(str);
                         case MessageType.FwUpdate:
-                            return JsonConvert.DeserializeObject<FwUpdateMsg>(str);
+                            return JsonSerializer.Deserialize<FwUpdateMsg>(str);
                         default:
                             throw new Exception("unknown message type");
                     }

@@ -2,22 +2,14 @@
 using MHSApi.WebSocket;
 using MHSApi.WebSocket.AudioIn;
 using MHSClientAvalonia.Utils;
-using Microsoft.VisualBasic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SecuritySystemApi;
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace MHSClientAvalonia.Client
 {
@@ -100,8 +92,7 @@ namespace MHSClientAvalonia.Client
                 {
                     if (msg.type == MessageType.ServerHello)
                     {
-                        JObject loginPkt = new JObject() { { "type", 2 }, { "authorization", Token } };
-                        await ws.Send(JsonConvert.SerializeObject(new ClientWelcomeReply(Token)));
+                        await ws.Send(JsonSerializer.Serialize(new ClientWelcomeReply(Token)));
                     }
                     else if (msg.type == MessageType.AuthError)
                     {
@@ -164,12 +155,12 @@ namespace MHSClientAvalonia.Client
 
         public async Task SetAnncVolume(int newValue)
         {
-            await ws.Send(JsonConvert.SerializeObject(new AnncPlayerVolumeChange(newValue)));
+            await ws.Send(JsonSerializer.Serialize(new AnncPlayerVolumeChange(newValue)));
         }
 
         public async Task SetMusicVolume(int newValue)
         {
-            await ws.Send(JsonConvert.SerializeObject(new MusicPlayerVolumeChange(newValue)));
+            await ws.Send(JsonSerializer.Serialize(new MusicPlayerVolumeChange(newValue)));
         }
 
         private async Task SendMusicManagerThings()
@@ -465,7 +456,7 @@ namespace MHSClientAvalonia.Client
                 return Result.Exception;
             }
 
-            ApiResponseWithContent<T>? responseJson = JsonConvert.DeserializeObject<ApiResponseWithContent<T>>(response);
+            ApiResponseWithContent<T>? responseJson = JsonSerializer.Deserialize<ApiResponseWithContent<T>>(response);
             if (responseJson == null)
                 return Result.EmptyResponse;
 
@@ -493,7 +484,7 @@ namespace MHSClientAvalonia.Client
                 return Result.Exception;
             }
 
-            ApiResponse? responseJson = JsonConvert.DeserializeObject<ApiResponse>(response);
+            ApiResponse? responseJson = JsonSerializer.Deserialize<ApiResponse>(response);
             if (responseJson == null)
                 return Result.EmptyResponse;
             Result res = new Result(responseJson.code, responseJson.message, null);
@@ -521,16 +512,16 @@ namespace MHSClientAvalonia.Client
         {
             try
             {
-                var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonConvert.SerializeObject(body))).ConfigureAwait(false);
+                var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonSerializer.Serialize(body))).ConfigureAwait(false);
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonConvert.DeserializeObject<ApiResponse?>(responseStr);
-                var contents2 = JsonConvert.DeserializeObject<T?>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse?>(responseStr);
+                var contents2 = JsonSerializer.Deserialize<T?>(responseStr);
                 if (contents == null)
                 {
                     return Result.Exception;
                 }
 
-                Result res = new Result(contents.code, contents.message, contents2);
+                Result res = new(contents.code, contents.message, contents2);
 
                 return res;
             }
@@ -551,10 +542,10 @@ namespace MHSClientAvalonia.Client
         {
             try
             {
-                var response = await Client.PatchAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonConvert.SerializeObject(body))).ConfigureAwait(false);
+                var response = await Client.PatchAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonSerializer.Serialize(body))).ConfigureAwait(false);
 
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonConvert.DeserializeObject<ApiResponse?>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse?>(responseStr);
 
                 if (contents == null)
                 {
@@ -574,7 +565,7 @@ namespace MHSClientAvalonia.Client
             {
                 var response = await Client.DeleteAsync(Endpoint + Endpoints.ApiBase + endpoint).ConfigureAwait(false);
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonConvert.DeserializeObject<ApiResponse>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse>(responseStr);
 
                 if (contents == null)
                     return Result.EmptyResponse;
@@ -650,7 +641,7 @@ namespace MHSClientAvalonia.Client
                 contentType.Value = "multipart/form-data; " + contentType.Value;
                 var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + Endpoints.UploadFirmware, form).ConfigureAwait(false);
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonConvert.DeserializeObject<ApiResponse?>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse?>(responseStr);
                 if (contents == null)
                 {
                     return Result.EmptyResponse;

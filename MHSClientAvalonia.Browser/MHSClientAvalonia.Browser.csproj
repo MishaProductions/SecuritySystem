@@ -7,9 +7,9 @@
 		<WasmBuildNative>true</WasmBuildNative>
 		<WasmDebugLevel>5</WasmDebugLevel>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
-	  <PackageReference Include="Avalonia.Browser" Version="11.2.3" />
+		<PackageReference Include="Avalonia.Browser" Version="11.2.3" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -17,6 +17,6 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-	
+
 	</Target>
 </Project>
