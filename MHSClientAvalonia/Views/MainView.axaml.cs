@@ -482,7 +482,7 @@ public partial class MainView : UserControl
     {
         if (page == null)
             return;
-
+        Console.WriteLine("navigate to " + page);
         try
         {
             // send navigate away event to old page
@@ -550,7 +550,9 @@ public partial class MainView : UserControl
             runnerBox.IsVisible = false;
             MainFrameBox.IsVisible = true;
 
-            ShowMessage("Something went wrong", "When loading the page, a error has occured.\n\n" + ex.ToString());
+            Console.WriteLine(ex.ToString());
+
+            ShowMessage("Something went wrong", "When loading the page, a error was encountered.\n\n" + ex.ToString());
         }
     }
 
@@ -618,7 +620,7 @@ public partial class MainView : UserControl
                             navigationView.SelectedItem = nvi;
 
                             // update page text
-                            PageTitle.Text = (string)nvi.Content;
+                            PageTitle.Text = (string?)nvi.Content;
                         }
                     }
                 }
@@ -645,49 +647,58 @@ public partial class MainView : UserControl
 
     internal async void NavigateToInitialPage()
     {
-        var ip = Services.Preferences.Get("ip");
-        var tok = Services.Preferences.Get("user_token");
-
-        if (BrowserUtils.IsBrowser)
+        Console.WriteLine("NavigateToInitialPage");
+        try
         {
-            ip = BrowserUtils.GetHost();
-        }
+            var ip = Services.Preferences.Get("ip");
+            var tok = Services.Preferences.Get("user_token");
 
-
-        // Try to connect to the server first. If that fails, show login page
-        if (!string.IsNullOrEmpty(tok) && !string.IsNullOrEmpty(ip))
-        {
-            try
+            if (BrowserUtils.IsBrowser)
             {
-                LoadingDescription.Text = "Connecting to server";
-                // might be a valid token, try to authenticate
-                Services.SecurityClient.SetHost("https://" + ip);
-                if (await Services.SecurityClient.Start(tok) == SecurityApiResult.Success)
-                {
-                    LoadingDescription.Text = "Authentication OK";
+                ip = BrowserUtils.GetHost();
+            }
 
-                    if (Services.SecurityClient.CurrentUser.Username == "System Installer")
+
+            // Try to connect to the server first. If that fails, show login page
+            if (!string.IsNullOrEmpty(tok) && !string.IsNullOrEmpty(ip))
+            {
+                try
+                {
+                    LoadingDescription.Text = "Connecting to server";
+                    // might be a valid token, try to authenticate
+                    Services.SecurityClient.SetHost("https://" + ip);
+                    if (await Services.SecurityClient.Start(tok) == SecurityApiResult.Success)
                     {
-                        await NavigateTo("InitialSetup", true);
+                        LoadingDescription.Text = "Authentication OK";
+
+                        if (Services.SecurityClient.CurrentUser != null && Services.SecurityClient.CurrentUser.Username == "System Installer")
+                        {
+                            await NavigateTo("InitialSetup", true);
+                        }
+                        else
+                        {
+                            await NavigateTo("HomePage", true);
+                        }
+                        return;
                     }
                     else
                     {
-                        await NavigateTo("HomePage", true);
+                        LoadingDescription.Text = "Authentication FAIL";
                     }
-                    return;
                 }
-                else
+                catch
                 {
-                    LoadingDescription.Text = "Authentication FAIL";
+
                 }
             }
-            catch
-            {
 
-            }
+            await NavigateTo("LoginPage", true);
         }
-
-        await NavigateTo("LoginPage", true);
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            ShowMessage("Something went wrong", "When loading the page, a error was encountered.\n\n" + ex.ToString());
+        }
     }
 
     private async void Logout_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

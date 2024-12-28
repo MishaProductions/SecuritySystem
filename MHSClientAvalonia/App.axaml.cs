@@ -42,7 +42,7 @@ namespace MHSClientAvalonia
 
         private void ShowMainWindow_Click(object? sender, System.EventArgs e)
         {
-            Services.MainWindow.Activate();
+            //Services.MainWindow.Activate(); // TODO: This causes program to exit with code 0, no exceptions are thrown.
             Services.MainWindow.Show();
             Services.MainWindow.Activate();
         }

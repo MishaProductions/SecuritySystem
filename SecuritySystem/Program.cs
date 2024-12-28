@@ -40,6 +40,7 @@ namespace SecuritySystem
                    Thread.Sleep(1000);
                 }
             }
+            // TODO FIX
 
             //Console.WriteLine("NetworkManager...");
             //NetworkManager.Initialize();

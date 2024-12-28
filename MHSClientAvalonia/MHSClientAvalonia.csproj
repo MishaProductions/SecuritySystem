@@ -7,8 +7,8 @@
 		<LangVersion>latest</LangVersion>
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-		<AssemblyVersion>4.0.1.2</AssemblyVersion>
-		<FileVersion>4.0.1.2</FileVersion>
+		<AssemblyVersion>4.0.1.3</AssemblyVersion>
+		<FileVersion>4.0.1.3</FileVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

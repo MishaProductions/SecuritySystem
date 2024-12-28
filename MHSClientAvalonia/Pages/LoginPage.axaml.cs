@@ -59,6 +59,8 @@ namespace MHSClientAvalonia.Pages
                     // might be a valid token, try to authenticate
                     Services.SecurityClient.SetHost("https://" + ip);
 
+                    Console.WriteLine("StartLoginProcess - Starting now");
+
                     var res = await Services.SecurityClient.Start(tok);
                     if (res == SecurityApiResult.Success)
                     {
@@ -82,10 +84,18 @@ namespace MHSClientAvalonia.Pages
                         AutoLoginBar.IsOpen = true;
                     }
                 }
-                catch
+                catch(Exception ex)
                 {
+                    Console.WriteLine("Open Autobar");
                     // Something went wrong while signing in.
                     AutoLoginBar.IsOpen = true;
+
+                    await new ContentDialog()
+                    {
+                        Title = "Error",
+                        Content = "The following error has occured while attempting to login using the cached login token:\n" + ex.ToString(),
+                        PrimaryButtonText = "OK"
+                    }.ShowAsync();
                 }
             }
 

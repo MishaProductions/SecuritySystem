@@ -3,7 +3,7 @@
 md SecuritySystem\www\modernclient\
 dotnet publish MHSClientAvalonia.Browser
 xcopy /Y /e /k /h /i "MHSClientAvalonia.Browser\bin\Release\net9.0-browser\publish\wwwroot" "SecuritySystem\www\modernclient\"
-xcopy /Y SecuritySystem\www\modernclient\*.js SecuritySystem\www\modernclient\_framework\
+REM xcopy /Y SecuritySystem\www\modernclient\*.js SecuritySystem\www\modernclient\_framework\
 
 dotnet publish MHSClientAvalonia.Desktop --runtime linux-x64
 xcopy /Y /e /k /h /i MHSClientAvalonia.Desktop\bin\Release\net9.0\linux-x64\publish\MHSClientAvalonia.Desktop SecuritySystem\www\client\linux64\

@@ -27,6 +27,8 @@ namespace SecuritySystemApi
         /// Error code
         /// </summary>
         public SecurityApiResult code { get; set; }
+
+        public ApiResponse() { }
     }
     /// <summary>
     /// Represents the basic response of the SecuritySystem API with content
@@ -35,6 +37,8 @@ namespace SecuritySystemApi
     public class ApiResponseWithContent<T> : ApiResponse
     {
         public T? content { get; set; }
+
+        public ApiResponseWithContent() { }
     }
     /// <summary>
     /// Represents the content field in an ApiResponse

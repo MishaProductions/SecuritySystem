@@ -81,7 +81,7 @@
 							<ui:ProgressRing x:Name="runner" IsIndeterminate="True"  Width="50" Height="50" />
 							<TextBlock x:Name="LoadingDescription">Loading</TextBlock>
 						</WrapPanel>
-						<Grid x:Name="MainFrameBox" IsVisible="False">
+						<Grid x:Name="MainFrameBox" IsVisible="True">
 							<ui:Frame Name="FrameView"></ui:Frame>
 						</Grid>
 					</Grid>
