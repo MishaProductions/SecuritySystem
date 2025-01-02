@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/MHSClientAvalonia.Desktop/bin/Debug/net8.0/MHSClientAvalonia.Desktop.dll",
+            "program": "${workspaceFolder}/MHSClientAvalonia.Desktop/bin/Debug/net9.0/MHSClientAvalonia.Desktop.dll",
             "args": [],
             "cwd": "${workspaceFolder}/MHSClientAvalonia.Desktop",
             "console": "internalConsole",

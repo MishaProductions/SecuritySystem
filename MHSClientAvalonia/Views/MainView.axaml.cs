@@ -341,8 +341,15 @@ public partial class MainView : UserControl
             Body = title,
         };
 
-        if (Services.NotificationManager != null)
-            await Services.NotificationManager.ShowNotification(nf, DateTimeOffset.Now.AddSeconds(3));
+        try
+        {
+            if (Services.NotificationManager != null)
+                await Services.NotificationManager.ShowNotification(nf, DateTimeOffset.Now.AddSeconds(3));
+        }
+        catch
+        {
+
+        }
     }
     private void PlaySysTimer()
     {
@@ -685,15 +692,15 @@ public partial class MainView : UserControl
                         LoadingDescription.Text = "Authentication FAIL";
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    ShowMessage("Something went wrong", "When connecting, a error was encountered.\n\n" + ex.ToString());
                 }
             }
 
             await NavigateTo("LoginPage", true);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Console.WriteLine(ex.ToString());
             ShowMessage("Something went wrong", "When loading the page, a error was encountered.\n\n" + ex.ToString());
@@ -702,6 +709,7 @@ public partial class MainView : UserControl
 
     private async void Logout_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        FlyoutBase.GetAttachedFlyout(UserPopupButton)?.Hide();
         if (await new ContentDialog()
         {
             Title = "Are you sure?",
@@ -741,13 +749,13 @@ public partial class MainView : UserControl
             navigationView.IsEnabled = true;
             runnerBox.IsVisible = false;
             MainFrameBox.IsVisible = true;
-            
         }
     }
     private async void ChangePW_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        ChangePasswordView view = new ChangePasswordView();
-        ContentDialog dlg = new ContentDialog
+        FlyoutBase.GetAttachedFlyout(UserPopupButton)?.Hide();
+        ChangePasswordView view = new();
+        ContentDialog dlg = new()
         {
             PrimaryButtonText = "Change",
             CloseButtonText = "Cancel",

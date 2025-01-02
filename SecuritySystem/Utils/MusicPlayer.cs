@@ -1,4 +1,6 @@
-﻿namespace SecuritySystem.Utils
+﻿using SecuritySystem.Modules.NXDisplay;
+
+namespace SecuritySystem.Utils
 {
     public static class MusicPlayer
     {
@@ -13,6 +15,9 @@
         private static readonly Player alarmProc = new();
         private static readonly Player alarmAnncProc = new();
         private static readonly Player anncSfx = new();
+        private static readonly Player tickSfx = new();
+        private static readonly Player armAnnc = new();
+
         public static bool PlaylistMode { get; private set; }
         public static string CurrentSongName
         {
@@ -67,7 +72,7 @@
                 musicProc.Volume = value;
             }
         }
-        private static int MusicFadeTime = 50;
+        private static int MusicFadeTime = 40;
 
         public static event EventHandler? OnMusicStop;
         public static event EventHandler? OnAnncStop;
@@ -88,8 +93,25 @@
 
             SystemManager.OnAlarm += SystemManager_OnAlarm;
             SystemManager.OnSystemDisarm += SystemManager_OnSystemDisarm;
+            SystemManager.OnSysTimerEvent += SystemManager_OnSysTimer;
+            SystemManager.OnZoneUpdate += SystemManager_OnZoneUpdate;
 
             ScanFiles();
+        }
+
+        private static void SystemManager_OnZoneUpdate(bool single, int zone, string name, ZoneState ready)
+        {
+            tickSfx.Play("/musics/annc/systimer.mp3");
+        }
+
+        private static void SystemManager_OnSysTimer(bool entry, int timer)
+        {
+            tickSfx.Play("/musics/annc/systimer.mp3");
+
+            if (!entry && timer == 14)
+            {
+                armAnnc.Play("/musics/annc/standclear.mp3");
+            }
         }
 
         private static void SystemManager_OnSystemDisarm(object? sender, EventArgs e)

@@ -77,7 +77,7 @@ public partial class MusicManager : SecurityPage
     private async void StopAnnc_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
 #pragma warning disable CS8073 // The result of the expression is always 'true' since a value of type 'ALCaptureDevice' is never equal to 'null' of type 'ALCaptureDevice?'
-        if (_captureDevice != null!)
+        if (_captureDevice != null! && !BrowserUtils.IsBrowser)
 #pragma warning restore CS8073 // The result of the expression is always 'true' since a value of type 'ALCaptureDevice' is never equal to 'null' of type 'ALCaptureDevice?'
         {
             _shouldCapture = false;
@@ -238,7 +238,7 @@ public partial class MusicManager : SecurityPage
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            Services.MainView.ShowMessage("System Error", ex.Message);
+            Services.MainView.ShowMessage("System Error", ex.ToString());
         }
     }
 }

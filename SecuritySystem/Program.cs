@@ -61,9 +61,6 @@ namespace SecuritySystem
             Console.WriteLine("Starting webserver");
             HttpFrontendServer.Start();
 
-            Console.WriteLine("Starting announcement server");
-            MusicStreamServer.StartAnncHandlerServer();
-
             Console.WriteLine("Starting system timer");
             Thread t2 = new(TimerThread);
             t2.Start();

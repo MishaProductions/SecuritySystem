@@ -5,14 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MHSClientAvalonia.Pages.MusicManager"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls">
-	<Grid>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition MinWidth="300"></ColumnDefinition>
-			<ColumnDefinition MinWidth="300"></ColumnDefinition>
-			<ColumnDefinition Width="auto"></ColumnDefinition>
-			<ColumnDefinition Width="auto"></ColumnDefinition>
-		</Grid.ColumnDefinitions>
-
+	<UniformGrid Columns="2">
 		<Grid Grid.Column="0">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="*"></RowDefinition>
@@ -23,7 +16,7 @@
 			</ListBox>
 
 			<StackPanel Grid.Row="1">
-				<StackPanel Orientation="Horizontal">
+				<StackPanel Orientation="Horizontal" Spacing="5">
 					<Button Click="StopMusic_Click">Stop music</Button>
 					<Button Click="PlayAllMusic_Click">Play All</Button>
 					<Button Click="MusicBack_Click">Back</Button>
@@ -43,7 +36,7 @@
 			<ListBox x:Name="listAnnc" Grid.Row="0" DoubleTapped="listAnnc_DoubleTapped"></ListBox>
 
 			<StackPanel Grid.Row="1">
-				<StackPanel Orientation="Horizontal">
+				<StackPanel Orientation="Horizontal" Spacing="5">
 					<Button Click="StopAnnc_Click">Stop annc</Button>
 					<Button x:Name="BtnPlayAnncFromMic" Click="PlayAnncFromMic_Click">Start asynchronous microphone stream operation</Button>
 				</StackPanel>
@@ -51,5 +44,5 @@
 				<Slider x:Name="AnncVolumeSlider" Orientation="Horizontal" Minimum="0" Maximum="130" ValueChanged="AnncVol_ValueChanged"></Slider>
 			</StackPanel>
 		</Grid>
-	</Grid>
+	</UniformGrid>
 </UserControl>

@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-rm -rf MHSClientAvalonia/bin/
-rm -rf MHSClientAvalonia/obj/
-rm -rf MHSClientAvalonia.Android/bin/
-rm -rf MHSClientAvalonia.Android/obj/
+#rm -rf MHSClientAvalonia/bin/
+#rm -rf MHSClientAvalonia/obj/
+#rm -rf MHSClientAvalonia.Android/bin/
+#rm -rf MHSClientAvalonia.Android/obj/
 #rm -rf MHSClientAvalonia.Browser/bin/
 #rm -rf MHSClientAvalonia.Browser/obj/
 rm -rf MHSClientAvalonia.Desktop/bin/
@@ -20,6 +20,7 @@ cp -r MHSClientAvalonia.Desktop/bin/Release/net9.0/linux-x64/publish/MHSClientAv
 dotnet publish MHSClientAvalonia.Desktop --runtime win-x64
 cp -r MHSClientAvalonia.Desktop/bin/Release/net9.0/win-x64/publish/MHSClientAvalonia.Desktop.exe SecuritySystem/www/client/win64/
 
-#dotnet publish MHSClientAvalonia.Android
+dotnet publish MHSClientAvalonia.Android
+cp -r MHSClientAvalonia.Android/bin/Release/net9.0-android/publish/com.mikhailproductions.mhs-Signed.apk SecuritySystem/www/client/android/
 
 dotnet publish SecuritySystem --runtime linux-arm
