@@ -9,6 +9,13 @@ rm -rf MHSClientAvalonia.Browser/bin/
 rm -rf MHSClientAvalonia.Browser/obj/
 rm -rf MHSClientAvalonia.Desktop/bin/
 rm -rf MHSClientAvalonia.Desktop/obj/
+rm -rf SecuritySystem/www/client/linux64
+rm -rf SecuritySystem/www/client/win64
+rm -rf SecuritySystem/www/client/android
+
+mkdir -p SecuritySystem/www/client/linux64
+mkdir -p SecuritySystem/www/client/win64
+mkdir -p SecuritySystem/www/client/android
 
 dotnet publish MHSClientAvalonia.Browser
 cp -r MHSClientAvalonia.Browser/bin/Release/net9.0-browser/publish/wwwroot/* SecuritySystem/www/modernclient/
