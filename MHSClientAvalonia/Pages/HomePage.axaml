@@ -21,6 +21,8 @@
 						<TextBlock x:Name="zone10" FontSize="20">Loading...</TextBlock>
 					</StackPanel>
 				</ContentControl>
+
+				<TextBlock x:Name="weatherInfoShort">Loading weather information...</TextBlock>
 			</StackPanel>
 		</Grid>
 	</ScrollViewer>

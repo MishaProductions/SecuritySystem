@@ -10,14 +10,16 @@ namespace SecuritySystem.Utils
         private static DateTime LastUpdateTime = DateTime.MinValue;
         private static async Task UpdateWeatherInfo()
         {
+            if (string.IsNullOrEmpty(Configuration.Instance.WeatherCords))
+            {
+                InternetWeather = "Weather cords not set in config";
+                return;
+            }
+
+            string result = "";
             try
             {
-                if (string.IsNullOrEmpty(Configuration.Instance.WeatherCords))
-                {
-                    InternetWeather = "Weather cords not set in config";
-                    return;
-                }
-                HttpClient httpClient = new HttpClient();
+                HttpClient httpClient = new();
                 httpClient.DefaultRequestHeaders.Add("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
                 var data = await httpClient.GetAsync("https://api.weather.gov/points/" + Configuration.Instance.WeatherCords);
                 if (data.IsSuccessStatusCode)
@@ -29,52 +31,51 @@ namespace SecuritySystem.Utils
                     dynamic fs2 = JObject.Parse(await data2.Content.ReadAsStringAsync());
                     if (data2.IsSuccessStatusCode)
                     {
-                   
-
                         var today = fs2.properties.periods[0];
-                        InternetWeather = "";
                         if (today.temperature != null)
                         {
-                            InternetWeather += $"Temperature: {(int)today.temperature}\r\n";
+                            result += $"Temperature: {(int)today.temperature}\r\n";
                         }
                         if (today.shortForecast != null)
                         {
-                            InternetWeather += $"{(string)today.shortForecast}\r\n";
+                            result += $"{(string)today.shortForecast}\r\n";
                         }
                         if (today.probabilityOfPrecipitation.value != null)
                         {
-                            InternetWeather += $"Participation chance: {(int)today.probabilityOfPrecipitation.value}%\r\n";
+                            result += $"Participation chance: {(int)today.probabilityOfPrecipitation.value}%\r\n";
                         }
                         LastUpdateTime = DateTime.Now;
                     }
                     else
                     {
-                        InternetWeather = "weather.gov failed to get forecast info with code:\r\n" + (string)fs2.detail + "\r\n";
+                        result = "weather.gov failed to get forecast info with code:\r\n" + (string)fs2.detail + "\r\n";
                         Console.WriteLine("weather: failed to get forecast api");
                     }
                 }
                 else
                 {
-                    InternetWeather = "weather.gov get point api FAIL\r\n";
+                    result = "weather.gov get point api FAIL\r\n";
                     Console.WriteLine("weather: failed to get point api");
                 }
 
 
-                Console.WriteLine("[weather] internet weather result: " + InternetWeather);
+                Console.WriteLine("[weather] internet weather result: " + result);
             }
             catch (Exception ex)
             {
-                InternetWeather = "failed to load weather info:\r\n" + ex.Message+"\r\n";
+                result = "failed to load weather info:\r\n" + ex.Message + "\r\n";
             }
+
+            InternetWeather = result;
         }
 
         private static async Task UpdateTempSensorInfo()
         {
-            TempWeather = "";
+            string result = "";
             Console.WriteLine("[weather] query temp info");
             foreach (var busId in OneWireBus.EnumerateBusIds())
             {
-                OneWireBus bus = new OneWireBus(busId);
+                OneWireBus bus = new(busId);
                 foreach (var devId in bus.EnumerateDeviceIds())
                 {
                     if (OneWireThermometerDevice.IsCompatible(busId, devId))
@@ -82,10 +83,12 @@ namespace SecuritySystem.Utils
                         OneWireThermometerDevice devTemp = new(busId, devId);
                         string temp = (await devTemp.ReadTemperatureAsync()).DegreesFahrenheit.ToString("F2") + "F";
 
-                        TempWeather += $"Temperature sensor: {temp}\r\n";
+                        result += $"Temperature sensor: {temp}\r\n";
                     }
                 }
             }
+
+            TempWeather = result;
         }
         public static async Task<string> GetWeather()
         {

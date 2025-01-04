@@ -46,7 +46,8 @@ public partial class ZonesCfg : SecurityPage
                 {
                     new() { Content = "Unconfigured" },
                     new() { Content = "Entry" },
-                new() { Content = "Window" },
+                    new() { Content = "Window" },
+                    new() { Content = "Motion" },
                 },
                 SelectedIndex = (int)item.type,
                 Width = 100,
@@ -90,10 +91,12 @@ public partial class ZonesCfg : SecurityPage
                         return;
                     }
 
-                    zones[zoneIdx] = new JsonZone();
-                    zones[zoneIdx].name = name.Text;
-                    zones[zoneIdx].idx = zoneIdx;
-                    zones[zoneIdx].type = (ZoneType)cmb.SelectedIndex;
+                    zones[zoneIdx] = new JsonZone
+                    {
+                        name = name.Text,
+                        idx = zoneIdx,
+                        type = (ZoneType)cmb.SelectedIndex
+                    };
                 }
             }
         }

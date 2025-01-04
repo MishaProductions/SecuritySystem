@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using DesktopNotifications;
@@ -57,6 +58,7 @@ public partial class MainView : UserControl
             _updateTimer.Tick += UpdateTimer_Tick;
             _updateTimer.Start();
         }
+        UiAndroidHint.IsOpen = BrowserUtils.IsBrowser;
 
         NavigateToInitialPage();
     }
@@ -577,6 +579,12 @@ public partial class MainView : UserControl
     {
         runnerBox.IsVisible = true;
         MainFrameBox.IsVisible = false;
+    }
+
+    private async void BtnDownload_Click(object? sender, RoutedEventArgs e)
+    {
+        Services.SecurityClient.SetHost("https://" + BrowserUtils.GetHost());
+        await NavigateTo("Download");
     }
 
     private async void NavigationView_ItemInvoked(object? sender, FluentAvalonia.UI.Controls.NavigationViewItemInvokedEventArgs e)

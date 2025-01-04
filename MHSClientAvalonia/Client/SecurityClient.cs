@@ -308,6 +308,14 @@ namespace MHSClientAvalonia.Client
             return await DoSimpleGet<UpdateInformationContent?>(Endpoints.QueryClientUpdateInfo);
         }
         /// <summary>
+        /// ShortWeatherDataContent?
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Result> FetchWeatherShortData()
+        {
+            return await DoSimpleGet<ShortWeatherDataContent?>(Endpoints.QueryWeatherShort);
+        }
+        /// <summary>
         /// AlarmHistoryInfoContent[]?
         /// </summary>
         /// <returns></returns>

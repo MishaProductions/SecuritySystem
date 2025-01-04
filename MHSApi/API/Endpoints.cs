@@ -29,6 +29,7 @@ namespace MHSApi.API
         public const string UploadFirmware = "/firmware/keypad/upload";
         public const string FirmwareUpdateStatus = "/firmware/keypad/status";
         public const string QueryClientUpdateInfo = "/getWindowsClientVersion-v2-windows";
+        public const string QueryWeatherShort = "/weather/QueryShortString";
 
         public const string StartAnnc = "/music/startannc";
         public const string StartMusic = "/music/startmusic";

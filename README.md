@@ -23,7 +23,7 @@ Web interface / Client
 ![image](https://github.com/MishaProductions/SecuritySystem/assets/106913236/1922e334-e2f7-42f4-bac8-75ac2193eb4d)
 
 ## Installation
-Build solution in Visual Studio 2022, publish secsys project for your SOC architecture, and create /usr/lib/systemd/system/secsys.service: 
+Build solution in Visual Studio 2022 or use buildall.sh/buildall.bat, publish secsys project for your SOC architecture, and create /usr/lib/systemd/system/secsys.service: 
 ```
 [Unit]
 Description=Starts security system

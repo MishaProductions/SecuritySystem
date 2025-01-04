@@ -3,8 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using MHSApi.API;
-using MHSClientAvalonia.Client;
-using MHSClientAvalonia.Pages;
 using MHSClientAvalonia.Utils;
 
 namespace MHSClientAvalonia.Pages;
@@ -22,10 +20,29 @@ public partial class HomePage : SecurityPage
         labels = [zone1, zone2, zone3, zone4, zone5, zone6, zone7, zone8, zone9, zone10];
     }
 
-    public override void OnNavigateTo()
+    public override async void OnNavigateTo()
     {
         base.OnNavigateTo();
+        UpdateLoadingString("Syncing zone information");
+        ShowLoadingBar();
         UpdateZones();
+        UpdateLoadingString("Syncing weather information");
+
+        var w = await Services.SecurityClient.FetchWeatherShortData();
+        ShortWeatherDataContent? val;
+        if (w.IsSuccess && (val = (ShortWeatherDataContent?)w.Value) != null)
+        {
+            if (string.IsNullOrEmpty(val.WeatherData))
+                val.WeatherData = "No weather information";
+            
+            weatherInfoShort.Text = val.WeatherData;
+        }
+        else
+        {
+            weatherInfoShort.Text = "Failed to load weather info";
+        }
+
+        HideLoadingBar();
     }
 
     public override void OnZoneUpdate()

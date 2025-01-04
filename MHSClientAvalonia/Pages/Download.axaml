@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MHSClientAvalonia.Pages.Download"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls">
+	<WrapPanel VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Horizontal">
+        <Border Margin="5" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1,1,1,1" CornerRadius="10" Height="200" Width="250">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+					<RowDefinition Height="auto"/>
+				</Grid.RowDefinitions>
+
+				<TextBlock FontSize="20" Grid.Row="1" Margin="5">MHSClient Windows</TextBlock>
+				<HyperlinkButton x:Name="lWindows" Grid.Row="2">Download</HyperlinkButton>
+			</Grid>
+        </Border>
+        <Border Margin="5" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1,1,1,1" CornerRadius="10" Height="200" Width="250">
+            <Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+					<RowDefinition Height="auto"/>
+				</Grid.RowDefinitions>
+
+				<TextBlock FontSize="20" Grid.Row="1" Margin="5">MHSClient Linux</TextBlock>
+				<HyperlinkButton x:Name="lLinux" Grid.Row="2">Download</HyperlinkButton>
+			</Grid>
+        </Border>
+        <Border Margin="5" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1,1,1,1" CornerRadius="10" Height="200" Width="250">
+            <Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+					<RowDefinition Height="auto"/>
+				</Grid.RowDefinitions>
+
+				<TextBlock FontSize="20" Grid.Row="1" Margin="5">MHSClient Android</TextBlock>
+				<HyperlinkButton x:Name="lAndroid" Grid.Row="2">Download</HyperlinkButton>
+			</Grid>
+		</Border>
+    </WrapPanel>
+</UserControl>

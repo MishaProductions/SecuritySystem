@@ -85,12 +85,14 @@ namespace SecuritySystem
             User? currentUser = await GetUserFromToken();
             if (currentUser == null) return;
 
-            List<AlarmHistoryInfoContent> array = new List<AlarmHistoryInfoContent>();
+            List<AlarmHistoryInfoContent> array = [];
             foreach (var item in Configuration.Instance.AlarmHistory.Reverse())
             {
-                AlarmHistoryInfoContent alarm = new AlarmHistoryInfoContent();
-                alarm.date = item.Key.ToString();
-                alarm.zone = item.Value;
+                AlarmHistoryInfoContent alarm = new()
+                {
+                    date = item.Key.ToString(),
+                    zone = item.Value
+                };
                 array.Add(alarm);
             }
             await SendSuccessfulResponseWithContent(array.ToArray());
@@ -102,6 +104,16 @@ namespace SecuritySystem
             if (currentUser == null) return;
 
             await SendSuccessfulResponseWithContent(Configuration.Instance.EventLog.ToArray());
+        }
+        #endregion
+        #region Weather
+        [Route(HttpVerbs.Get, Endpoints.QueryWeatherShort)]
+        public async Task QueryWeatherShort()
+        {
+            User? currentUser = await GetUserFromToken();
+            if (currentUser == null) return;
+
+            await SendSuccessfulResponseWithContent(new ShortWeatherDataContent(await WeatherService.GetWeather()));
         }
         #endregion
         #region Zones
@@ -118,11 +130,13 @@ namespace SecuritySystem
             int i = 0;
             foreach (var item in Configuration.Instance.Zones)
             {
-                JsonZoneWithReady obj = new JsonZoneWithReady();
-                obj.idx = item.Value.ZoneNumber;
-                obj.name = item.Value.Name;
-                obj.type = item.Value.Type;
-                obj.ready = ZoneController.ZoneStates[item.Key] == PinValue.Low;
+                JsonZoneWithReady obj = new()
+                {
+                    idx = item.Value.ZoneNumber,
+                    name = item.Value.Name,
+                    type = item.Value.Type,
+                    ready = ZoneController.ZoneStates[item.Key] == PinValue.Low
+                };
                 result.zones[i] = obj;
             }
 

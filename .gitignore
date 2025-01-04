@@ -398,3 +398,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 SecuritySystem/www/modernclient/
+SecuritySystem/www/client/

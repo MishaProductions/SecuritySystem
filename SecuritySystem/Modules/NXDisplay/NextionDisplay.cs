@@ -26,7 +26,7 @@ namespace SecuritySystem.Modules.NXDisplay
         public bool UpdateInProgress = false;
         public string UpdateProgressString = "No firmware update in progress";
         public bool WlanAuthenticated = false;
-
+        public bool IsSleepMode = false;
         string currentPage = "pageHome";
         private SerialPort? SerialPort
         {
@@ -84,11 +84,11 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             SerialPort = new SerialPort(comport, 9600);
             SerialPort.Open();
-            packetReader = new(PacketReaderThread);
+            packetReader = new(PacketRxThread);
             packetReader.Start();
             InitKeypad();
 
-            var aTimer = new System.Timers.Timer(1000 * 60); // update every minute (in milliseconds)
+            var aTimer = new System.Timers.Timer(1000 * 60 * 30); // update every 30 minutes (in milliseconds)
             aTimer.Elapsed += new ElapsedEventHandler(HandleWeatherTimer);
             aTimer.Start();
         }
@@ -403,6 +403,7 @@ namespace SecuritySystem.Modules.NXDisplay
 
             Console.WriteLine("NextionDisplay: initializing");
 
+            SetCmptVal("pageBoot.j0", "100");
             SendCommand("bkcmd=3");
 
             currentPage = "pageHome";
@@ -425,14 +426,15 @@ namespace SecuritySystem.Modules.NXDisplay
 
         public async void RefreshWeather()
         {
-            if (currentPage != "pageHome")
+            if (IsSleepMode) return;
+            if (currentPage != "pageHome" || PromptOpen)
             {
                 Console.WriteLine("[weather] wrong page: " + currentPage);
                 return;
             }
             if (!KeypadSendCommands)
                 return;
-            SendCommand($"tWeather.txt=\"{await WeatherService.GetWeather()}\"");
+            SetCmptText("tWeather", await WeatherService.GetWeather());
         }
         public void UpdateStatusText()
         {
@@ -492,15 +494,15 @@ namespace SecuritySystem.Modules.NXDisplay
                 SendCommand($"pageHome.bIsSystemArmed.val=1");
                 SendCommand($"tsw bDArmSys,1");
                 SendCommand($"bDArmSys.txt=\"Disarm\"");
-                SendCommand($"vis bNoMotion,0");
                 SendCommand($"vis bSettings,0");
                 SendCommand($"vis bMusicLoop,0");
+                SendCommand($"vis b0,0");
             }
             else
             {
                 SendCommand($"vis bSettings,1");
                 SendCommand($"vis bMusicLoop,1");
-                SendCommand($"vis bNoMotion,1");
+                SendCommand($"vis b0,1");
                 SendCommand($"bDArmSys.txt=\"Arm System\"");
                 SendCommand($"pageHome.bIsSystemArmed.val=0");
                 if (!ready)
@@ -564,12 +566,12 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             if (SerialPort == null)
                 throw new Exception("Init() method not called because NextionDisplayController.SerialPort is null");
+            
             //read packet result
             byte aTermBytes = 0;
-            List<byte> packet = new();
+            List<byte> packet = [];
             while (true)
             {
-
                 byte b = (byte)SerialPort.ReadByte();
                 packet.Add(b);
                 if (b == 0xFF)
@@ -582,13 +584,12 @@ namespace SecuritySystem.Modules.NXDisplay
                 }
                 if (aTermBytes >= 3)
                 {
-                    return packet.ToArray();
+                    return [.. packet];
                 }
             }
         }
-        private void PacketReaderThread(object? obj)
+        private void PacketRxThread(object? obj)
         {
-
             while (KeypadSendCommands)
             {
                 try
@@ -653,10 +654,13 @@ namespace SecuritySystem.Modules.NXDisplay
                             break;
                         case 0x86:
                             Console.WriteLine("keypad: Entered sleep mode");
+                            IsSleepMode = true;
                             break;
                         case 0x87:
                             //Nextion ready event
                             Console.WriteLine("keypad: Exited sleep mode");
+                            IsSleepMode = false;
+                            RefreshWeather();
                             break;
                         case 0x88:
                             //Nextion ready event
@@ -670,11 +674,18 @@ namespace SecuritySystem.Modules.NXDisplay
                             Console.WriteLine($"Touch event at page {page}, cmpt: {componentID}, evnt: {@event}");
                             HandleTouchEvent(page, componentID, @event);
                             break;
+                        case 0x67:
+                            // touch cordinate when awake
+                            break;
+                        case 0x68:
+                            // touch cordinate when asleep
+                            SendCommand("click bWait,1");
+                            IsSleepMode = false;
+                            break;
                         case 0x70:
                             //Text sent
                             var x = Encoding.ASCII.GetString(p, 1, p.Length - 4);
                             Console.WriteLine("Got text: " + x);
-
 
                             HandleStringCommand(x);
                             break;
@@ -690,7 +701,7 @@ namespace SecuritySystem.Modules.NXDisplay
             }
 
         }
-        private void HandleTouchEvent(byte page, byte componentID, byte p_event)
+        private static void HandleTouchEvent(byte page, byte componentID, byte p_event)
         {
             if (page == 7) //music page
             {
@@ -700,6 +711,10 @@ namespace SecuritySystem.Modules.NXDisplay
         private void SetCmptText(string name, string text)
         {
             SendCommand($"{name}.txt=\"{text}\"");
+        }
+        private void SetCmptVal(string name, string val)
+        {
+            SendCommand($"{name}.val={val}");
         }
         // TODO: vis does not support page!
         private void SetCmptVisible(string name, bool val)
@@ -735,10 +750,7 @@ namespace SecuritySystem.Modules.NXDisplay
         private void ShowPrompt(string title, string message, bool iconVisible, int icon, string b1Text, bool b1Visible, Action? b1Click, string b2Text, bool b2Visible, Action? b2Click, string b3Text, bool b3Visible, Action? b3Click, int bg = 16904)
         {
             SetDispPage("pageSysMsg");
-
-            // wait for navigation to complete
-            Thread.Sleep(500);
-
+            
             // setup basics
             SetCmptText("pageSysMsg.tMsgTitle", title);
             SetCmptText("pageSysMsg.tMsgTxt", message);
@@ -748,15 +760,15 @@ namespace SecuritySystem.Modules.NXDisplay
             if (iconVisible)
                 SetCmptPic("pageSysMsg.pMsgPic", icon);
 
-            // update button visibility
-            SetCmptVisible("b0", b1Visible);
-            SetCmptVisible("b1", b2Visible);
-            SetCmptVisible("b2", b3Visible);
-
             // update button text
             SetCmptText("pageSysMsg.b0", b1Text);
             SetCmptText("pageSysMsg.b1", b2Text);
             SetCmptText("pageSysMsg.b2", b3Text);
+
+            // update button visibility
+            SetCmptVisible("b0", b1Visible);
+            SetCmptVisible("b1", b2Visible);
+            SetCmptVisible("b2", b3Visible);
 
             // update button handlers
             PromptB1Action = b1Click;
@@ -794,7 +806,14 @@ namespace SecuritySystem.Modules.NXDisplay
                 return;
             }
 
-            // Hide loader for now
+            SetCmptVisible("j0", true);
+            SetCmptVisible("tLdr", true);
+            SetCmptText("tLdr", "Downloading Weather Data");
+            SetCmptVal("j0", "50");
+
+
+            SetCmptText("tLdr", "Reading...");
+            SetCmptVal("j0", "75");
 
             SetCmptText("tCap1", "Snowing In Florida");
             SetCmptText("tCap2", "High: 90f, Low: 85f");
@@ -821,15 +840,7 @@ namespace SecuritySystem.Modules.NXDisplay
             }
 
             SetCmptVisible("tLdr", false);
-
-            ShowPrompt("Not Implemented", "The requested function is\r\nnot implemented.", true, 9,
-            "", false, null,
-            "Reload", true, ()=>{
-                PromptOpen = false;
-                SetDispPage("pageHome");
-            },
-            "", false, null, 21152
-            );
+            SetCmptVisible("j0", false);
         }
         private void HandleStringCommand(string x)
         {
@@ -1168,7 +1179,7 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 int a = int.Parse(x.Replace("dispversion ", ""));
 
-                if (a != 125 && !ShowedFirmwareMismatch)
+                if (a != 201 && !ShowedFirmwareMismatch)
                 {
                     ShowPrompt("Firmware Mismatch", "The display firmware version does not\r\nmatch with the controller firmware\r\nversion. Problems may occur. ", true, 9,
                     "OK", true, () =>
@@ -1195,6 +1206,7 @@ namespace SecuritySystem.Modules.NXDisplay
                     ShowPrompt("Warning", "System will not be monitoring during\r\nthe restart. Continue?", true, 9,
                     "Yes", true, () =>
                     {
+                        SystemManager.WriteToEventLog("System restart from Nextion Display");
                         PromptOpen = false;
                         SetPage("pageBoot");
                         Thread.Sleep(1000);
@@ -1206,7 +1218,31 @@ namespace SecuritySystem.Modules.NXDisplay
                     "No", true, () =>
                     {
                         PromptOpen = false;
-                        SetPage("pageHome");
+                        SetPage("pageSettings");
+                    }, 49152);
+                }
+                else
+                {
+                    ShowNotImpl(x);
+                }
+            }
+            else if (x == "doSystemPowerOff")
+            {
+                if (!Configuration.Instance.SystemArmed)
+                {
+                    ShowPrompt("Warning", "System will not be monitoring. Continue?", true, 9,
+                    "Yes", true, () =>
+                    {
+                        PromptOpen = false;
+                        SystemManager.WriteToEventLog("System shutdown from Nextion Display");
+                        Configuration.Save();
+                        Process.Start("/sbin/poweroff").WaitForExit();
+                    },
+                    "", false, null,
+                    "No", true, () =>
+                    {
+                        PromptOpen = false;
+                        SetPage("pageSettings");
                     }, 49152);
                 }
                 else

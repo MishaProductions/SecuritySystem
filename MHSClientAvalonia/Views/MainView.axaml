@@ -17,6 +17,7 @@
 				<ui:NavigationViewItem Content="Home" Tag="HomePage" IconSource="HomeFilled" />
 				<ui:NavigationViewItem Content="Alarm History" Tag="AlarmHistory" IconSource="BulletList" />
 				<ui:NavigationViewItem Content="Music Manager" Tag="MusicManager" IconSource="Speaker2Filled" />
+				<ui:NavigationViewItem Content="Weather" Tag="Weather" IconSource="Cloud" IsVisible="False" />
 
 				<ui:NavigationViewItem Content="Configuration" Tag="CfgOverview" IconSource="SettingsFilled">
 					<ui:NavigationViewItem.MenuItems>
@@ -32,6 +33,8 @@
 						<ui:NavigationViewItem Content="Event log" IconSource="ClipboardFilled" Tag="EventLog" />
 					</ui:NavigationViewItem.MenuItems>
 				</ui:NavigationViewItem>
+
+				<ui:NavigationViewItem Content="Downloads" Tag="Download" IconSource="Download" />
 			</ui:NavigationView.MenuItems>
 			<Grid>
 				<Grid Margin="25,25,25,25">
@@ -97,6 +100,15 @@
 			<ui:InfoBar.Content>
 				<ProgressBar IsIndeterminate="True" Margin="0,0,0,6"/>
 			</ui:InfoBar.Content>
+		</ui:InfoBar>
+
+		<ui:InfoBar x:Name="UiAndroidHint"
+    Title="Native MHSClient available"
+    Message="We recommend downloading the native client for your device."
+    IsClosable="True" IsOpen="False" Grid.Row="0">
+			<ui:InfoBar.ActionButton>
+				<Button Content="Download" Click="BtnDownload_Click" />
+			</ui:InfoBar.ActionButton>
 		</ui:InfoBar>
 	</Grid>
 </UserControl>

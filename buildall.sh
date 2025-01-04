@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-#rm -rf MHSClientAvalonia/bin/
-#rm -rf MHSClientAvalonia/obj/
-#rm -rf MHSClientAvalonia.Android/bin/
-#rm -rf MHSClientAvalonia.Android/obj/
-#rm -rf MHSClientAvalonia.Browser/bin/
-#rm -rf MHSClientAvalonia.Browser/obj/
+rm -rf MHSClientAvalonia/bin/
+rm -rf MHSClientAvalonia/obj/
+rm -rf MHSClientAvalonia.Android/bin/
+rm -rf MHSClientAvalonia.Android/obj/
+rm -rf MHSClientAvalonia.Browser/bin/
+rm -rf MHSClientAvalonia.Browser/obj/
 rm -rf MHSClientAvalonia.Desktop/bin/
 rm -rf MHSClientAvalonia.Desktop/obj/
 
