@@ -736,10 +736,11 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand($"{name}.bco={bgColor}");
         }
 
-        private readonly string[] WeatherLabels = ["t19", "t20", "t21", "t22", "t23", "t24", "t25"];
-        private readonly string[] TempLabels = ["t12", "t13", "t14", "t15", "t16", "t17", "t18"];
-        private readonly string[] WeekLabels = ["t5", "t6", "t7", "t8", "t9", "t10", "t11"];
-        private readonly string[] WeekLabelText = ["Saturday", "Monday", "Tuesday", "Wenesday", "Thursday", "Friday", "Sat"];
+        private readonly string[] WeekLabels = ["t2", "t3", "t4", "t5", "t6", "t7", "t8"];
+        private readonly string[] TempLabels = ["t9", "t10", "t11", "t12", "t13", "t14", "t15"];
+        private readonly string[] WeatherLabels = ["t16", "t17", "t18", "t18", "t20", "t21", "t22"];
+        private readonly string[] WeatherPictures = ["p1", "p2", "p3", "p4", "p5", "p6", "p7"];
+        private readonly string[] WeekLabelText = ["Sat", "Mon", "Tue", "Wen", "Thu", "Fri", "Sat"];
         private bool PromptOpen = false;
 
         private Action? PromptB1Action;
