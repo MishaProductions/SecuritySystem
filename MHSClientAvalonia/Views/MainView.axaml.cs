@@ -23,14 +23,13 @@ namespace MHSClientAvalonia;
 public partial class MainView : UserControl
 {
     private readonly DispatcherTimer _reconnectTimer = new();
-    private readonly DispatcherTimer? _updateTimer;
+    private readonly DispatcherTimer _updateTimer = new();
     internal Visual VisualForUpdate { get { return (Visual?)VisualRoot ?? throw new Exception(); } }
     public MainView()
     {
         InitializeComponent();
+        Loaded += OnLoad;
 
-        navigationView.IsPaneVisible = false;
-        PageTitle.IsVisible = false;
         Services.MainView = this;
         Services.SecurityClient.OnWSClose += SecurityClient_OnWSClose;
         Services.SecurityClient.OnAuthenticationFailure += SecurityClient_OnAuthenticationFailure;
@@ -45,7 +44,28 @@ public partial class MainView : UserControl
         Services.SecurityClient.OnMusicStopped += SecurityClient_OnMusicStopped;
         Services.SecurityClient.OnAnncStarted += SecurityClient_OnAnncStarted;
         Services.SecurityClient.OnAnncStopped += SecurityClient_OnAnncStopped;
+    }
 
+    private void OnLoad(object? sender, EventArgs e)
+    {
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
+        {
+            var toplevel = TopLevel.GetTopLevel(this);
+
+            if (toplevel != null)
+            {
+                var insetsManager = toplevel.InsetsManager;
+
+                if (insetsManager != null)
+                {
+                    insetsManager.DisplayEdgeToEdge = false;
+                    insetsManager.IsSystemBarVisible = false;
+                }
+            }
+        }
+
+        navigationView.IsPaneVisible = false;
+        PageTitle.IsVisible = false;
         _reconnectTimer.Interval = TimeSpan.FromSeconds(5);
         _reconnectTimer.Tick += ReconnectTimer_Tick;
         navigationView.BackRequested += OnNavigationViewBackRequested;
@@ -53,7 +73,6 @@ public partial class MainView : UserControl
 
         if (!BrowserUtils.IsBrowser && Services.Preferences.GetBool("autoupdate", true))
         {
-            _updateTimer = new();
             _updateTimer.Interval = TimeSpan.FromMinutes(5);
             _updateTimer.Tick += UpdateTimer_Tick;
             _updateTimer.Start();

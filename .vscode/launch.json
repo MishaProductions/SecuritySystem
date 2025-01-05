@@ -19,6 +19,21 @@
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach"
-        }
+        },
+        {
+			"name": "Debug - Android",
+			"type": "mono",
+			"preLaunchTask": "run-debug-android",
+			"request": "attach",
+      			"address": "localhost",
+      			"port": 10000
+		},
+		{
+			"name": "Attach - Android",
+			"type": "mono",
+			"request": "attach",
+			"address": "localhost",
+			"port": 10000
+		}
     ]
 }

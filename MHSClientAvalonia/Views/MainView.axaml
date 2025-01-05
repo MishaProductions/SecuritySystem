@@ -6,7 +6,7 @@
              x:Class="MHSClientAvalonia.MainView"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
 			 xmlns:uip="using:FluentAvalonia.UI.Controls.Primitives"
-			xmlns:wnd="using:FluentAvalonia.UI.Windowing">
+			xmlns:wnd="using:FluentAvalonia.UI.Windowing" TopLevel.AutoSafeAreaPadding="True" >
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="auto"></RowDefinition>

@@ -27,6 +27,10 @@ namespace SecuritySystem.Modules.NXDisplay
         public string UpdateProgressString = "No firmware update in progress";
         public bool WlanAuthenticated = false;
         public bool IsSleepMode = false;
+        public bool WarningFlash = false;
+        public bool ImageState = false;
+        private List<TroubleLog> TroubleLog = [];
+        public int ImageId = 2;
         string currentPage = "pageHome";
         private SerialPort? SerialPort
         {
@@ -91,13 +95,33 @@ namespace SecuritySystem.Modules.NXDisplay
             var aTimer = new System.Timers.Timer(1000 * 60 * 30); // update every 30 minutes (in milliseconds)
             aTimer.Elapsed += new ElapsedEventHandler(HandleWeatherTimer);
             aTimer.Start();
+
+            var warningT = new System.Timers.Timer(1000);
+            warningT.Elapsed += new ElapsedEventHandler(HandleWarningFlash);
+            warningT.Start();
         }
         #endregion
         #region Event handlers
+        private void HandleWarningFlash(object? sender, ElapsedEventArgs e)
+        {
+            if (!WarningFlash || currentPage != "pageHome") return;
 
+            if (ImageState)
+            {
+                SetCmptVisible("pStatus", false);
+            }
+            else
+            {
+                SetCmptVisible("pStatus", true);
+            }
+            ImageState = !ImageState;
+        }
         private void HandleWeatherTimer(object? sender, ElapsedEventArgs e)
         {
             RefreshWeather();
+
+            if (currentPage == "pageHome")
+                UpdateTroubleCondition();
         }
         private void MusicPlayer_OnAnncStop(object? sender, EventArgs e)
         {
@@ -130,6 +154,31 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 SendCommand("h1.val=" + MusicPlayer.MusicVol);
             }
+        }
+
+        public void PlayMusic(string path)
+        {
+            return; // the speakers are very shitty
+            if (currentPage != "pageHome") return;
+            string properPath = "sd0" + path.Replace(".mp3", ".wav").Replace(".flac", ".wav");
+            Console.WriteLine("Play music " + properPath);
+            SendCommand("pageHome.wavMusic.path=\"" + properPath + "\"");
+            SendCommand("pageHome.wavMusic.en=1");
+        }
+        public void StopMusic()
+        {
+            SendCommand("pageHome.wavMusic.en=0");
+        }
+        public void PlayAnnc(string path)
+        {if (currentPage != "pageHome") return;
+            string properPath = "sd0" + path.Replace(".mp3", ".wav").Replace(".flac", ".wav");
+            Console.WriteLine("Play annc " + properPath);
+            SendCommand("pageHome.wavAnnc.path=\"" + properPath + "\"");
+            SendCommand("pageHome.wavAnnc.en=1");
+        }
+        public void StopAnnc()
+        {
+            SendCommand("pageHome.wavAnnc.en=0");
         }
         private void SystemManager_OnZoneUpdate(bool single, int zone, string name, ZoneState ready)
         {
@@ -173,11 +222,14 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             // todo: play some annoying sound
             UpdateStatusText();
+            SendCommand("play 0,5,1"); //channel 1, play resource 1, no loop
         }
         private void SystemManager_OnSystemDisarm(object? sender, EventArgs e)
         {
             // show main view
             UpdateStatusText();
+
+        SendCommand("audio1=0");
         }
         private void SystemManager_OnSysTimerEvent(bool entry, int timer)
         {
@@ -195,6 +247,7 @@ namespace SecuritySystem.Modules.NXDisplay
         private byte[]? FirmwareData;
         public void UpdateFirmware(byte[] firmware)
         {
+            SendCommand("play 0,4,0"); //channel 1, play resource 2, no loop
             //disable sending of commands and disable packetreader thread
             KeypadSendCommands = false;
             SerialPort?.Close();
@@ -420,8 +473,69 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand($"rtc4={DateTime.Now.Minute}");
             SendCommand($"rtc5={DateTime.Now.Second}");
             SendCommand($"vis pStatus,0");
+            SendCommand($"thsp=0");
             RefreshWeather();
             SystemManager_OnZoneUpdate(false, 0, "", ZoneState.Unconfigured);
+
+            UpdateTroubleCondition();
+        }
+
+        private void UpdateTroubleCondition()
+        {
+            return;
+            if (TroubleLog.Count == 0)
+            {
+                WarningFlash = false;
+                SetCmptVisible("bShowT", false);
+                SetCmptVisible("pStatus", false);
+                return;
+            }
+
+            //TroubleBeep();
+            WarningFlash = true;
+            SetCmptPic("pageHome.pStatus", 9);
+            SetCmptVisible("bShowT", true);
+            SetCmptVisible("pStatus", true);
+        }
+
+        private void HandleShowTrouble()
+        {
+            return;
+            if (TroubleLog.Count == 0)
+            {
+                SetPage("pageHome");
+                UpdateTroubleCondition();
+                return;
+            }
+
+            var t = TroubleLog[0];
+
+            if (TroubleLog.Count > 1)
+            {
+                ShowPrompt(t.Title, t.Description, true, 9,
+            "", false, null,
+            "", false, null,
+            "Next", true, () =>
+            {
+                TroubleLog.Remove(t);
+                Console.WriteLine("go to next log");
+                UpdateTroubleCondition();
+            }, 21152
+            );
+            }
+            else
+            {
+                ShowPrompt(t.Title, t.Description, true, 9,
+            "", false, null,
+            "", false, null,
+            "Done", true, () =>
+            {
+                TroubleLog.Remove(t);
+                Console.WriteLine("go home");
+                SetPage("pageHome");
+            }, 21152
+            );
+            }
         }
 
         public async void RefreshWeather()
@@ -550,6 +664,8 @@ namespace SecuritySystem.Modules.NXDisplay
             if (SerialPort == null)
                 throw new Exception("Init() method not called because NextionDisplayController.SerialPort is null");
 
+            Console.WriteLine("SendCOmmand: "+ command);
+
             byte[] pkt = new byte[command.Length + 3];
             int i = 0;
             foreach (var item in Encoding.ASCII.GetBytes(command))
@@ -566,7 +682,7 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             if (SerialPort == null)
                 throw new Exception("Init() method not called because NextionDisplayController.SerialPort is null");
-            
+
             //read packet result
             byte aTermBytes = 0;
             List<byte> packet = [];
@@ -665,6 +781,12 @@ namespace SecuritySystem.Modules.NXDisplay
                         case 0x88:
                             //Nextion ready event
                             Console.WriteLine("Warning: keypad restarted");
+                            TroubleLog.Add(new TroubleLog()
+                            {
+                                Title = "Unexpected restart",
+                                Description = "The display has unexpectedly restarted.\r\nVerify that the power supply voltage and\r\namperage is correct."
+                            });
+
                             InitKeypad();
                             break;
                         case 0x65:
@@ -716,6 +838,10 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             SendCommand($"{name}.val={val}");
         }
+        private void SetCmptPic(string name, string val)
+        {
+            SendCommand($"{name}.val={val}");
+        }
         // TODO: vis does not support page!
         private void SetCmptVisible(string name, bool val)
         {
@@ -751,7 +877,7 @@ namespace SecuritySystem.Modules.NXDisplay
         private void ShowPrompt(string title, string message, bool iconVisible, int icon, string b1Text, bool b1Visible, Action? b1Click, string b2Text, bool b2Visible, Action? b2Click, string b3Text, bool b3Visible, Action? b3Click, int bg = 16904)
         {
             SetDispPage("pageSysMsg");
-            
+
             // setup basics
             SetCmptText("pageSysMsg.tMsgTitle", title);
             SetCmptText("pageSysMsg.tMsgTxt", message);
@@ -806,7 +932,7 @@ namespace SecuritySystem.Modules.NXDisplay
                 Console.WriteLine("nextion: attempted to init weather page when not weather page!");
                 return;
             }
-
+    SendCommand("play 0,5,1"); 
             SetCmptVisible("j0", true);
             SetCmptVisible("tLdr", true);
             SetCmptText("tLdr", "Downloading Weather Data");
@@ -1200,6 +1326,10 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 SetDispPage("pageWeather");
             }
+            else if (x == "prompt showTrouble")
+            {
+                HandleShowTrouble();
+            }
             else if (x == "doSystemRestart")
             {
                 if (!Configuration.Instance.SystemArmed)
@@ -1253,7 +1383,16 @@ namespace SecuritySystem.Modules.NXDisplay
             }
             else
             {
+
+                SendCommand("play 0,4,0"); //channel 1, play resource 2, no loop
                 Console.WriteLine(x);
+
+                TroubleLog.Add(new TroubleLog()
+                {
+                    Title = "Unexpected command",
+                    Description = "The display has issued\r\nan incorrect command\r\nPlease check the\r\nfirmware version of the display\r\nor controller."
+                });
+
                 //wrong password
                 //SendCommand($"click bCancel,1");
                 //SendCommand($"click bCancel,1");
@@ -1275,7 +1414,17 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             if (!KeypadSendCommands)
                 return;
-            SendCommand("play 0,1,0"); //channel 1, play resource 1, no loop
+            SendCommand("play 1,1,0"); //channel 1, play resource 1, no loop
+        }
+
+        public void ErrorBeep()
+        {
+            SendCommand("play 1,2,0"); //channel 1, play resource 2, no loop
+        }
+
+        public void TroubleBeep()
+        {
+            SendCommand("play 1,4,0"); //channel 1, play resource 2, no loop
         }
 
         private void SetPage(string pg)

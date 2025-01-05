@@ -1,4 +1,5 @@
-﻿using SecuritySystem.Modules.NXDisplay;
+﻿using SecuritySystem.Modules;
+using SecuritySystem.Modules.NXDisplay;
 
 namespace SecuritySystem.Utils
 {
@@ -249,6 +250,8 @@ namespace SecuritySystem.Utils
             MusicIdx = a;
             PlaylistMode = false;
             Console.WriteLine("[music] PlayMusic() with " + fileName);
+            ModuleController.GetDisplays().First().PlayMusic("/musics/" + fileName);
+            Thread.Sleep(5);
             musicProc.Play("/musics/" + fileName);
             OnMusicStarted?.Invoke(fileName);
         }
@@ -258,6 +261,7 @@ namespace SecuritySystem.Utils
         internal static void StopAsyncMicAnnc()
         {
             anncSfx.Play("/musics/annc/anncend.mp3");
+            ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/anncend.mp3");
             AnncProc_OnStop(new MpvEventEndFile());
         }
         internal static void StartAsyncMicAnnc()
@@ -269,6 +273,7 @@ namespace SecuritySystem.Utils
             if (!MusicPlaying)
             {
                 anncSfx.Play("/musics/annc/anncstart.mp3");
+                ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/anncstart.mp3");
                 return;
             }
 
@@ -303,6 +308,7 @@ namespace SecuritySystem.Utils
 
                     // Play the annc start
                     anncSfx.Play("/musics/annc/anncstart.mp3");
+                    ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/anncstart.mp3");
                 }
             });
             t.Start();
@@ -315,6 +321,7 @@ namespace SecuritySystem.Utils
             }
             if (!MusicPlaying)
             {
+                ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/" + AnncFiles[idx]);
                 anncProc.Play("/musics/annc/" + AnncFiles[idx]);
                 OnAnncStarted?.Invoke(AnncFiles[idx]);
                 return;
@@ -351,6 +358,7 @@ namespace SecuritySystem.Utils
                     OnAnncStarted?.Invoke(AnncFiles[idx]);
 
                     // Play the annoucement
+                    ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/" + AnncFiles[idx]);
                     anncProc.Play("/musics/annc/" + AnncFiles[idx]);
                 }
             });
@@ -359,12 +367,14 @@ namespace SecuritySystem.Utils
         internal static void StopMusic()
         {
             musicProc.Stop();
+            ModuleController.GetDisplays().First().StopMusic();
             OnMusicStop?.Invoke(null, new());
         }
         internal static void StopAnnc()
         {
             anncProc.Stop();
             OnAnncStop?.Invoke(null, new());
+            ModuleController.GetDisplays().First().StopAnnc();
         }
 
         public static void PlaylistBack()

@@ -36,6 +36,22 @@
                 "${workspaceFolder}/MHSClientAvalonia.Desktop/MHSClientAvalonia.Desktop.csproj"
             ],
             "problemMatcher": "$msCompile"
-        }
+        },
+        {
+			"label": "run-debug-android",
+			"command": "dotnet",
+			"type": "shell",
+			"args": [
+				"build",
+				"--no-restore",
+				"-t:Run",
+				"${workspaceFolder}/MHSClientAvalonia.Android/MHSClientAvalonia.Android.csproj",
+				"-p:TargetFramework=net9.0-android",
+				"-p:Configuration=Debug",
+				"-p:AndroidAttachDebugger=true",
+				"-p:AndroidSdbHostPort=10000"
+			],
+			"problemMatcher": "$msCompile"
+		}
     ]
 }
