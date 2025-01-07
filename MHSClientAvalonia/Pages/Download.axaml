@@ -5,6 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MHSClientAvalonia.Pages.Download"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls">
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
 	<WrapPanel VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Horizontal">
         <Border Margin="5" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderThickness="1,1,1,1" CornerRadius="10" Height="200" Width="250">
 			<Grid>
@@ -43,4 +44,5 @@
 			</Grid>
 		</Border>
     </WrapPanel>
+	</ScrollViewer>
 </UserControl>

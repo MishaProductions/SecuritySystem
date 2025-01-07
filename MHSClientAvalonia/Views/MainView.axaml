@@ -16,7 +16,7 @@
 			<ui:NavigationView.MenuItems>
 				<ui:NavigationViewItem Content="Home" Tag="HomePage" IconSource="HomeFilled" />
 				<ui:NavigationViewItem Content="Alarm History" Tag="AlarmHistory" IconSource="BulletList" />
-				<ui:NavigationViewItem Content="Music Manager" Tag="MusicManager" IconSource="Speaker2Filled" />
+				<ui:NavigationViewItem Content="Music" Tag="MusicManager" IconSource="Speaker2Filled" />
 				<ui:NavigationViewItem Content="Weather" Tag="Weather" IconSource="Cloud" IsVisible="False" />
 
 				<ui:NavigationViewItem Content="Configuration" Tag="CfgOverview" IconSource="SettingsFilled">
@@ -45,7 +45,7 @@
 					</Grid.RowDefinitions>
 
 					<Grid Grid.Row="0">
-						<TextBlock x:Name="PageTitle" FontSize="24">Login</TextBlock>
+						<TextBlock x:Name="PageTitle" FontSize="24">Initializing</TextBlock>
 
 						<Grid x:Name="pnlControls"  VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False">
 							<Grid.ColumnDefinitions>

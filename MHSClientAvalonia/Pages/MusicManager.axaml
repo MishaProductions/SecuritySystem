@@ -16,12 +16,12 @@
 			</ListBox>
 
 			<StackPanel Grid.Row="1">
-				<StackPanel Orientation="Horizontal" Spacing="5">
+				<WrapPanel Orientation="Horizontal">
 					<Button Click="StopMusic_Click">Stop music</Button>
 					<Button Click="PlayAllMusic_Click">Play All</Button>
 					<Button Click="MusicBack_Click">Back</Button>
 					<Button Click="MusicNext_Click">Next</Button>
-				</StackPanel>
+				</WrapPanel>
 				<TextBlock x:Name="TxtCurrentlyPlayingMusic">Playing: no file</TextBlock>
 				<Slider x:Name="MusicVolumeSlider" Orientation="Horizontal" Minimum="0" Maximum="130" ValueChanged="MusicVol_ValueChanged"></Slider>
 			</StackPanel>
@@ -34,12 +34,12 @@
 			</Grid.RowDefinitions>
 
 			<ListBox x:Name="listAnnc" Grid.Row="0" DoubleTapped="listAnnc_DoubleTapped"></ListBox>
-
+ 
 			<StackPanel Grid.Row="1">
-				<StackPanel Orientation="Horizontal" Spacing="5">
+				<WrapPanel Orientation="Horizontal">
 					<Button Click="StopAnnc_Click">Stop annc</Button>
-					<Button x:Name="BtnPlayAnncFromMic" Click="PlayAnncFromMic_Click">Start asynchronous microphone stream operation</Button>
-				</StackPanel>
+					<Button x:Name="BtnPlayAnncFromMic" Click="PlayAnncFromMic_Click">Start Microphone</Button>
+				</WrapPanel>
 				<TextBlock x:Name="TxtCurrentlyPlayingAnnc">Playing: no file</TextBlock>
 				<Slider x:Name="AnncVolumeSlider" Orientation="Horizontal" Minimum="0" Maximum="130" ValueChanged="AnncVol_ValueChanged"></Slider>
 			</StackPanel>

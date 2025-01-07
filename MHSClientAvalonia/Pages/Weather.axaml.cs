@@ -14,7 +14,7 @@ public partial class Weather : SecurityPage
         InitializeComponent();
     }
 
-    public override async void OnNavigateTo()
+    public override void OnNavigateTo()
     {
         base.OnNavigateTo();
         

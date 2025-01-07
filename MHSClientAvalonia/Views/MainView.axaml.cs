@@ -62,6 +62,9 @@ public partial class MainView : UserControl
                     insetsManager.IsSystemBarVisible = false;
                 }
             }
+
+
+            Margin = new Thickness(5);
         }
 
         navigationView.IsPaneVisible = false;
@@ -499,6 +502,7 @@ public partial class MainView : UserControl
     }
     public void ShowPageTitle()
     {
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) return;
         PageTitle.IsVisible = true;
     }
     /// <summary>

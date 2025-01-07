@@ -128,7 +128,7 @@ namespace SecuritySystem
             Configuration.Instance.Users.Clear();
             Configuration.Instance.Tokens.Clear();
             Configuration.Instance.UseOrangePiDriver = data.IsOrangePiDriver;
-            Configuration.Instance.Users.Add(new Utils.User() { Username = data.NewUsername, PasswordHash = Sha256(data.NewPassword), Permissions = UserPermissions.Admin, ID = -1 });
+            Configuration.Instance.Users.Add(new User() { Username = data.NewUsername, PasswordHash = Sha256(data.NewPassword), Permissions = UserPermissions.Admin, ID = -1 });
             Configuration.Instance.SystemSetUp = true; // once this is set system gets started fully
             Configuration.Save();
 

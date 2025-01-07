@@ -81,12 +81,14 @@ namespace SecuritySystem
                 // todo don't hardcode index
                 var display = disp[0];
 
-                FirmwareUpdateProgressResponseContent result = new FirmwareUpdateProgressResponseContent();
-                result.fail = display.UpdateFail;
-                result.progress = display.UpdateProgress;
-                result.progressstring = display.UpdateProgressString;
-                result.finished = display.UpdateFinish;
-                result.inprogress = display.UpdateInProgress;
+                FirmwareUpdateProgressResponseContent result = new()
+                {
+                    fail = display.UpdateFail,
+                    progress = display.UpdateProgress,
+                    progressstring = display.UpdateProgressString,
+                    finished = display.UpdateFinish,
+                    inprogress = display.UpdateInProgress
+                };
                 await SendSuccessfulResponseWithContent(result);
                 return;
             }

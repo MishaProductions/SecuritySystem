@@ -473,6 +473,7 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand($"rtc4={DateTime.Now.Minute}");
             SendCommand($"rtc5={DateTime.Now.Second}");
             SendCommand($"vis pStatus,0");
+            SetCmptVisible("bShowT", false);
             SendCommand($"thsp=0");
             RefreshWeather();
             SystemManager_OnZoneUpdate(false, 0, "", ZoneState.Unconfigured);

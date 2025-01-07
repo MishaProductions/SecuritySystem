@@ -14,7 +14,7 @@ public partial class Download : SecurityPage
         InitializeComponent();
     }
 
-    public override async void OnNavigateTo()
+    public override void OnNavigateTo()
     {
         base.OnNavigateTo();
 
