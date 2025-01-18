@@ -8,6 +8,7 @@ namespace SecuritySystem.Utils
         private static string InternetWeather = "";
         private static string TempWeather = "";
         private static DateTime LastUpdateTime = DateTime.MinValue;
+        
         private static async Task UpdateWeatherInfo()
         {
             if (string.IsNullOrEmpty(Configuration.Instance.WeatherCords))
@@ -20,7 +21,7 @@ namespace SecuritySystem.Utils
             try
             {
                 HttpClient httpClient = new();
-                httpClient.DefaultRequestHeaders.Add("User-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36");
+                httpClient.DefaultRequestHeaders.Add("User-agent", "SecuritySystem (https://github.com/MishaProductions/SecuritySystem)");
                 var data = await httpClient.GetAsync("https://api.weather.gov/points/" + Configuration.Instance.WeatherCords);
                 if (data.IsSuccessStatusCode)
                 {
@@ -44,6 +45,7 @@ namespace SecuritySystem.Utils
                         {
                             result += $"Participation chance: {(int)today.probabilityOfPrecipitation.value}%\r\n";
                         }
+                        //result += (string)today.detailedForecast;
                         LastUpdateTime = DateTime.Now;
                     }
                     else
@@ -114,5 +116,15 @@ namespace SecuritySystem.Utils
                 return "ERROR WHILE QUERY";
             }
         }
+    }
+
+    public class PointResponse
+    {
+        public PointResponseProperties? properties { get; set;}
+    }
+    public class PointResponseProperties
+    {
+        public string forecast { get; set; } = "";
+        public string forecastHourly { get; set; } = "";
     }
 }

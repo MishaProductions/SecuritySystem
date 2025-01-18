@@ -102,7 +102,7 @@ namespace SecuritySystem.Utils
 
         private static void SystemManager_OnZoneUpdate(bool single, int zone, string name, ZoneState ready)
         {
-            tickSfx.Play("/musics/annc/systimer.mp3");
+            //tickSfx.Play("/musics/annc/systimer.mp3");
         }
 
         private static void SystemManager_OnSysTimer(bool entry, int timer)
@@ -112,6 +112,7 @@ namespace SecuritySystem.Utils
             if (!entry && timer == 14)
             {
                 armAnnc.Play("/musics/annc/standclear.mp3");
+                ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/standclear.mp3");
             }
         }
 

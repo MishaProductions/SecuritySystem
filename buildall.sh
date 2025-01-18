@@ -24,8 +24,8 @@ cp SecuritySystem/www/modernclient/*.js SecuritySystem/www/modernclient/_framewo
 dotnet publish MHSClientAvalonia.Desktop --runtime linux-x64
 cp -r MHSClientAvalonia.Desktop/bin/Release/net9.0/linux-x64/publish/MHSClientAvalonia.Desktop SecuritySystem/www/client/linux64/
 
-dotnet publish MHSClientAvalonia.Desktop --runtime win-x64
-cp -r MHSClientAvalonia.Desktop/bin/Release/net9.0/win-x64/publish/MHSClientAvalonia.Desktop.exe SecuritySystem/www/client/win64/
+#dotnet publish MHSClientAvalonia.Desktop --runtime win-x64
+#cp -r MHSClientAvalonia.Desktop/bin/Release/net9.0/win-x64/publish/MHSClientAvalonia.Desktop.exe SecuritySystem/www/client/win64/
 
 dotnet publish MHSClientAvalonia.Android
 cp -r MHSClientAvalonia.Android/bin/Release/net9.0-android/publish/com.mikhailproductions.mhs-Signed.apk SecuritySystem/www/client/android/

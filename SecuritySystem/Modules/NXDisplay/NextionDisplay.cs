@@ -1,4 +1,5 @@
 ﻿using MHSApi.API;
+using Newtonsoft.Json.Linq;
 using SecuritySystem.DeviceSubsys;
 using SecuritySystem.Utils;
 using System;
@@ -170,7 +171,8 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand("pageHome.wavMusic.en=0");
         }
         public void PlayAnnc(string path)
-        {if (currentPage != "pageHome") return;
+        {
+            if (currentPage != "pageHome") return;
             string properPath = "sd0" + path.Replace(".mp3", ".wav").Replace(".flac", ".wav");
             Console.WriteLine("Play annc " + properPath);
             SendCommand("pageHome.wavAnnc.path=\"" + properPath + "\"");
@@ -229,7 +231,7 @@ namespace SecuritySystem.Modules.NXDisplay
             // show main view
             UpdateStatusText();
 
-        SendCommand("audio1=0");
+            SendCommand("audio1=0");
         }
         private void SystemManager_OnSysTimerEvent(bool entry, int timer)
         {
@@ -483,7 +485,6 @@ namespace SecuritySystem.Modules.NXDisplay
 
         private void UpdateTroubleCondition()
         {
-            return;
             if (TroubleLog.Count == 0)
             {
                 WarningFlash = false;
@@ -501,7 +502,6 @@ namespace SecuritySystem.Modules.NXDisplay
 
         private void HandleShowTrouble()
         {
-            return;
             if (TroubleLog.Count == 0)
             {
                 SetPage("pageHome");
@@ -664,8 +664,6 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             if (SerialPort == null)
                 throw new Exception("Init() method not called because NextionDisplayController.SerialPort is null");
-
-            Console.WriteLine("SendCOmmand: "+ command);
 
             byte[] pkt = new byte[command.Length + 3];
             int i = 0;
@@ -926,33 +924,109 @@ namespace SecuritySystem.Modules.NXDisplay
                 InitKeypad();
             });
         }
-        private void InitWeatherPage(bool show7Day)
+        private async void InitWeatherPage(bool show7Day)
         {
             if (currentPage != "pageWeather")
             {
                 Console.WriteLine("nextion: attempted to init weather page when not weather page!");
                 return;
             }
-    SendCommand("play 0,5,1"); 
+            SendCommand("play 0,5,1");
             SetCmptVisible("j0", true);
             SetCmptVisible("tLdr", true);
-            SetCmptText("tLdr", "Downloading Weather Data");
+            SetCmptText("tLdr", "Downloading Location data");
             SetCmptVal("j0", "50");
+
+            bool downloadFail = false;
+
+            try
+            {
+                HttpClient httpClient = new();
+                httpClient.DefaultRequestHeaders.Add("User-agent", "SecuritySystem (https://github.com/MishaProductions/SecuritySystem)");
+                var data = await httpClient.GetAsync("https://api.weather.gov/points/" + Configuration.Instance.WeatherCords);
+                if (data.IsSuccessStatusCode)
+                {
+                    dynamic fs = JObject.Parse(await data.Content.ReadAsStringAsync());
+
+                    string url = "";
+
+                    if (show7Day)
+                        url = (string)fs.properties.forecast;
+                    else
+                        url = (string)fs.properties.forecastHourly;
+
+                    SetCmptText("tLdr", "Downloading Weather data");
+                    SetCmptVal("j0", "68");
+
+                    var data2 = await httpClient.GetAsync(url);
+                    dynamic fs2 = JObject.Parse(await data2.Content.ReadAsStringAsync());
+                    if (data2.IsSuccessStatusCode)
+                    {
+                        SetCmptText("tLdr", "Processing Weather data");
+                        SetCmptVal("j0", "75");
+                        var today = fs2.properties.periods[0];
+                        SetCmptText("tCap1", (string)today.shortForecast);
+                        SetCmptText("tCap2", (string)today.name);
+                        SetCmptText("tOverallTemp", ((int)today.temperature).ToString() + "F");
+
+
+
+                        /*if (today.temperature != null)
+                        {
+                            result += $"Temperature: {(int)today.temperature}\r\n";
+                        }
+                        if (today.shortForecast != null)
+                        {
+                            result += $"{(string)today.shortForecast}\r\n";
+                        }
+                        if (today.probabilityOfPrecipitation.value != null)
+                        {
+                            result += $"Participation chance: {(int)today.probabilityOfPrecipitation.value}%\r\n";
+                        }*/
+
+                    }
+                    else
+                    {
+                        downloadFail = true;
+                    }
+                }
+                else
+                {
+                    downloadFail = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                SetCmptText("tCap1", "Failed to download weather data:");
+                SetCmptText("tCap2", ex.Message);
+                SetCmptVisible("tLdr", false);
+                SetCmptVisible("j0", false);
+                return;
+            }
+
+            if (downloadFail)
+            {
+                SetCmptText("tCap1", "Failed to download weather data");
+                SetCmptText("tCap2", "");
+                SetCmptVisible("tLdr", false);
+                SetCmptVisible("j0", false);
+                return;
+            }
 
 
             SetCmptText("tLdr", "Reading...");
             SetCmptVal("j0", "75");
 
-            SetCmptText("tCap1", "Snowing In Florida");
-            SetCmptText("tCap2", "High: 90f, Low: 85f");
-            SetCmptText("tOverallTemp", "70f");
+            //SetCmptText("tCap1", "Snowing In Florida");
+            //SetCmptText("tCap2", "High: 90f, Low: 85f");
+            //SetCmptText("tOverallTemp", "70f");
 
             if (show7Day)
             {
                 SetCmptText("tViewText", "Week View");
 
                 // assign week labels
-                for (int i = 0; i > WeekLabelText.Length; i++)
+                for (int i = 0; i < WeekLabelText.Length; i++)
                 {
                     SetCmptText(WeekLabels[i], WeekLabelText[i]);
                 }
@@ -961,7 +1035,7 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 SetCmptText("tViewText", "7 Hour View");
 
-                for (int i = 0; i > WeekLabelText.Length; i++)
+                for (int i = 0; i < WeekLabelText.Length; i++)
                 {
                     SetCmptText(WeekLabels[i], "+" + (i + 1) + "hr");
                 }
@@ -1387,12 +1461,6 @@ namespace SecuritySystem.Modules.NXDisplay
 
                 SendCommand("play 0,4,0"); //channel 1, play resource 2, no loop
                 Console.WriteLine(x);
-
-                TroubleLog.Add(new TroubleLog()
-                {
-                    Title = "Unexpected command",
-                    Description = "The display has issued\r\nan incorrect command\r\nPlease check the\r\nfirmware version of the display\r\nor controller."
-                });
 
                 //wrong password
                 //SendCommand($"click bCancel,1");
