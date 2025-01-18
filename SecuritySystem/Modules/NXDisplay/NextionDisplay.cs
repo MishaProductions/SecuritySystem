@@ -159,12 +159,12 @@ namespace SecuritySystem.Modules.NXDisplay
 
         public void PlayMusic(string path)
         {
-            return; // the speakers are very shitty
-            if (currentPage != "pageHome") return;
+            // Disabled as the nextion display speakers are very bad.
+            /*if (currentPage != "pageHome") return;
             string properPath = "sd0" + path.Replace(".mp3", ".wav").Replace(".flac", ".wav");
             Console.WriteLine("Play music " + properPath);
             SendCommand("pageHome.wavMusic.path=\"" + properPath + "\"");
-            SendCommand("pageHome.wavMusic.en=1");
+            SendCommand("pageHome.wavMusic.en=1");*/
         }
         public void StopMusic()
         {
