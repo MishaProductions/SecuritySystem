@@ -1175,6 +1175,7 @@ namespace SecuritySystem.Modules.NXDisplay
             else if (x == "init WeatherPage")
             {
                 currentPage = "pageWeather";
+                SendCommand("delfile \"sd0/test2.tft\"");
                 InitWeatherPage(false);
             }
             else if (x == "weather setview 7hr")
