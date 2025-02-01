@@ -1,6 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.Browser;
 using MHSClientAvalonia;
+using MHSClientAvalonia.Browser;
+using MHSClientAvalonia.Utils;
 using System;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ internal sealed partial class Program
     {
         try
         {
+            Services.AudioCapture = new BrowserAudioCapture();
             return BuildAvaloniaApp()
             .WithInterFont()
             .StartBrowserAppAsync("out");

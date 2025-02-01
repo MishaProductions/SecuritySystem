@@ -15,6 +15,8 @@ namespace MHSClientAvalonia.Desktop
         {
             try
             {
+                Services.AudioCapture = new OpenTKAudioCapture();
+
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
             }
             catch(Exception ex)

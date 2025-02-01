@@ -4,6 +4,7 @@ using Android.Content.PM;
 using Avalonia;
 using Avalonia.Android;
 using MHSClientAvalonia;
+using MHSClientAvalonia.Utils;
 
 namespace MHSClientAvalonia.Android;
 
@@ -17,6 +18,7 @@ public class MainActivity : AvaloniaMainActivity<App>
 {
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
+        Services.AudioCapture = new AndroidAudioCapture();
         return base.CustomizeAppBuilder(builder)
             .WithInterFont();
     }
