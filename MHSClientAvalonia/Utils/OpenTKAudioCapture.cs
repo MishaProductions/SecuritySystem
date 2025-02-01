@@ -51,12 +51,14 @@ namespace MHSClientAvalonia.Utils
             }
         }
 
-        public override void Open()
+        public override Task Open()
         {
             _captureDevice = ALC.CaptureOpenDevice(null, 44100, ALFormat.Mono16, 50);//opens default mic //null specifies default 
             ALC.CaptureStart(_captureDevice);
             _shouldCapture = true;
             new Thread(CapturingThread).Start();
+
+            return Task.CompletedTask;
         }
 
     }

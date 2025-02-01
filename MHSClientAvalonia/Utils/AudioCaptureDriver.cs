@@ -12,7 +12,7 @@ namespace MHSClientAvalonia.Utils
         public bool _shouldCapture = false;
         public byte[] buffer = new byte[100 * 41000];
 
-        public abstract void Open();
+        public abstract Task Open();
         public abstract Task Stop();
 
         protected async Task CloseSocket()

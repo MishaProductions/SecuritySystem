@@ -5,9 +5,10 @@ namespace MHSClientAvalonia.Browser
 {
     public class BrowserAudioCapture : AudioCaptureDriver
     {
-        public override void Open()
+        public override Task Open()
         {
             // Todo: open device and start capturing sound
+            return Task.CompletedTask;
         }
 
         public override async Task Stop()
