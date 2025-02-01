@@ -24,14 +24,9 @@ namespace SecuritySystem.Utils
         {
             get
             {
-                if (PlaylistMode)
-                {
-                    return MusicFiles[(int)musicProc.PlaylistIndex];
-                }
-
                 if (MusicPlaying)
                 {
-                    return MusicFiles[MusicIdx];
+                    return musicProc.GetPlaylistFileNameByIndex(musicProc.PlaylistIndex);
                 }
                 else
                 {
@@ -74,6 +69,7 @@ namespace SecuritySystem.Utils
             }
         }
         private static int MusicFadeTime = 40;
+        private static int MusicFadeToVolume = 40;
 
         public static event EventHandler? OnMusicStop;
         public static event EventHandler? OnAnncStop;
@@ -87,6 +83,8 @@ namespace SecuritySystem.Utils
         {
             musicProc.OnStop += MusicProc_OnStop;
             anncProc.OnStop += AnncProc_OnStop;
+
+            musicProc.OnStart += MusicProc_OnStart;
 
             // arlarm function
             alarmProc.OnStop += AlarmProc_OnStop;
@@ -158,7 +156,7 @@ namespace SecuritySystem.Utils
                     if (name != "upload.bat" && !name.EndsWith(".jpg"))
                         items.Add(name);
                 }
-                items = items.OrderBy(q => q).ToList();
+                items = [.. items.OrderBy(q => q)];
                 foreach (var item in items)
                 {
                     MusicFiles.Add(item);
@@ -174,17 +172,16 @@ namespace SecuritySystem.Utils
                     if (name != "upload.bat")
                         items.Add(Path.GetFileName(item));
                 }
-                items = items.OrderBy(q => q).ToList();
+                items = [.. items.OrderBy(q => q)];
                 foreach (var item in items)
                 {
                     AnncFiles.Add(item);
                 }
             }
         }
-        private static void AnncProc_OnStop(MpvEventEndFile data)
-        {
-            OnAnncStop?.Invoke(null, new());
 
+        private static void FadeIn()
+        {
             // If music was faded, set it back to normal volume
             if (FadeBackMusic && MusicPlaying)
             {
@@ -224,21 +221,33 @@ namespace SecuritySystem.Utils
                 }
             }
         }
+        private static void AnncProc_OnStop(MpvEventEndFile data)
+        {
+            OnAnncStop?.Invoke(null, new());
+            FadeIn();
+        }
         private static void MusicProc_OnStop(MpvEventEndFile data)
         {
             Console.WriteLine("MusicProc_OnStop with " + data.Reason);
             OnMusicStop?.Invoke(null, new());
         }
+        private static void MusicProc_OnStart(long id)
+        {
+            var fileName = musicProc.GetPlaylistFileNameByIndex(musicProc.PlaylistIndex);
+            Console.WriteLine("got " + fileName + " id of " + id);
+            OnMusicStarted?.Invoke(fileName);
+        }
         internal static void PlayAllMusic(List<string> paths)
         {
             PlaylistMode = true;
             string[] strings = new string[paths.Count];
+            musicProc.ClearPlaylist();
             for (int i = 0; i < strings.Length; i++)
             {
                 strings[i] = "/musics/" + paths[i];
                 Console.WriteLine(strings[i]);
             }
-            OnMusicStarted?.Invoke("Playlist");
+
             musicProc.PlaylistPlay(strings, true);
         }
         internal static void PlayMusic(int a)
@@ -247,6 +256,7 @@ namespace SecuritySystem.Utils
             {
                 musicProc.Stop();
             }
+            musicProc.ClearPlaylist();
             string fileName = MusicFiles[a];
             MusicIdx = a;
             PlaylistMode = false;
@@ -254,7 +264,6 @@ namespace SecuritySystem.Utils
             ModuleController.GetDisplays().First().PlayMusic("/musics/" + fileName);
             Thread.Sleep(5);
             musicProc.Play("/musics/" + fileName);
-            OnMusicStarted?.Invoke(fileName);
         }
         private static bool IsFadingMusic = false;
         private static bool FadeBackMusic;
@@ -290,9 +299,9 @@ namespace SecuritySystem.Utils
                 {
                     IsFadingMusic = true;
                     MusicPrevVol = MusicVol;
-                    if (MusicVol > 20)
+                    if (MusicVol > MusicFadeToVolume)
                     {
-                        while (MusicVol > 20)
+                        while (MusicVol > MusicFadeToVolume)
                         {
                             MusicVol -= 1;
                             Thread.Sleep(MusicFadeTime);
@@ -340,9 +349,9 @@ namespace SecuritySystem.Utils
                 {
                     IsFadingMusic = true;
                     MusicPrevVol = MusicVol;
-                    if (MusicVol > 20)
+                    if (MusicVol > MusicFadeToVolume)
                     {
-                        while (MusicVol > 20)
+                        while (MusicVol > MusicFadeToVolume)
                         {
                             MusicVol -= 1;
                             Thread.Sleep(MusicFadeTime);
@@ -373,6 +382,7 @@ namespace SecuritySystem.Utils
         }
         internal static void StopAnnc()
         {
+            FadeIn();
             anncProc.Stop();
             OnAnncStop?.Invoke(null, new());
             ModuleController.GetDisplays().First().StopAnnc();
@@ -381,13 +391,21 @@ namespace SecuritySystem.Utils
         public static void PlaylistBack()
         {
             musicProc.PlaylistBack();
-            OnMusicStarted?.Invoke(MusicFiles[(int)musicProc.PlaylistIndex]);
         }
 
         public static void PlaylistForward()
         {
             musicProc.PlaylistNext();
-            OnMusicStarted?.Invoke(MusicFiles[(int)musicProc.PlaylistIndex]);
+        }
+
+        public static void SetMusicShuffle(bool should)
+        {
+            musicProc.UpdatePlaylistShuffle(should);
+        }
+
+        public static void SetMusicLoop(bool should)
+        {
+            musicProc.LoopPlaylist = should;
         }
 
         public delegate void MusicStartedEventArgs(string fileName);

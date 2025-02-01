@@ -4,11 +4,12 @@ using System.Text;
 namespace SecuritySystem.Utils
 {
     //Most code from here is taken from https://github.com/hudec117/Mpv.NET-lib- I couldnt use it directly as it does not support Linux
-    public class Player
+    public partial class Player
     {
         // /usr/lib/arm-linux-gnueabihf/libmpv.so
         public bool IsPlaying { get; private set; } = false;
         public event EndfileEventHandler? OnStop;
+        public event StartfileEventHandler? OnStart;
         private nint playerHandle;
         Task eventLoopTask;
         bool IsEventLoopRunning = true;
@@ -64,7 +65,7 @@ namespace SecuritySystem.Utils
         {
             get
             {
-                MpvError hr = mpv_get_property(playerHandle, "loop-playlist", MpvFormat.String, out string vol);
+                MpvError hr = GetPropertyString(playerHandle, "loop-playlist", MpvFormat.String, out string vol);
                 if (hr != MpvError.Success)
                 {
                     throw new Exception("failed to get loop playlist property");
@@ -82,6 +83,7 @@ namespace SecuritySystem.Utils
             }
         }
         public delegate void EndfileEventHandler(MpvEventEndFile data);
+        public delegate void StartfileEventHandler(long index);
         public Player()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -97,37 +99,67 @@ namespace SecuritySystem.Utils
             eventLoopTask = new Task(EventLoopTaskHandler);
             eventLoopTask.Start();
         }
+        private bool currentlyShuffled = false;
+
+        public void UpdatePlaylistShuffle(bool shuffle)
+        {
+            if (shuffle && !currentlyShuffled)
+            {
+                DoMpvCommand("playlist-shuffle");
+                currentlyShuffled = true;
+            }
+            else if (currentlyShuffled)
+            {
+                DoMpvCommand("playlist-unshuffle");
+                currentlyShuffled = false;
+            }
+        }
 
         private void EventLoopTaskHandler()
         {
-            while (IsEventLoopRunning)
+            try
             {
-                var eventPtr = mpv_wait_event(playerHandle, Timeout.Infinite);
-                if (eventPtr != nint.Zero)
+                while (IsEventLoopRunning)
                 {
-                    var @event = Marshal.PtrToStructure<MpvEvent>(eventPtr);
-                    if (@event.ID != MpvEventID.None)
+                    var eventPtr = mpv_wait_event(playerHandle, Timeout.Infinite);
+                    if (eventPtr != nint.Zero)
                     {
-                        if (@event.ID == MpvEventID.EndFile)
+                        var @event = Marshal.PtrToStructure<MpvEvent>(eventPtr);
+                        if (@event.ID != MpvEventID.None)
                         {
-                            Console.WriteLine("mpv: end of file");
-                            if (@event.Data != 0)
+                            //Console.WriteLine("Got message: " + @event.ID);
+                            if (@event.ID == MpvEventID.EndFile)
                             {
-                                var evntdata = Marshal.PtrToStructure<MpvEventEndFile>(@event.Data);
-                                if (evntdata.Reason == MpvEndFileReason.EndOfFile)
+                                Console.WriteLine("mpv: end of file");
+                                if (@event.Data != 0)
                                 {
-                                    IsPlaying = false;
-                                    OnStop?.Invoke(evntdata);
+                                    var evntdata = Marshal.PtrToStructure<MpvEventEndFile>(@event.Data);
+                                    if (evntdata.Reason == MpvEndFileReason.EndOfFile)
+                                    {
+                                        IsPlaying = false;
+                                        OnStop?.Invoke(evntdata);
+                                    }
+                                }
+
+                            }
+                            else if (@event.ID == MpvEventID.StartFile)
+                            {
+                                Console.WriteLine("mpv: start file");
+                                if (@event.Data != 0)
+                                {
+                                    var evntdata = Marshal.PtrToStructure<MpvEventStartFile>(@event.Data);
+                                    IsPlaying = true;
+                                    //Console.WriteLine("index changed to " + (evntdata.PlaylistEntryId - 1));
+                                    OnStart?.Invoke(evntdata.PlaylistEntryId - 1);
                                 }
                             }
-
-                        }
-                        else
-                        {
-                            //Console.WriteLine("unknown event: " + @event.ID);
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception during event loop: " + ex.ToString());
             }
         }
 
@@ -170,6 +202,21 @@ namespace SecuritySystem.Utils
             }
             mpv_set_property_string(playerHandle, "pause", "no");
             DoMpvCommand("playlist-play-index", "0");
+        }
+
+        public string GetPlaylistFileNameByIndex(long idx)
+        {
+            MpvError hr = GetPropertyString(playerHandle, "playlist/" + idx + "/filename", MpvFormat.String, out string vol);
+            if (hr != MpvError.Success)
+            {
+                return $"failed to get playlist filename property of {idx}: {hr}";
+            }
+            return vol;
+        }
+
+        public void ClearPlaylist()
+        {
+            Console.WriteLine(DoMpvCommand("playlist-clear"));
         }
 
         internal void Stop()
@@ -227,26 +274,49 @@ namespace SecuritySystem.Utils
             }
         }
 
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern nint mpv_create();
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_initialize(nint mpvHandle);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_command(nint mpvHandle, nint strings);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_get_property(nint mpvHandle, [MarshalAs(UnmanagedType.LPStr)] string name, MpvFormat format, out double data);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_get_property(nint mpvHandle, [MarshalAs(UnmanagedType.LPStr)] string name, MpvFormat format, out long data);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_get_property(nint mpvHandle, [MarshalAs(UnmanagedType.LPStr)] string name, MpvFormat format, [MarshalAs(UnmanagedType.LPStr)] out string data);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_set_property(nint mpvHandle, [MarshalAs(UnmanagedType.LPStr)] string name, MpvFormat format, ref double data);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_set_property(nint mpvHandle, [MarshalAs(UnmanagedType.LPStr)] string name, MpvFormat format, ref long data);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern MpvError mpv_set_property_string(nint mpvHandle, [MarshalAs(UnmanagedType.LPStr)] string name, [MarshalAs(UnmanagedType.LPStr)] string data);
-        [DllImport("/usr/lib/arm-linux-gnueabihf/libmpv.so")]
-        private static extern nint mpv_wait_event(nint mpvHandle, double timeout);
+        private static MpvError GetPropertyString(nint mpvHandle, string name, MpvFormat format, out string stringg)
+        {
+            var error = mpv_get_property(mpvHandle, name, format, out IntPtr ptr);
+            if (error != MpvError.Success || ptr == IntPtr.Zero)
+            {
+                stringg = "";
+                return error;
+            }
+
+            var result = Marshal.PtrToStringUTF8(ptr);
+            if (result == null) stringg = "";
+            else stringg = result;
+
+            // free the MPV string
+            mpv_free(ptr);
+
+            return error;
+        }
+
+        public const string LibmpvPath = "/usr/lib/arm-linux-gnueabihf/libmpv.so";
+
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial nint mpv_create();
+         [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial nint mpv_free(nint handle);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_initialize(nint mpvHandle);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_command(nint mpvHandle, nint strings);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_get_property(nint mpvHandle, string name, MpvFormat format, out double data);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_get_property(nint mpvHandle, string name, MpvFormat format, out long data);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_get_property(nint mpvHandle, string name, MpvFormat format, out IntPtr data);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_set_property(nint mpvHandle, string name, MpvFormat format, ref double data);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_set_property(nint mpvHandle, string name, MpvFormat format, ref long data);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial MpvError mpv_set_property_string(nint mpvHandle, string name, string data);
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        private static partial nint mpv_wait_event(nint mpvHandle, double timeout);
     }
     public enum MpvFormat
     {
@@ -372,5 +442,10 @@ namespace SecuritySystem.Utils
         public MpvEndFileReason Reason;
 
         public MpvError Error;
+    }
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MpvEventStartFile
+    {
+        public long PlaylistEntryId;
     }
 }

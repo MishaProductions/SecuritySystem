@@ -1335,10 +1335,12 @@ namespace SecuritySystem.Modules.NXDisplay
             else if (x == "setshuffle 0")
             {
                 ShufflePlaylist = false;
+                MusicPlayer.SetMusicShuffle(false);
             }
             else if (x == "setshuffle 1")
             {
                 ShufflePlaylist = true;
+                MusicPlayer.SetMusicShuffle(true);
             }
             else if (x == "sysmsg init")
             {
