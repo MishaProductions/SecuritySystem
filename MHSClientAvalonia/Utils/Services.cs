@@ -43,6 +43,8 @@ namespace MHSClientAvalonia.Utils
         public static MainWindow MainWindow { get; set; } = null!;
         public static MainView MainView { get; set; } = null!;
         public static AudioCaptureDriver AudioCapture { get; set; } = null!;
+        public static AudioPlaybackDriver AudioPlayBack { get; set; } = null!;
+        
         public static DesktopNotifications.INotificationManager NotificationManager = null!;
     }
 }

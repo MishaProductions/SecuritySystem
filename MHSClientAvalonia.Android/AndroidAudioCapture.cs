@@ -39,7 +39,7 @@ namespace MHSClientAvalonia.Android
             }
         }
 
-        public override async Task Open()
+        public override Task Open()
         {
             _shouldCapture = true;
             
@@ -49,6 +49,8 @@ namespace MHSClientAvalonia.Android
 
             // start capture thread
             new Thread(CapturingThread).Start();
+
+            return Task.CompletedTask;
         }
 
         public override async Task Stop()

@@ -1,13 +1,8 @@
 using Avalonia.Input;
 using MHSApi.API;
-using MHSApi.WebSocket.AudioIn;
-using MHSClientAvalonia.Client;
 using MHSClientAvalonia.Utils;
-using OpenTK.Audio.OpenAL;
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
@@ -73,7 +68,8 @@ public partial class MusicManager : SecurityPage
 
     private async void StopAnnc_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Services.AudioCapture.Stop();
+        if (Services.AudioCapture != null)
+            await Services.AudioCapture.Stop();
         BtnPlayAnncFromMic.IsEnabled = true;
         await Services.SecurityClient.StopCurrentAnnoucement();
     }
@@ -154,6 +150,11 @@ public partial class MusicManager : SecurityPage
 
     private async void PlayAnncFromMic_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
+        if (Services.AudioCapture == null)
+        {
+            Services.MainView.ShowMessage("Platform Error", "Audio capture is not implemented on this platform.");
+            return;
+        }
         if (Services.AudioCapture._audioOutSocket != null)
         {
             Services.MainView.ShowMessage("System Error", "An audio input stream is already open on this device. Try speaking into the microphone, and then press Stop annc.");

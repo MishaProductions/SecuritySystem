@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using MHSApi.WebSocket.AudioIn;
 using MHSClientAvalonia.Client;
-using OpenTK.Audio.OpenAL;
 
 namespace MHSClientAvalonia.Utils
 {

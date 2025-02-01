@@ -12,7 +12,6 @@ using MHSApi.API;
 using MHSClientAvalonia.Pages;
 using MHSClientAvalonia.Utils;
 using MHSClientAvalonia.Views;
-using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -214,13 +213,13 @@ public partial class MainView : UserControl
 
     private void SecurityClient_OnSystemTimerEvent(bool arming, int time)
     {
-        Dispatcher.UIThread.Invoke(delegate
+        Dispatcher.UIThread.Invoke(async delegate
         {
             if (FrameView.Content is SecurityPage page)
             {
                 page.OnSysTimer(arming, time);
             }
-            PlaySysTimer();
+            await PlaySysTimer();
 
 
             if (arming)
@@ -298,14 +297,14 @@ public partial class MainView : UserControl
     }
     private void SecurityClient_OnZoneUpdate(object? sender, EventArgs e)
     {
-        Dispatcher.UIThread.Invoke(delegate
+        Dispatcher.UIThread.Invoke(async delegate
         {
             var page = GetCurrentPage();
             if (page != null)
             {
                 page.OnZoneUpdate();
             }
-            PlayZoneSound();
+            await PlayZoneSound();
             UpdateSystemStatus();
         });
     }
@@ -380,36 +379,25 @@ public partial class MainView : UserControl
 
         }
     }
-    private void PlaySysTimer()
+    private async Task PlaySysTimer()
     {
         if (!Services.Preferences.GetBool("armnoise", true))
             return;
         var wavfile = AssetLoader.Open(new Uri("avares://MHSClientAvalonia/Assets/systimer.wav"));
-        PlaySound(wavfile);
+        await PlaySound(wavfile);
     }
-    private void PlayZoneSound()
+    private async Task PlayZoneSound()
     {
         if (!Services.Preferences.GetBool("zonenoise", true))
             return;
         var wavfile = AssetLoader.Open(new Uri("avares://MHSClientAvalonia/Assets/zone.wav"));
-        PlaySound(wavfile);
+        await PlaySound(wavfile);
     }
-    private void PlaySound(Stream wavfile)
+    private async Task PlaySound(Stream wavfile)
     {
-        if (OperatingSystem.IsOSPlatform("windows"))
+        if (Services.AudioPlayBack != null)
         {
-            WaveStream mainOutputStream = new WaveFileReader(wavfile);
-            WaveChannel32 volumeStream = new WaveChannel32(mainOutputStream);
-
-            WaveOutEvent player = new WaveOutEvent();
-
-            player.Init(volumeStream);
-
-            player.Play();
-        }
-        else
-        {
-            // TODO: support other platforms
+            await Services.AudioPlayBack.PlayWav(wavfile);
         }
     }
     private async void ReconnectTimer_Tick(object? sender, EventArgs e)
