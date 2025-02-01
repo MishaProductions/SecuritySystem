@@ -80,9 +80,14 @@ public partial class MainView : UserControl
             _updateTimer.Tick += UpdateTimer_Tick;
             _updateTimer.Start();
         }
-        UiAndroidHint.IsOpen = BrowserUtils.IsBrowser;
+        UiAndroidHint.IsOpen = BrowserUtils.IsBrowser && Services.Preferences.GetBool("showandroidhint", true);
 
         NavigateToInitialPage();
+    }
+
+    private void AndroidHint_CloseButtonClick(InfoBar sender, EventArgs e)
+    {
+        Services.Preferences.SetBool("showandroidhint", false);
     }
 
     public static FwUpdateWindow? FwUpdateWindow;
