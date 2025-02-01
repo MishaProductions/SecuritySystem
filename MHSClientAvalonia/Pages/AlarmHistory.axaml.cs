@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -14,9 +15,9 @@ public partial class AlarmHistory : SecurityPage
         InitializeComponent();
     }
 
-    public override async void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
 
         UpdateLoadingString("Loading alarm history");
         var data = await Services.SecurityClient.GetAlarmHistory();

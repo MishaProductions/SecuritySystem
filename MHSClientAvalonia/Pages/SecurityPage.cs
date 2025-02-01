@@ -12,9 +12,9 @@ namespace MHSClientAvalonia.Pages
         public event EventHandler? OnShowLoadingBar;
         public event EventHandler? OnHideLoadingBar;
         public event LoadingProgressHandler? OnLoadProgress;
-        public virtual void OnNavigateTo()
+        public virtual Task OnNavigateTo()
         {
-
+            return Task.CompletedTask;
         }
 
         public virtual void OnNavigateAway()

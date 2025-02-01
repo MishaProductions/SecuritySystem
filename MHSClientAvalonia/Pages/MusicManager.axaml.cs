@@ -8,6 +8,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -23,9 +24,9 @@ public partial class MusicManager : SecurityPage
         InitializeComponent();
     }
 
-    public override async void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         MusicFiles.Clear();
         AnncFiles.Clear();
 
@@ -164,7 +165,7 @@ public partial class MusicManager : SecurityPage
             Services.AudioCapture._audioOutSocket = await Services.SecurityClient.OpenAnncStream(44100, 16, 2);
             if (Services.AudioCapture._audioOutSocket != null)
             {
-                Services.AudioCapture.Open();
+                await Services.AudioCapture.Open();
             }
             else
             {
@@ -174,7 +175,7 @@ public partial class MusicManager : SecurityPage
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            Services.MainView.ShowMessage("System Error", ex.ToString());
+            Services.MainView.ShowMessage("System Error", "Try checking microphone permissions\n"+ ex.ToString());
         }
     }
 }

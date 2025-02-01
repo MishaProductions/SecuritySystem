@@ -46,7 +46,7 @@ public partial class MainView : UserControl
         Services.SecurityClient.OnAnncStopped += SecurityClient_OnAnncStopped;
     }
 
-    private void OnLoad(object? sender, EventArgs e)
+    private async void OnLoad(object? sender, EventArgs e)
     {
         if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
         {
@@ -82,7 +82,7 @@ public partial class MainView : UserControl
         }
         UiAndroidHint.IsOpen = BrowserUtils.IsBrowser && Services.Preferences.GetBool("showandroidhint", true);
 
-        NavigateToInitialPage();
+        await NavigateToInitialPage();
     }
 
     private void AndroidHint_CloseButtonClick(InfoBar sender, EventArgs e)
@@ -577,7 +577,7 @@ public partial class MainView : UserControl
                     page2.OnHideLoadingBar += Page_OnHideLoadingBar;
                     page2.OnShowLoadingBar += Page_OnShowLoadingBar;
                     page2.OnLoadProgress += Page_OnLoadProgress;
-                    page2.OnNavigateTo();
+                    await page2.OnNavigateTo();
                 }
             }
         }
@@ -687,7 +687,7 @@ public partial class MainView : UserControl
         return items;
     }
 
-    internal async void NavigateToInitialPage()
+    internal async Task NavigateToInitialPage()
     {
         Console.WriteLine("NavigateToInitialPage");
         try
@@ -775,7 +775,7 @@ public partial class MainView : UserControl
                     return;
                 }
                 Services.Preferences.Set("user_token", "");
-                NavigateToInitialPage();
+                await NavigateToInitialPage();
             }
             catch
             {

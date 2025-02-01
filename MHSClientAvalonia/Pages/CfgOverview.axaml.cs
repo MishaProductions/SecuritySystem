@@ -12,9 +12,9 @@ public partial class CfgOverview : SecurityPage
     {
         InitializeComponent();
     }
-    public override void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         HideLoadingBar();
     }
     private async void Zones_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

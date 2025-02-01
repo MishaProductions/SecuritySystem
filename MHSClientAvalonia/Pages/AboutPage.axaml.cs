@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using MHSApi.API;
 using MHSClientAvalonia.Utils;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -14,9 +15,9 @@ public partial class AboutPage : SecurityPage
         InitializeComponent();
     }
 
-    public override async void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         TextContents.Children.Clear();
 
         AddInfo("Client version: " + Assembly.GetExecutingAssembly().GetName().Version);

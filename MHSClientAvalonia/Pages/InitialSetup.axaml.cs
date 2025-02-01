@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -47,9 +48,10 @@ public partial class InitialSetup : SecurityPage
 
     private int pgIndex = 0;
 
-    public override void OnNavigateTo()
+    public override Task OnNavigateTo()
     {
         HideLoadingBar();
+        return Task.CompletedTask;
     }
     private void BtnBack_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -162,7 +164,7 @@ public partial class InitialSetup : SecurityPage
             }
             else
             {
-                Services.MainView.NavigateToInitialPage();
+                await Services.MainView.NavigateToInitialPage();
             }
         }
     }

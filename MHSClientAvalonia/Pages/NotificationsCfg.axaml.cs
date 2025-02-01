@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using MHSApi.API;
 using MHSClientAvalonia.Utils;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -33,7 +34,7 @@ public partial class NotificationsCfg : SecurityPage
         SMTPEnabled = false;
     }
 
-    public override async void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
         UpdateLoadingString("Loading notification settings");
         var res = await Services.SecurityClient.GetNotificationSettings();
@@ -82,9 +83,9 @@ public partial class NotificationsCfg : SecurityPage
         }
         HideLoadingBar();
     }
-    private void BtnCancel_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void BtnCancel_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        OnNavigateTo();
+        await OnNavigateTo();
     }
     private async void BtnSendTestEmail_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {

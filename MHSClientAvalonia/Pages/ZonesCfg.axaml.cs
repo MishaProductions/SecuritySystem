@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using MHSClientAvalonia.Utils;
 using Avalonia.Layout;
 using MHSApi.API;
+using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -14,9 +15,9 @@ public partial class ZonesCfg : SecurityPage
         InitializeComponent();
     }
 
-    public override void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         ShowLoadingBar();
         UpdateLoadingString("Loading zone information");
 
@@ -111,8 +112,8 @@ public partial class ZonesCfg : SecurityPage
 
         HideLoadingBar();
     }
-    private void Cancel_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void Cancel_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        OnNavigateTo();
+        await OnNavigateTo();
     }
 }

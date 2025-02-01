@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -20,9 +21,9 @@ public partial class HomePage : SecurityPage
         labels = [zone1, zone2, zone3, zone4, zone5, zone6, zone7, zone8, zone9, zone10];
     }
 
-    public override async void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         UpdateLoadingString("Syncing zone information");
         ShowLoadingBar();
         UpdateZones();

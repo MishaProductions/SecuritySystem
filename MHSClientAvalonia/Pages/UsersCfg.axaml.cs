@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -15,9 +16,9 @@ public partial class UsersCfg : SecurityPage
         InitializeComponent();
     }
 
-    public override async void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         ShowLoadingBar();
 
         var retr = await Services.SecurityClient.GetAllUsers();
@@ -33,9 +34,9 @@ public partial class UsersCfg : SecurityPage
         HideLoadingBar();
     }
 
-    private void Reload_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private async void Reload_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        OnNavigateTo();
+        await OnNavigateTo();
     }
 
     private async void BtnNewUser_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -77,7 +78,7 @@ public partial class UsersCfg : SecurityPage
 
             if (resp.IsSuccess)
             {
-                OnNavigateTo();
+                await OnNavigateTo();
             }
             else
             {
@@ -108,7 +109,7 @@ public partial class UsersCfg : SecurityPage
 
             if (resp.IsSuccess)
             {
-                OnNavigateTo();
+                await OnNavigateTo();
             }
             else
             {
@@ -143,7 +144,7 @@ public partial class UsersCfg : SecurityPage
 
             if (resp.IsSuccess)
             {
-                OnNavigateTo();
+                await OnNavigateTo();
             }
             else
             {
@@ -186,7 +187,7 @@ public partial class UsersCfg : SecurityPage
 
             if (resp.IsSuccess)
             {
-                OnNavigateTo();
+                await OnNavigateTo();
             }
             else
             {

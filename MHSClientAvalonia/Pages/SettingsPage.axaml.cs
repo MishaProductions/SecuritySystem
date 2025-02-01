@@ -2,6 +2,7 @@ using MHSClientAvalonia.Utils;
 using Microsoft.Win32;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -33,9 +34,9 @@ public partial class SettingsPage : SecurityPage
         }
     }
 
-    public override void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         HideLoadingBar();
     }
     private void CheckForUpdatesButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

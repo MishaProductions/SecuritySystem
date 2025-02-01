@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -13,9 +14,9 @@ public partial class EventLog : SecurityPage
     {
         InitializeComponent();
     }
-    public override async void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
 
         UpdateLoadingString("Loading event log");
         var data = await Services.SecurityClient.GetEventLog();

@@ -10,9 +10,9 @@ public partial class MaintenanceOverview : SecurityPage
         InitializeComponent();
     }
 
-    public override void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         HideLoadingBar();
     }
 

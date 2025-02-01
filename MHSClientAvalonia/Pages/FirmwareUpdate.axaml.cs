@@ -6,6 +6,7 @@ using MHSClientAvalonia.Utils;
 using SkiaSharp;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -15,9 +16,9 @@ public partial class FirmwareUpdate : SecurityPage
     {
         InitializeComponent();
     }
-    public override void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
         HideLoadingBar();
     }
     private static byte[]? Array;

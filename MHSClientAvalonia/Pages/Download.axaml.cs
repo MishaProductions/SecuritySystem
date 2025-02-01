@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using MHSApi.API;
 using MHSClientAvalonia.Utils;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages;
 
@@ -14,9 +15,9 @@ public partial class Download : SecurityPage
         InitializeComponent();
     }
 
-    public override void OnNavigateTo()
+    public override async Task OnNavigateTo()
     {
-        base.OnNavigateTo();
+        await base.OnNavigateTo();
 
         lAndroid.NavigateUri = new(Services.SecurityClient.Endpoint + "/client/android/com.mikhailproductions.mhs-Signed.apk");
         lWindows.NavigateUri = new(Services.SecurityClient.Endpoint + "/client/win64/MHSClientAvalonia.Desktop.exe");
