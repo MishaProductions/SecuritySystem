@@ -542,7 +542,7 @@ namespace SecuritySystem.Modules.NXDisplay
         public async void RefreshWeather()
         {
             if (IsSleepMode) return;
-            if (currentPage != "pageHome" || PromptOpen)
+            if (currentPage != "pageHome")
             {
                 Console.WriteLine("[weather] wrong page: " + currentPage);
                 return;
@@ -914,6 +914,7 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             ShowSimpleWarning("Communication Fail", "The requested action is not\r\nimplemented. Press OK to reload.\r\nDetails:" + detail, () =>
             {
+                PromptOpen = false;
                 InitKeypad();
             });
         }
@@ -921,6 +922,7 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             ShowSimpleWarning("Communication Fail", "The requested action is not currently\r\navailable. Press OK to reload. Details:\r\n" + detail, () =>
             {
+                PromptOpen = false;
                 InitKeypad();
             });
         }

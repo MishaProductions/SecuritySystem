@@ -15,6 +15,8 @@
 					<RowDefinition Height="auto"/>
 				</Grid.RowDefinitions>
 
+				
+				<Image Source="avares://MHSClientAvalonia/Assets/win10.png" Grid.Row="0"></Image>	
 				<TextBlock FontSize="20" Grid.Row="1" Margin="5">MHSClient Windows</TextBlock>
 				<HyperlinkButton x:Name="lWindows" Grid.Row="2">Download</HyperlinkButton>
 			</Grid>
@@ -27,6 +29,7 @@
 					<RowDefinition Height="auto"/>
 				</Grid.RowDefinitions>
 
+				<Image Source="avares://MHSClientAvalonia/Assets/tux.png" Grid.Row="0"></Image>
 				<TextBlock FontSize="20" Grid.Row="1" Margin="5">MHSClient Linux</TextBlock>
 				<HyperlinkButton x:Name="lLinux" Grid.Row="2">Download</HyperlinkButton>
 			</Grid>
@@ -39,6 +42,7 @@
 					<RowDefinition Height="auto"/>
 				</Grid.RowDefinitions>
 
+				<Image Source="avares://MHSClientAvalonia/Assets/android.png" Grid.Row="0"></Image>
 				<TextBlock FontSize="20" Grid.Row="1" Margin="5">MHSClient Android</TextBlock>
 				<HyperlinkButton x:Name="lAndroid" Grid.Row="2">Download</HyperlinkButton>
 			</Grid>
