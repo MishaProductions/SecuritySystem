@@ -22,7 +22,7 @@
 					</StackPanel>
 				</ContentControl>
 
-				<TextBlock x:Name="weatherInfoShort">Loading weather information...</TextBlock>
+				<SelectableTextBlock x:Name="weatherInfoShort">Loading weather information...</SelectableTextBlock>
 			</StackPanel>
 		</Grid>
 	</ScrollViewer>

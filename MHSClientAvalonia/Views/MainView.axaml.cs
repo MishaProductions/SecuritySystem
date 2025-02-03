@@ -114,12 +114,12 @@ public partial class MainView : UserControl
             }
         });
     }
-    private void SecurityClient_OnMusicStarted(string fileName)
+    private void SecurityClient_OnMusicStarted(string fileName, bool isLive)
     {
         Dispatcher.UIThread.Invoke(delegate
         {
             var page = GetCurrentPage();
-            page?.OnMusicFileChanged(fileName);
+            page?.OnMusicFileChanged(fileName, isLive);
         });
     }
     private void SecurityClient_OnMusicStopped(object? sender, EventArgs e)
@@ -127,15 +127,15 @@ public partial class MainView : UserControl
         Dispatcher.UIThread.Invoke(delegate
         {
             var page = GetCurrentPage();
-            page?.OnMusicFileChanged(null);
+            page?.OnMusicFileChanged(null, false);
         });
     }
-    private void SecurityClient_OnAnncStarted(string fileName)
+    private void SecurityClient_OnAnncStarted(string fileName, bool isLive)
     {
         Dispatcher.UIThread.Invoke(delegate
         {
             var page = GetCurrentPage();
-            page?.OnAnncChanged(fileName, false);
+            page?.OnAnncChanged(fileName, isLive);
         });
     }
     private void SecurityClient_OnAnncStopped(object? sender, EventArgs e)

@@ -235,7 +235,7 @@ namespace SecuritySystem.Utils
         {
             var fileName = musicProc.GetPlaylistFileNameByIndex(musicProc.PlaylistIndex);
             Console.WriteLine("got " + fileName + " id of " + id);
-            OnMusicStarted?.Invoke(fileName);
+            OnMusicStarted?.Invoke(fileName, false);
         }
         internal static void PlayAllMusic(List<string> paths)
         {
@@ -248,7 +248,7 @@ namespace SecuritySystem.Utils
                 Console.WriteLine(strings[i]);
             }
 
-            musicProc.PlaylistPlay(strings, true);
+            musicProc.PlaylistPlay(strings, true, true);
         }
         internal static void PlayMusic(int a)
         {
@@ -280,6 +280,9 @@ namespace SecuritySystem.Utils
             {
                 anncProc.Stop();
             }
+
+            OnAnncStarted?.Invoke("", true);
+
             if (!MusicPlaying)
             {
                 anncSfx.Play("/musics/annc/anncstart.mp3");
@@ -333,7 +336,7 @@ namespace SecuritySystem.Utils
             {
                 ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/" + AnncFiles[idx]);
                 anncProc.Play("/musics/annc/" + AnncFiles[idx]);
-                OnAnncStarted?.Invoke(AnncFiles[idx]);
+                OnAnncStarted?.Invoke(AnncFiles[idx], false);
                 return;
             }
 
@@ -365,7 +368,7 @@ namespace SecuritySystem.Utils
 
                     IsFadingMusic = false;
                     FadeBackMusic = true;
-                    OnAnncStarted?.Invoke(AnncFiles[idx]);
+                    OnAnncStarted?.Invoke(AnncFiles[idx], false);
 
                     // Play the annoucement
                     ModuleController.GetDisplays().First().PlayAnnc("/musics/annc/" + AnncFiles[idx]);
@@ -408,6 +411,6 @@ namespace SecuritySystem.Utils
             musicProc.LoopPlaylist = should;
         }
 
-        public delegate void MusicStartedEventArgs(string fileName);
+        public delegate void MusicStartedEventArgs(string fileName, bool isLive);
     }
 }

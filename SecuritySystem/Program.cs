@@ -19,6 +19,35 @@ namespace SecuritySystem
     {
         public static void Main()
         {
+            try
+            {
+                RunApp();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("EXCEPTION DURING APPLICATION RUNTIME: ");
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine();
+                Console.WriteLine("Attempting to restart...");
+
+                try
+                {
+                    RunApp();
+                }
+                catch (Exception ex2)
+                {
+                    Console.WriteLine("EXCEPTION DURING APPLICATION RUNTIME: ");
+                    Console.WriteLine(ex2.ToString());
+                    Console.WriteLine();
+                    Console.WriteLine("Failed to restart. Exiting application.");
+
+                    Environment.Exit(-1);
+                }
+            }
+        }
+
+        private static void RunApp()
+        {
             Console.WriteLine("┌────────────────────────────────┐");
             Console.WriteLine("│                                │");
             Console.WriteLine("│ MHS Security System Controller │");
@@ -35,9 +64,9 @@ namespace SecuritySystem
 
                 HttpFrontendServer.Start();
 
-                while(!Configuration.Instance.SystemSetUp)
+                while (!Configuration.Instance.SystemSetUp)
                 {
-                   Thread.Sleep(1000);
+                    Thread.Sleep(1000);
                 }
             }
             // TODO FIX

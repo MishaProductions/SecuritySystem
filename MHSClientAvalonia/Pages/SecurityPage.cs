@@ -51,7 +51,7 @@ namespace MHSClientAvalonia.Pages
 
         }
 
-        public virtual void OnMusicFileChanged(string? fileName)
+        public virtual void OnMusicFileChanged(string? fileName, bool isLive)
         {
 
         }

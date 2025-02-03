@@ -17,12 +17,14 @@
 
 			<StackPanel Grid.Row="1">
 				<WrapPanel Orientation="Horizontal">
-					<Button Click="StopMusic_Click">Stop music</Button>
-					<Button Click="PlayAllMusic_Click">Play All</Button>
-					<Button Click="MusicBack_Click">Back</Button>
-					<Button Click="MusicNext_Click">Next</Button>
+					<Button Click="PlayAllMusic_Click" Classes="accent" Margin="5">Play All</Button>
+					<Button Click="StopMusic_Click" Margin="5">Stop</Button>
+					<Button Click="MusicBack_Click" Margin="5">Back</Button>
+					<Button Click="MusicNext_Click" Margin="5">Next</Button>
+					<!--<ToggleButton x:Name="ChkPlaylistLoop" Margin="5">Loop</ToggleButton>
+					<ToggleButton x:Name="ChkPlaylistShuffle" Margin="5">Shuffle</ToggleButton>-->
 				</WrapPanel>
-				<TextBlock x:Name="TxtCurrentlyPlayingMusic">Playing: no file</TextBlock>
+				<TextBlock x:Name="TxtCurrentlyPlayingMusic">Playing: None</TextBlock>
 				<Slider x:Name="MusicVolumeSlider" Orientation="Horizontal" Minimum="0" Maximum="130" ValueChanged="MusicVol_ValueChanged"></Slider>
 			</StackPanel>
 		</Grid>
@@ -37,10 +39,10 @@
  
 			<StackPanel Grid.Row="1">
 				<WrapPanel Orientation="Horizontal">
-					<Button Click="StopAnnc_Click">Stop annc</Button>
-					<Button x:Name="BtnPlayAnncFromMic" Click="PlayAnncFromMic_Click">Start Microphone</Button>
+					<Button x:Name="BtnPlayAnncFromMic" Click="PlayAnncFromMic_Click" Margin="5" Classes="accent">Start Microphone</Button>
+					<Button Click="StopAnnc_Click" Margin="5">Stop</Button>
 				</WrapPanel>
-				<TextBlock x:Name="TxtCurrentlyPlayingAnnc">Playing: no file</TextBlock>
+				<TextBlock x:Name="TxtCurrentlyPlayingAnnc">Playing: None</TextBlock>
 				<Slider x:Name="AnncVolumeSlider" Orientation="Horizontal" Minimum="0" Maximum="130" ValueChanged="AnncVol_ValueChanged"></Slider>
 			</StackPanel>
 		</Grid>

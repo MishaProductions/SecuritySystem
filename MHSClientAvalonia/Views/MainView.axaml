@@ -15,8 +15,8 @@
 		<ui:NavigationView x:Name="navigationView" ItemInvoked="NavigationView_ItemInvoked" Grid.Row="1" IsBackEnabled="{Binding #FrameView.CanGoBack}">
 			<ui:NavigationView.MenuItems>
 				<ui:NavigationViewItem Content="Home" Tag="HomePage" IconSource="HomeFilled" />
-				<ui:NavigationViewItem Content="Alarm History" Tag="AlarmHistory" IconSource="BulletList" />
 				<ui:NavigationViewItem Content="Music" Tag="MusicManager" IconSource="Speaker2Filled" />
+				<ui:NavigationViewItem Content="Alarm History" Tag="AlarmHistory" IconSource="BulletList" />
 				<ui:NavigationViewItem Content="Weather" Tag="Weather" IconSource="Cloud" IsVisible="False" />
 
 				<ui:NavigationViewItem Content="Configuration" Tag="CfgOverview" IconSource="SettingsFilled">
@@ -104,7 +104,7 @@
 
 		<ui:InfoBar x:Name="UiAndroidHint"
     Title="Native MHSClient available"
-    Message="We recommend downloading the native client for your device."
+    Message="For the best experience, it is recommended to use the client specifically compiled for your device."
     IsClosable="True" IsOpen="False" Grid.Row="0" CloseButtonClick="AndroidHint_CloseButtonClick" >
 			<ui:InfoBar.ActionButton>
 				<Button Content="Download" Click="BtnDownload_Click" />

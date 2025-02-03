@@ -87,16 +87,14 @@ namespace SecuritySystem
 
             var data = await ParseRequestJson<JsonZones>();
 
-            //We need to convert the JsonZones into proper zone class
-            Dictionary<int, Zone> newZones = new();
-            int i = 0;
-            foreach (var item in data.zones)
+            for (int i = 0; i < data.zones.Length; i++)
             {
-                newZones.Add(i, new Zone() { Name = item.name, ZoneNumber = item.idx, Type = (ZoneType)item.type });
-                i++;
+                var item = data.zones[i];
+                Configuration.Instance.Zones[i].Name = item.name;
+                Configuration.Instance.Zones[i].ZoneNumber = item.idx;
+                Configuration.Instance.Zones[i].Type = item.type;
             }
 
-            Configuration.Instance.Zones = newZones;
             Configuration.Save();
 
             SystemManager.SendZoneUpdateSingleToAll(false, 0, "", Modules.NXDisplay.ZoneState.Unconfigured);

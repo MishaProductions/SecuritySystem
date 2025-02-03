@@ -130,7 +130,8 @@ namespace MHSClientAvalonia.Client
                     }
                     else if (msg.type == MessageType.MusicStarted)
                     {
-                        OnMusicStarted?.Invoke(((MusicStarted)msg).MusicFileName);
+                        var msg2 = ((MusicStarted)msg) ?? throw new Exception("cannot be null");
+                        OnMusicStarted?.Invoke(msg2.MusicFileName, msg2.IsLive);
                     }
                     else if (msg.type == MessageType.MusicStopped)
                     {
@@ -139,7 +140,7 @@ namespace MHSClientAvalonia.Client
                     else if (msg.type == MessageType.AnncStarted)
                     {
                         var msg2 = ((AnncStarted)msg) ?? throw new Exception("cannot be null");
-                        OnAnncStarted?.Invoke(msg2.AnncFileName ?? "null");
+                        OnAnncStarted?.Invoke(msg2.AnncFileName ?? "null", msg2.IsLive);
                     }
                     else if (msg.type == MessageType.AnncStopped)
                     {
@@ -671,7 +672,7 @@ namespace MHSClientAvalonia.Client
         public delegate void ProgressEventHandler(int progress);
         public delegate void OnSystemTimer(bool arming, int timer);
         public delegate void OnSystemUpdateProgress(FwUpdateMsg msg);
-        public delegate void MusicStartedEventHandler(string fileName);
+        public delegate void MusicStartedEventHandler(string fileName, bool isLive);
     }
     public class Result(SecurityApiResult result, string message, object? value)
     {

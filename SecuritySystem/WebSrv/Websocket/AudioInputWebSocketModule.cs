@@ -117,10 +117,10 @@ namespace SecuritySystem.WebSrv.Websocket
             else if (cmd == AudioInMsgType.OpenAudioDevice)
             {
                 if (PcmDevice != null)
-                    await SendCommandAsync(context, AudioInMsgType.CmdError);
+                    await SendCommandAsync(context, AudioInMsgType.LineBusy);
                 else
                 {
-                    BinaryReader br = new BinaryReader(new MemoryStream(buffer));
+                    BinaryReader br = new(new MemoryStream(buffer));
                     br.ReadByte(); // skip command byte
 
                     int sampleRate = br.ReadInt32();

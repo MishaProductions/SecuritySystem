@@ -106,25 +106,31 @@ public partial class MusicManager : SecurityPage
         MusicVolumeSlider.Value = Services.SecurityClient.MusicVol;
     }
 
-    public override void OnMusicFileChanged(string? fileName)
+    public override void OnMusicFileChanged(string? fileName, bool isLive)
     {
+        if (isLive)
+        {
+            TxtCurrentlyPlayingMusic.Text = "Source: DirectStream";
+            return;
+        }
+
         if (fileName != null)
             TxtCurrentlyPlayingMusic.Text = "Playing: " + fileName;
         else
-            TxtCurrentlyPlayingMusic.Text = "Playing: no file";
+            TxtCurrentlyPlayingMusic.Text = "Playing: None";
     }
     public override void OnAnncChanged(string? fileName, bool isLive)
     {
         if (isLive)
         {
-            TxtCurrentlyPlayingAnnc.Text = "Microphone input";
+            TxtCurrentlyPlayingAnnc.Text = "Source: Microphone input";
             return;
         }
 
         if (fileName != null)
             TxtCurrentlyPlayingAnnc.Text = "Playing: " + fileName;
         else
-            TxtCurrentlyPlayingAnnc.Text = "Playing: no file";
+            TxtCurrentlyPlayingAnnc.Text = "Playing: None";
     }
 
     private async void AnncVol_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -152,7 +158,7 @@ public partial class MusicManager : SecurityPage
     {
         if (Services.AudioCapture == null)
         {
-            Services.MainView.ShowMessage("Platform Error", "Audio capture is not implemented on this platform.");
+            Services.MainView.ShowMessage("Platform Error", "Audio capture is not yet implemented on this platform.");
             return;
         }
         if (Services.AudioCapture._audioOutSocket != null)
@@ -160,6 +166,8 @@ public partial class MusicManager : SecurityPage
             Services.MainView.ShowMessage("System Error", "An audio input stream is already open on this device. Try speaking into the microphone, and then press Stop annc.");
             return;
         }
+
+        BtnPlayAnncFromMic.IsEnabled = false;
 
         try
         {
@@ -171,12 +179,14 @@ public partial class MusicManager : SecurityPage
             else
             {
                 Services.MainView.ShowMessage("System Error", "Opening remote annc stream input failed. Check network/authentication");
+                BtnPlayAnncFromMic.IsEnabled = true;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
             Services.MainView.ShowMessage("System Error", "Try checking microphone permissions\n"+ ex.ToString());
+            BtnPlayAnncFromMic.IsEnabled = true;
         }
     }
 }

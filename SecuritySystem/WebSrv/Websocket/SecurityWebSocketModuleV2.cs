@@ -47,13 +47,13 @@ namespace SecuritySystem.WebSrv.Websocket
         {
             await SendToAll(new MusicStopped());
         }
-        private async void MusicPlayer_OnMusicStarted(string fileName)
+        private async void MusicPlayer_OnMusicStarted(string fileName, bool isLive)
         {
-            await SendToAll(new MusicStarted() { MusicFileName = fileName});
+            await SendToAll(new MusicStarted() { MusicFileName = fileName, IsLive = isLive});
         }
-        private async void MusicPlayer_OnAnncStarted(string fileName)
+        private async void MusicPlayer_OnAnncStarted(string fileName, bool isLive)
         {
-            await SendToAll(new AnncStarted() { AnncFileName = fileName, IsLive = false});
+            await SendToAll(new AnncStarted() { AnncFileName = fileName, IsLive = isLive});
         }
 
         private async void DeviceModel_OnFirmwareUpdateProgress(string devName, string desc, int percent)

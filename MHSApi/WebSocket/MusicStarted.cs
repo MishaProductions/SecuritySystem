@@ -11,5 +11,6 @@ namespace MHSApi.WebSocket
     {
         public override MessageType type { get; } = MessageType.MusicStarted;
         public string MusicFileName { get; set; } = "";
+        public bool IsLive { get; set; }
     }
 }

@@ -176,12 +176,12 @@ namespace SecuritySystem.Utils
                 DoMpvCommand("loadfile", path);
             }
         }
-        public void PlaylistPlay(string[] paths, bool force = false)
+        public void PlaylistPlay(string[] paths, bool force = false, bool shuffle = false)
         {
             if (IsPlaying)
             {
                 Stop();
-
+                ClearPlaylist();
             }
             IsPlaying = true;
             Console.WriteLine(mpv_set_property_string(playerHandle, "pause", "no"));
@@ -200,6 +200,13 @@ namespace SecuritySystem.Utils
 
                 first = false;
             }
+
+            currentlyShuffled = false;
+            if (shuffle)
+            {
+                UpdatePlaylistShuffle(true);
+            }
+
             mpv_set_property_string(playerHandle, "pause", "no");
             DoMpvCommand("playlist-play-index", "0");
         }

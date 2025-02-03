@@ -9,8 +9,8 @@ namespace MHSClientAvalonia.Pages;
 
 public partial class InitialSetup : SecurityPage
 {
-    private IBrush? defaultBrush;
-    Control[] Pages = [];
+    private readonly IBrush? defaultBrush;
+    readonly Control[] Pages = [];
 
     private string NewPassword1
     {

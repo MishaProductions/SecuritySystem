@@ -33,11 +33,11 @@ public partial class AboutPage : SecurityPage
 
                 if (info.fwBuildTime.Year > 2000)
                 {
-                    AddInfo("Controller build time: " + info.fwBuildTime.ToString("MM/dd/yyyy HH:mm:ss"));
+                    AddInfo("Firmware build date: " + info.fwBuildTime.ToString("MM/dd/yyyy HH:mm:ss"));
                 }
                 else
                 {
-                    AddInfo("Controller build time: Unknown (Controller does not support request)");
+                    AddInfo("Firmware build date: Unknown (Controller does not support request)");
                 }
             }
         }

@@ -18,7 +18,7 @@ public class MainActivity : AvaloniaMainActivity<App>
 {
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
-        Services.AudioCapture = new AndroidAudioCapture();
+        Services.AudioCapture = new AndroidAudioCapture(this);
         return base.CustomizeAppBuilder(builder)
             .WithInterFont();
     }

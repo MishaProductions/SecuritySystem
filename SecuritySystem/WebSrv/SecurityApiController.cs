@@ -77,7 +77,7 @@ namespace SecuritySystem
             User? currentUser = await GetUserFromToken();
             if (currentUser == null) return;
 
-            await SendSuccessfulResponseWithContent(new SystemInfoResponse("Security System (MHS-1000P)", new DateTime(Builtin.CompileTime)));
+            await SendSuccessfulResponseWithContent(new SystemInfoResponse("Security System (MHS-1000PA)", new DateTime(Builtin.CompileTime)));
         }
         [Route(HttpVerbs.Get, Endpoints.GetAlarmHistory)]
         public async Task ReadAlarmHistory()

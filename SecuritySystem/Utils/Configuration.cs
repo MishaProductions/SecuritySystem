@@ -76,7 +76,7 @@ namespace SecuritySystem.Utils
                 Instance = j;
                 if (Instance.Zones.Count == 0)
                 {
-                    Instance.Zones = new Dictionary<int, Zone>();
+                    Instance.Zones = [];
                     for (int i = 0; i < 7; i++)
                     {
                         Instance.Zones.Add(i, new Zone());
@@ -117,7 +117,7 @@ namespace SecuritySystem.Utils
 
         public static bool CheckIfCodeCorrect(string code)
         {
-            return SecurityApiController.Sha256(code).ToLower() == Instance.AccessCode.ToLower();
+            return SecurityApiController.Sha256(code).Equals(Instance.AccessCode, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }
