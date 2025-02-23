@@ -77,7 +77,7 @@ namespace SecuritySystem
             Console.WriteLine("Probing zones (this might take some time)...");
             ZoneController.Initialize();
 
-            Console.WriteLine("Loading SMTP module");
+            Console.WriteLine("Start InactiveZoneMonitor module");
             ModuleController.RegisterModule(new MailClass());
 
             Console.WriteLine("Initializing devices (this might take some time)...");
@@ -86,6 +86,9 @@ namespace SecuritySystem
             {
                 ModuleController.RegisterModule(new NextionDisplay("/dev/ttyS3"));
             }
+
+            Console.WriteLine("Start InactiveZoneMonitor module");
+            ModuleController.RegisterModule(new InactiveZoneMonitor());
 
             Console.WriteLine("Starting webserver");
             HttpFrontendServer.Start();

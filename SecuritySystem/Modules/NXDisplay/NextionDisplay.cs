@@ -67,6 +67,7 @@ namespace SecuritySystem.Modules.NXDisplay
             SystemManager.OnAlarm += SystemManager_OnAlarm;
             SystemManager.OnSystemDisarm += SystemManager_OnSystemDisarm;
             SystemManager.OnSysTimerEvent += SystemManager_OnSysTimerEvent;
+            SystemManager.OnInactiveZone += SystemManager_OnInactiveZone;
         }
 
         public override void OnUnregister()
@@ -237,6 +238,30 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             AlarmBeep();
             UpdateStatusText();
+        }
+        private bool inactiveZoneWarnShowing = false;
+        private void SystemManager_OnInactiveZone(int idx, TimeSpan sinceInactive)
+        {
+            TroubleBeep();
+            if (!PromptOpen && !inactiveZoneWarnShowing)
+            {
+                inactiveZoneWarnShowing = true;
+
+                ShowPrompt("Inactive Zone", $"The zone {idx+1} has been\r\nnot ready for {(int)sinceInactive.TotalMinutes}mins\r\nStop alarm or ignore?", true,
+                2, "STOPALRM", true, ()=> {
+                    inactiveZoneWarnShowing = false;
+                    PromptOpen = false;
+
+                    SystemManager.SendIgnoreInactiveZone(idx);
+
+                    SetPage("pageHome");
+                }, "", false, null, "IGNORE", true, () => {
+                    inactiveZoneWarnShowing = false;
+                    PromptOpen = false;
+
+                    SetPage("pageHome");
+                }, 21152);
+            }
         }
         #endregion
         #region Firmware update
@@ -875,6 +900,9 @@ namespace SecuritySystem.Modules.NXDisplay
 
         private void ShowPrompt(string title, string message, bool iconVisible, int icon, string b1Text, bool b1Visible, Action? b1Click, string b2Text, bool b2Visible, Action? b2Click, string b3Text, bool b3Visible, Action? b3Click, int bg = 16904)
         {
+            SendCommand("click bWait,0");
+            SendCommand("click bWait,1");
+            
             SetDispPage("pageSysMsg");
 
             // setup basics

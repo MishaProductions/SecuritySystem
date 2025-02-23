@@ -17,6 +17,8 @@ namespace SecuritySystem.Utils
         public static event ZoneUpdateEventHandler? OnZoneUpdate;
         public static event EventHandler? OnSystemDisarm;
         public static event SysTimerEvent? OnSysTimerEvent;
+        public static event InactiveZoneEvent? OnInactiveZone;
+        public static event IgnoreInactiveZoneEvent? OnInactiveZoneIgnore;
         public static void StartAlarm(int zone)
         {
             OnAlarm?.Invoke(zone);
@@ -64,6 +66,8 @@ namespace SecuritySystem.Utils
         public delegate void ZoneUpdateEventHandler(bool single, int zone, string name, ZoneState ready);
         public delegate void AlarmEventHandler(int alarmZone);
         public delegate void SysTimerEvent(bool entry, int timer);
+        public delegate void InactiveZoneEvent(int index, TimeSpan lastReadyDur);
+        public delegate void IgnoreInactiveZoneEvent(int index);
 
         public static void WriteToEventLog(string message, User? user = null)
         {
@@ -76,6 +80,16 @@ namespace SecuritySystem.Utils
 
             Configuration.Instance.EventLog.Add(evt);
             Configuration.Save();
+        }
+
+        internal static void InactiveZone(int index, TimeSpan lastReadyDur)
+        {
+            OnInactiveZone?.Invoke(index, lastReadyDur);
+        }
+
+        internal static void SendIgnoreInactiveZone(int idx)
+        {
+            OnInactiveZoneIgnore?.Invoke(idx);
         }
     }
 }
