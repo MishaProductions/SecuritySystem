@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Client
@@ -92,7 +93,7 @@ namespace MHSClientAvalonia.Client
                 {
                     if (msg.type == MessageType.ServerHello)
                     {
-                        await ws.Send(JsonSerializer.Serialize(new ClientWelcomeReply(Token)));
+                        await ws.Send(JsonSerializer.Serialize(new ClientWelcomeReply(Token), SourceGenerationContext.Default.ClientWelcomeReply));
                     }
                     else if (msg.type == MessageType.AuthError)
                     {
@@ -157,12 +158,12 @@ namespace MHSClientAvalonia.Client
 
         public async Task SetAnncVolume(int newValue)
         {
-            await ws.Send(JsonSerializer.Serialize(new AnncPlayerVolumeChange(newValue)));
+            await ws.Send(JsonSerializer.Serialize(new AnncPlayerVolumeChange(newValue), SourceGenerationContext.Default.AnncPlayerVolumeChange));
         }
 
         public async Task SetMusicVolume(int newValue)
         {
-            await ws.Send(JsonSerializer.Serialize(new MusicPlayerVolumeChange(newValue)));
+            await ws.Send(JsonSerializer.Serialize(new MusicPlayerVolumeChange(newValue), SourceGenerationContext.Default.MusicPlayerVolumeChange));
         }
 
         private async Task SendMusicManagerThings()
@@ -466,7 +467,10 @@ namespace MHSClientAvalonia.Client
                 return Result.Exception;
             }
 
-            ApiResponseWithContent<T>? responseJson = JsonSerializer.Deserialize<ApiResponseWithContent<T>>(response);
+            var jsonType = SourceGenerationContext.Default.GetTypeInfo(typeof(ApiResponseWithContent<T>));
+            if (jsonType == null) return new(SecurityApiResult.InternalError, "Unknown JSON type for body: " + typeof(T).Name, null);
+
+            ApiResponseWithContent<T>? responseJson = JsonSerializer.Deserialize(response, (JsonTypeInfo<ApiResponseWithContent<T>>)jsonType);
             if (responseJson == null)
                 return Result.EmptyResponse;
 
@@ -494,7 +498,7 @@ namespace MHSClientAvalonia.Client
                 return Result.Exception;
             }
 
-            ApiResponse? responseJson = JsonSerializer.Deserialize<ApiResponse>(response);
+            ApiResponse? responseJson = JsonSerializer.Deserialize(response, SourceGenerationContext.Default.ApiResponse);
             if (responseJson == null)
                 return Result.EmptyResponse;
             Result res = new(responseJson.code, responseJson.message, null);
@@ -522,14 +526,21 @@ namespace MHSClientAvalonia.Client
         {
             try
             {
-                var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonSerializer.Serialize(body))).ConfigureAwait(false);
+                var jsonType = SourceGenerationContext.Default.GetTypeInfo(body.GetType());
+                if (jsonType == null) return new(SecurityApiResult.InternalError, "Unknown JSON type for body: " + body.GetType().Name, null);
+                
+                var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonSerializer.Serialize(body, jsonType))).ConfigureAwait(false);
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse?>(responseStr);
-                var contents2 = JsonSerializer.Deserialize<T?>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize(responseStr, SourceGenerationContext.Default.ApiResponse);
                 if (contents == null)
                 {
                     return Result.Exception;
                 }
+
+                var jsonTypeResponse = SourceGenerationContext.Default.GetTypeInfo(typeof(T));
+                if (jsonTypeResponse == null) return new(SecurityApiResult.InternalError, "Unknown JSON type for response", null);
+
+                var contents2 = JsonSerializer.Deserialize(responseStr, jsonTypeResponse);
 
                 Result res = new(contents.code, contents.message, contents2);
 
@@ -552,10 +563,13 @@ namespace MHSClientAvalonia.Client
         {
             try
             {
-                var response = await Client.PatchAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonSerializer.Serialize(body))).ConfigureAwait(false);
+                var jsonType = SourceGenerationContext.Default.GetTypeInfo(body.GetType());
+                if (jsonType == null) return new(SecurityApiResult.InternalError, "Unknown JSON type", null);
+
+                var response = await Client.PatchAsync(Endpoint + Endpoints.ApiBase + endpoint, new StringContent(JsonSerializer.Serialize(body, jsonType))).ConfigureAwait(false);
 
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse?>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize(responseStr, SourceGenerationContext.Default.ApiResponse);
 
                 if (contents == null)
                 {
@@ -575,7 +589,7 @@ namespace MHSClientAvalonia.Client
             {
                 var response = await Client.DeleteAsync(Endpoint + Endpoints.ApiBase + endpoint).ConfigureAwait(false);
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize(responseStr, SourceGenerationContext.Default.ApiResponse);
 
                 if (contents == null)
                     return Result.EmptyResponse;
@@ -602,7 +616,7 @@ namespace MHSClientAvalonia.Client
             List<byte> TokenCmd = [(byte)AudioInMsgType.DoAuth, (byte)tokenBytes.Length];
             TokenCmd.AddRange(tokenBytes);
 
-            await client.Send(TokenCmd.ToArray());
+            await client.Send([.. TokenCmd]);
 
             // recieve auth status
             var authResult = await client.ReceiveBytes();
@@ -617,7 +631,7 @@ namespace MHSClientAvalonia.Client
             AudioDevCmd.AddRange(BitConverter.GetBytes(bitsPerSample));
             AudioDevCmd.AddRange(BitConverter.GetBytes(blockAlign));
 
-            await client.Send(AudioDevCmd.ToArray());
+            await client.Send([.. AudioDevCmd]);
 
             // recieve audio device status
             var devResult = await client.ReceiveBytes();
@@ -653,7 +667,7 @@ namespace MHSClientAvalonia.Client
                 contentType.Value = "multipart/form-data; " + contentType.Value;
                 var response = await Client.PostAsync(Endpoint + Endpoints.ApiBase + Endpoints.UploadFirmware, form).ConfigureAwait(false);
                 var responseStr = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                ApiResponse? contents = JsonSerializer.Deserialize<ApiResponse?>(responseStr);
+                ApiResponse? contents = JsonSerializer.Deserialize(responseStr, SourceGenerationContext.Default.ApiResponse);
                 if (contents == null)
                 {
                     return Result.EmptyResponse;

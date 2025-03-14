@@ -18,10 +18,10 @@ public partial class MaintenanceOverview : SecurityPage
 
     private async void FirmwareUpdate_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Services.MainView.NavigateTo("FirmwareUpdate");
+        await Services.MainView.NavigateTo(typeof(FirmwareUpdate));
     }
     private async void EventLog_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Services.MainView.NavigateTo("FirmwareUpdate");
+        await Services.MainView.NavigateTo(typeof(EventLog));
     }
 }

@@ -4,17 +4,26 @@ using MHSApi.API;
 using MHSClientAvalonia.Utils;
 using SecuritySystemApi;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace MHSClientAvalonia.Pages
 {
-    public partial class LoginPage : UserControl
+    public partial class LoginPage : SecurityPage
     {
         public LoginPage()
         {
             InitializeComponent();
         }
+
+        public override async Task OnNavigateTo()
+        {
+            await base.OnNavigateTo();
+            await StartLoginProcess();
+        }
+
+        
         public async Task StartLoginProcess()
         {
             // Determine if we need to show the login page.
@@ -47,7 +56,7 @@ namespace MHSClientAvalonia.Pages
                     if (res == SecurityApiResult.Success)
                     {
                         LoadingDescription.Text = "Authentication OK";
-                        await Services.MainView.NavigateTo("HomePage", true);
+                        await Services.MainView.NavigateTo(typeof(HomePage), true);
                         return;
                     }
                     else if (res == SecurityApiResult.IncorrectUsernameOrPassword)
@@ -93,9 +102,15 @@ namespace MHSClientAvalonia.Pages
         }
         private async void Login_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            await DoLogin();
+        }
+
+        private async Task DoLogin()
+        {
             AutoLoginBar.IsOpen = false;
             BarHostError.IsOpen = false;
             BarWrongPassword.IsOpen = false;
+            BarInternalError.IsOpen = false;
             var ip = txtIp.Text;
 
             if (ip == null)
@@ -158,7 +173,7 @@ namespace MHSClientAvalonia.Pages
                     if (wsResult == SecurityApiResult.Success)
                     {
                         Services.Preferences.Set("user_token", data.Item2);
-                        await Services.MainView.NavigateTo("HomePage", true);
+                        await Services.MainView.NavigateTo(typeof(HomePage), true);
                     }
                     else
                     {
@@ -174,12 +189,24 @@ namespace MHSClientAvalonia.Pages
                         }.ShowAsync();
                     }
                 }
-                else
+                else if (data.Item1 == SecurityApiResult.IncorrectUsernameOrPassword)
                 {
-                    // show login box
                     LoginBox.IsVisible = true;
                     runner.IsVisible = false;
                     BarWrongPassword.IsOpen = true;
+                }
+                else
+                {
+                    LoginBox.IsVisible = true;
+                    runner.IsVisible = false;
+                    BarInternalError.IsOpen = true;
+
+                    await new ContentDialog()
+                        {
+                            Title = "Error",
+                            Content = "The following internal error has occured while connecting to the device:\n" + data.Item2,
+                            PrimaryButtonText = "OK"
+                        }.ShowAsync();
                 }
             }
             catch (Exception ex)

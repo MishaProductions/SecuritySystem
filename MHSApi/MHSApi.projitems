@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)API\NotificationSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\SaveSysConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\ShortWeatherDataContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)API\SourceGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\StartAnnc.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\SystemInfoResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)API\SystemStatusResponse.cs" />

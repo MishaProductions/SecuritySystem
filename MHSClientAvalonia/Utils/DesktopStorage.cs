@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using MHSApi.API;
 
 namespace MHSClientAvalonia.Utils
 {
@@ -23,7 +24,7 @@ namespace MHSClientAvalonia.Utils
             try
             {
                 using var stream = Store.OpenFile(key, FileMode.Open);
-                return JsonSerializer.Deserialize<string>(stream, (JsonSerializerOptions?)null) ?? "";
+                return JsonSerializer.Deserialize(stream, SourceGenerationContext.Default.String) ?? "";
             }
             catch (Exception)
             {
@@ -41,7 +42,7 @@ namespace MHSClientAvalonia.Utils
             try
             {
                 using var stream = Store.OpenFile(key, FileMode.Create, FileAccess.Write);
-                JsonSerializer.Serialize(stream, value, (JsonSerializerOptions?)null);
+                JsonSerializer.Serialize(stream, value, SourceGenerationContext.Default.String);
             }
             catch (Exception)
             {

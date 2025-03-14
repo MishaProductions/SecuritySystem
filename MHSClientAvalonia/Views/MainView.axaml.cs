@@ -8,12 +8,14 @@ using Avalonia.Threading;
 using DesktopNotifications;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Media.Animation;
+using FluentAvalonia.UI.Navigation;
 using MHSApi.API;
 using MHSClientAvalonia.Pages;
 using MHSClientAvalonia.Utils;
 using MHSClientAvalonia.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -293,7 +295,7 @@ public partial class MainView : UserControl
             Content = "Something went wrong while authenticating with the websocket. Press OK to visit the login page. If that does not work, try to restart your security system controller, update your client, or try a firmware update.",
             CloseButtonText = "OK",
         }.ShowAsync();
-        await NavigateTo("LoginPage");
+        await NavigateTo(typeof(LoginPage));
     }
     private void SecurityClient_OnZoneUpdate(object? sender, EventArgs e)
     {
@@ -329,7 +331,7 @@ public partial class MainView : UserControl
 
                 if (Services.SecurityClient.CurrentUser.Username == "System Installer")
                 {
-                    await NavigateTo("InitialSetup", true);
+                    await NavigateTo(typeof(InitialSetup), true);
                 }
             }
             else
@@ -485,7 +487,7 @@ public partial class MainView : UserControl
         }
     }
 
-    private void CurrentUser_Clicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void CurrentUser_Clicked(object? sender, RoutedEventArgs e)
     {
         var ctl = sender as Control;
         if (ctl != null)
@@ -502,7 +504,7 @@ public partial class MainView : UserControl
     /// Navigates to page by tag
     /// </summary>
     /// <param name="page">The page tag</param>
-    public async Task NavigateTo(string? page, bool clearBackStack = false)
+    public async Task NavigateTo(Type page, bool clearBackStack = false)
     {
         if (page == null)
             return;
@@ -512,29 +514,26 @@ public partial class MainView : UserControl
             // send navigate away event to old page
             if (navigationView.Content is SecurityPage oldPage)
             {
-                oldPage.OnNavigateAway();
+                await oldPage.OnNavigateAway();
             }
 
-            if (page == "LoginPage")
+            if (page == typeof(LoginPage))
             {
                 PageTitle.Text = "Login";
                 PageTitle.IsVisible = true;
                 navigationView.IsPaneVisible = false;
                 pnlControls.IsVisible = false;
-                FrameView.Navigate(typeof(LoginPage), "", new SlideNavigationTransitionInfo());
+                if (!FrameView.Navigate(typeof(LoginPage), "", new SlideNavigationTransitionInfo()))
+                {
+                    Console.WriteLine("Navigation failed");
+                }
 
                 runnerBox.IsVisible = false;
                 MainFrameBox.IsVisible = true;
-
-                if (FrameView.Content != null)
-                {
-                    // should never be null
-                    await ((LoginPage)FrameView.Content).StartLoginProcess();
-                }
             }
             else
             {
-                if (page == "InitialSetup")
+                if (page == typeof(InitialSetup))
                 {
                     PageTitle.Text = "System setup";
                     PageTitle.IsVisible = true;
@@ -553,20 +552,12 @@ public partial class MainView : UserControl
                 }
 
                 // navigate to requested page
-                var smpPage = $"MHSClientAvalonia.Pages.{page}";
-                FrameView.Navigate(Type.GetType(smpPage), "", new DrillInNavigationTransitionInfo());
+                if (!FrameView.Navigate(page, "", new DrillInNavigationTransitionInfo()))
+                {
+                    Console.WriteLine("Navigation failed");
+                }
                 if (clearBackStack)
                     FrameView.BackStack.Clear();
-
-
-                // send navigation event
-                if (FrameView.Content is SecurityPage page2)
-                {
-                    page2.OnHideLoadingBar += Page_OnHideLoadingBar;
-                    page2.OnShowLoadingBar += Page_OnShowLoadingBar;
-                    page2.OnLoadProgress += Page_OnLoadProgress;
-                    await page2.OnNavigateTo();
-                }
             }
         }
         catch (Exception ex)
@@ -577,6 +568,34 @@ public partial class MainView : UserControl
             Console.WriteLine(ex.ToString());
 
             ShowMessage("Something went wrong", "When loading the page, a error was encountered.\n\n" + ex.ToString());
+        }
+    }
+
+    private async void Frame_Navigated(object? sender, NavigationEventArgs e)
+    {
+        // send navigation event
+        if (e.Content is SecurityPage page2)
+        {
+            page2.OnHideLoadingBar += Page_OnHideLoadingBar;
+            page2.OnShowLoadingBar += Page_OnShowLoadingBar;
+            page2.OnLoadProgress += Page_OnLoadProgress;
+            await page2.OnNavigateTo();
+        }
+        else
+        {
+            Console.WriteLine("Not a securitypage.");
+        }
+    }
+
+    private void Frame_NavigationFailed(object? sender, NavigationFailedEventArgs e)
+    {
+        if (e.Exception != null)
+        {
+            Console.WriteLine("Navigation failed with " + e.Exception.ToString());
+            runnerBox.IsVisible = false;
+            MainFrameBox.IsVisible = true;
+
+            ShowMessage("Error", $"Failed to load page in MHSClient:{Environment.NewLine}{e.Exception}");
         }
     }
 
@@ -600,15 +619,45 @@ public partial class MainView : UserControl
     private async void BtnDownload_Click(object? sender, RoutedEventArgs e)
     {
         Services.SecurityClient.SetHost("https://" + BrowserUtils.GetHost());
-        await NavigateTo("Download");
+        await NavigateTo(typeof(Download));
     }
+
+    // TODO: better way to do this
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(HomePage))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(MusicManager))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(AlarmHistory))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Weather))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(CfgOverview))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ZonesCfg))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(UsersCfg))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(NotificationsCfg))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(AboutPage))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(MaintenanceOverview))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(FirmwareUpdate))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(EventLog))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Download))]
+    private static readonly Dictionary<string, Type> PageNames = new(){
+        {"HomePage", typeof(HomePage)},
+        {"MusicManager", typeof(MusicManager)},
+        {"AlarmHistory", typeof(AlarmHistory)},
+        {"Weather", typeof(Weather)},
+        {"CfgOverview", typeof(CfgOverview)},
+        {"ZonesCfg", typeof(ZonesCfg)},
+        {"UsersCfg", typeof(UsersCfg)},
+        {"NotificationsCfg", typeof(NotificationsCfg)},
+        {"AboutPage", typeof(AboutPage)},
+        {"MaintenanceOverview", typeof(MaintenanceOverview)},
+        {"FirmwareUpdate", typeof(FirmwareUpdate)},
+        {"EventLog", typeof(EventLog)},
+        {"Download", typeof(Download)}
+    };
 
     private async void NavigationView_ItemInvoked(object? sender, FluentAvalonia.UI.Controls.NavigationViewItemInvokedEventArgs e)
     {
         // send navigate away event to old page
         if (navigationView.Content is SecurityPage page)
         {
-            page.OnNavigateAway();
+            await page.OnNavigateAway();
         }
 
         // navigate to the selected page
@@ -617,12 +666,12 @@ public partial class MainView : UserControl
         {
             if (e.IsSettingsInvoked)
             {
-                await NavigateTo("SettingsPage");
+                await NavigateTo(typeof(SettingsPage));
             }
             else
             {
-                if (nvi.Tag != null)
-                    await NavigateTo((string)nvi.Tag);
+                if (nvi.Tag != null && PageNames.TryGetValue((string)nvi.Tag, out Type? t))
+                    await NavigateTo(t);
             }
         }
     }
@@ -703,11 +752,11 @@ public partial class MainView : UserControl
 
                         if (Services.SecurityClient.CurrentUser != null && Services.SecurityClient.CurrentUser.Username == "System Installer")
                         {
-                            await NavigateTo("InitialSetup", true);
+                            await NavigateTo(typeof(InitialSetup), true);
                         }
                         else
                         {
-                            await NavigateTo("HomePage", true);
+                            await NavigateTo(typeof(HomePage), true);
                         }
                         return;
                     }
@@ -722,7 +771,7 @@ public partial class MainView : UserControl
                 }
             }
 
-            await NavigateTo("LoginPage", true);
+            await NavigateTo(typeof(LoginPage), true);
         }
         catch (Exception ex)
         {

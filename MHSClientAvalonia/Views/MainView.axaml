@@ -85,7 +85,7 @@
 							<TextBlock x:Name="LoadingDescription">Loading</TextBlock>
 						</WrapPanel>
 						<Grid x:Name="MainFrameBox" IsVisible="True">
-							<ui:Frame Name="FrameView"></ui:Frame>
+							<ui:Frame Name="FrameView" Navigated="Frame_Navigated" NavigationFailed="Frame_NavigationFailed"></ui:Frame>
 						</Grid>
 					</Grid>
 

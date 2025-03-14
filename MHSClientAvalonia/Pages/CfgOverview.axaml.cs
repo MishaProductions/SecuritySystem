@@ -19,18 +19,18 @@ public partial class CfgOverview : SecurityPage
     }
     private async void Zones_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Services.MainView.NavigateTo("ZonesCfg");
+        await Services.MainView.NavigateTo(typeof(ZonesCfg));
     }
     private async void Users_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Services.MainView.NavigateTo("UsersCfg");
+        await Services.MainView.NavigateTo(typeof(UsersCfg));
     }
     private async void NotificationSettings_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Services.MainView.NavigateTo("NotificationsCfg");
+        await Services.MainView.NavigateTo(typeof(NotificationsCfg));
     }
     private async void About_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        await Services.MainView.NavigateTo("AboutPage");
+        await Services.MainView.NavigateTo(typeof(AboutPage));
     }
 }

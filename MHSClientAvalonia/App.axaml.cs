@@ -62,7 +62,7 @@ namespace MHSClientAvalonia
             {
                 Services.Preferences.Set("user_token", "");
                 Services.SecurityClient.Stop();
-                await Services.MainView.NavigateTo("LoginPage");
+                await Services.MainView.NavigateTo(typeof(LoginPage));
             }
         }
 

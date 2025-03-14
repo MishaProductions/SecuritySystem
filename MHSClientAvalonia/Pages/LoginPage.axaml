@@ -12,6 +12,7 @@
 			</ui:InfoBar.ActionButton>
 		</ui:InfoBar>
 		<ui:InfoBar x:Name="BarWrongPassword" Title="Error" IsOpen="False" Severity="Error" Message="Incorrect username or password."/>
+		<ui:InfoBar x:Name="BarInternalError" Title="Error" IsOpen="False" Severity="Error" Message="An internal error has occured in MHSClient. Make sure that MHS client and the device's firmware versions match."/>
 		<ui:InfoBar x:Name="BarHostError" Title="Error" IsOpen="False" Severity="Error" Message="An error has occured while communicating to the device. Make sure that the IP/host is correct, and that the device is powered on."/>
 		<ui:InfoBar x:Name="BarSessionExpire" Title="Warning" IsOpen="False" Severity="Warning" Message="Your session has expired, please login again"/>
 

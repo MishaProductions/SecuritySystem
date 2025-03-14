@@ -17,9 +17,9 @@ namespace MHSClientAvalonia.Pages
             return Task.CompletedTask;
         }
 
-        public virtual void OnNavigateAway()
+        public virtual Task OnNavigateAway()
         {
-
+            return Task.CompletedTask;
         }
 
         public virtual void OnZoneUpdate()

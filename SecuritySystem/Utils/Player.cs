@@ -11,8 +11,8 @@ namespace SecuritySystem.Utils
         public event EndfileEventHandler? OnStop;
         public event StartfileEventHandler? OnStart;
         private nint playerHandle;
-        Task eventLoopTask;
-        bool IsEventLoopRunning = true;
+        private Task? eventLoopTask;
+        private bool IsEventLoopRunning = true;
         public long PlaylistIndex
         {
             get
@@ -86,18 +86,18 @@ namespace SecuritySystem.Utils
         public delegate void StartfileEventHandler(long index);
         public Player()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (MPVExists())
             {
                 playerHandle = mpv_create();
                 if (mpv_initialize(playerHandle) < 0)
                 {
                     throw new Exception("failed to initialize libmpv");
                 }
-            }
-            Volume = 100;
+                Volume = 100;
 
-            eventLoopTask = new Task(EventLoopTaskHandler);
-            eventLoopTask.Start();
+                eventLoopTask = new Task(EventLoopTaskHandler);
+                eventLoopTask.Start();
+            }
         }
         private bool currentlyShuffled = false;
 
@@ -165,7 +165,7 @@ namespace SecuritySystem.Utils
 
         public void Play(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (MPVExists())
             {
                 if (IsPlaying)
                 {
@@ -263,10 +263,9 @@ namespace SecuritySystem.Utils
         }
         private MpvError DoMpvCommand(params string[] args)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (MPVExists())
             {
-                nint[] byteArrayPointers;
-                var mainPtr = AllocateUtf8IntPtrArrayWithSentinel(args, out byteArrayPointers);
+                var mainPtr = AllocateUtf8IntPtrArrayWithSentinel(args, out nint[] byteArrayPointers);
                 var result = mpv_command(playerHandle, mainPtr);
                 foreach (var ptr in byteArrayPointers)
                 {
@@ -300,11 +299,16 @@ namespace SecuritySystem.Utils
             return error;
         }
 
+        private static bool MPVExists()
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists(LibmpvPath);
+        }
+
         public const string LibmpvPath = "/usr/lib/arm-linux-gnueabihf/libmpv.so";
 
         [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
         private static partial nint mpv_create();
-         [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
+        [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
         private static partial nint mpv_free(nint handle);
         [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
         private static partial MpvError mpv_initialize(nint mpvHandle);
@@ -430,6 +434,8 @@ namespace SecuritySystem.Utils
                     return "append";
                 case LoadMethod.AppendPlay:
                     return "append-play";
+                default:
+                    break;
             }
 
             throw new ArgumentException("Invalid enumeration value.");
