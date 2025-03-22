@@ -29,7 +29,7 @@ public partial class MusicManager : SecurityPage
         var res = await Services.SecurityClient.GetMusicAndAnnoucements();
         if (res.IsFailure || res.Value == null)
         {
-            Services.MainView.ShowMessage("Failed to fetch data", res.ResultMessage);
+            MainView.ShowMessage("Failed to fetch data", res.ResultMessage);
             HideLoadingBar();
             return;
         }
@@ -158,12 +158,12 @@ public partial class MusicManager : SecurityPage
     {
         if (Services.AudioCapture == null)
         {
-            Services.MainView.ShowMessage("Platform Error", "Audio capture is not yet implemented on this platform.");
+            MainView.ShowMessage("Platform Error", "Audio capture is not yet implemented on this platform.");
             return;
         }
         if (Services.AudioCapture._audioOutSocket != null)
         {
-            Services.MainView.ShowMessage("System Error", "An audio input stream is already open on this device. Try speaking into the microphone, and then press Stop annc.");
+            MainView.ShowMessage("System Error", "An audio input stream is already open on this device. Try speaking into the microphone, and then press Stop annc.");
             return;
         }
 
@@ -178,14 +178,14 @@ public partial class MusicManager : SecurityPage
             }
             else
             {
-                Services.MainView.ShowMessage("System Error", "Opening remote annc stream input failed. Check network/authentication");
+                MainView.ShowMessage("System Error", "Opening remote annc stream input failed. Check network/authentication");
                 BtnPlayAnncFromMic.IsEnabled = true;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            Services.MainView.ShowMessage("System Error", "Try checking microphone permissions\n"+ ex.ToString());
+            MainView.ShowMessage("System Error", "Try checking microphone permissions\n"+ ex.ToString());
             BtnPlayAnncFromMic.IsEnabled = true;
         }
     }

@@ -24,7 +24,7 @@ public partial class ZonesCfg : SecurityPage
         ZonesContainer.Children.Clear();
         if (Services.SecurityClient.Zones == null)
         {
-            Services.MainView.ShowMessage("System error", "Invaild system state");
+            MainView.ShowMessage("System error", "Invaild system state");
             HideLoadingBar();
             return;
         }
@@ -69,7 +69,7 @@ public partial class ZonesCfg : SecurityPage
         ShowLoadingBar();
         if (Services.SecurityClient.Zones == null)
         {
-            Services.MainView.ShowMessage("System error", "Invaild system state");
+            MainView.ShowMessage("System error", "Invaild system state");
             HideLoadingBar();
             return;
         }
@@ -88,7 +88,7 @@ public partial class ZonesCfg : SecurityPage
                     if (string.IsNullOrEmpty(name.Text))
                     {
                         HideLoadingBar();
-                        Services.MainView.ShowMessage("Name for zone " + (zoneIdx + 1) + " cannot be empty or null.", "Zone name is empty");
+                        MainView.ShowMessage("Name for zone " + (zoneIdx + 1) + " cannot be empty or null.", "Zone name is empty");
                         return;
                     }
 
@@ -107,7 +107,7 @@ public partial class ZonesCfg : SecurityPage
 
         if (!resp.IsSuccess)
         {
-            Services.MainView.ShowMessage(resp.ResultMessage, "Server error");
+            MainView.ShowMessage(resp.ResultMessage, "Server error");
         }
 
         HideLoadingBar();

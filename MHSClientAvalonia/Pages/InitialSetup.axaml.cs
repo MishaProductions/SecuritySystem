@@ -160,7 +160,7 @@ public partial class InitialSetup : SecurityPage
             var res = await Services.SecurityClient.CompleteSystemOobe(new MHSApi.API.SaveSysConfig(Username, NewPassword1, CmbGpioDriver.SelectedIndex == 1));
             if (res.IsFailure)
             {
-                Services.MainView.ShowMessage("Failed to update system settings", res.ResultMessage);
+                MainView.ShowMessage("Failed to update system settings", res.ResultMessage);
             }
             else
             {

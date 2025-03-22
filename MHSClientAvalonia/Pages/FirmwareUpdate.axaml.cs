@@ -29,13 +29,13 @@ public partial class FirmwareUpdate : SecurityPage
         {
             if (string.IsNullOrEmpty(TxtFilePath.Text))
             {
-                Services.MainView.ShowMessage("No disk", "Please select a file");
+                MainView.ShowMessage("No disk", "Please select a file");
                 return;
             }
 
             if (!File.Exists(TxtFilePath.Text) && !OperatingSystem.IsBrowser())
             {
-                Services.MainView.ShowMessage("No disk", "Specified file does not exist.");
+                MainView.ShowMessage("No disk", "Specified file does not exist.");
                 return;
             }
 
@@ -52,11 +52,11 @@ public partial class FirmwareUpdate : SecurityPage
         var res = await Services.SecurityClient.UploadNextionKeypadFirmware(file);
         if (res.IsSuccess)
         {
-            Services.MainView.ShowMessage("Success", "Firmware uploaded successfully");
+            MainView.ShowMessage("Success", "Firmware uploaded successfully");
         }
         else
         {
-            Services.MainView.ShowMessage("Error", "Failed to upload firmware: " + res.ResultMessage);
+            MainView.ShowMessage("Error", "Failed to upload firmware: " + res.ResultMessage);
         }
         txtFwUpload.IsVisible = false;
         btnFlash.IsEnabled = true;
@@ -68,7 +68,7 @@ public partial class FirmwareUpdate : SecurityPage
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel == null)
         {
-            Services.MainView.ShowMessage("No disk", "Platform is not supported");
+            MainView.ShowMessage("No disk", "Platform is not supported");
             return;
         }
 

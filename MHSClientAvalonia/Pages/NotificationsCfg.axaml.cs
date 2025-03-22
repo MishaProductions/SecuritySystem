@@ -52,7 +52,7 @@ public partial class NotificationsCfg : SecurityPage
         }
         else
         {
-            Services.MainView.ShowMessage("Something went wrong", "Failed to fetch notification configuration");
+            MainView.ShowMessage("Something went wrong", "Failed to fetch notification configuration");
         }
     }
 
@@ -75,11 +75,11 @@ public partial class NotificationsCfg : SecurityPage
         var resp = await Services.SecurityClient.SaveNotificationSettings(cfg);
         if (resp.IsSuccess)
         {
-            Services.MainView.ShowMessage("Notification settings saved", "Settings saved successfully");
+            MainView.ShowMessage("Notification settings saved", "Settings saved successfully");
         }
         else
         {
-            Services.MainView.ShowMessage("Failed to save settings", resp.ResultMessage);
+            MainView.ShowMessage("Failed to save settings", resp.ResultMessage);
         }
         HideLoadingBar();
     }
@@ -94,6 +94,6 @@ public partial class NotificationsCfg : SecurityPage
         var resp = await Services.SecurityClient.SendTestEmail();
         HideLoadingBar();
 
-        Services.MainView.ShowMessage("SMTP Operation result", resp.ResultMessage);
+        MainView.ShowMessage("SMTP Operation result", resp.ResultMessage);
     }
 }

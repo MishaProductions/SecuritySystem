@@ -28,7 +28,7 @@ public partial class UsersCfg : SecurityPage
         }
         else
         {
-            Services.MainView.ShowMessage("Something went wrong", "Failed to get list of users from the server: " + retr.ResultMessage);
+            MainView.ShowMessage("Something went wrong", "Failed to get list of users from the server: " + retr.ResultMessage);
         }
 
         HideLoadingBar();
@@ -55,19 +55,19 @@ public partial class UsersCfg : SecurityPage
         {
             if (string.IsNullOrEmpty(newUserView.Username) || string.IsNullOrWhiteSpace(newUserView.Username))
             {
-                Services.MainView.ShowMessage("Invalid username", "Username cannot be empty");
+                MainView.ShowMessage("Invalid username", "Username cannot be empty");
                 return;
             }
 
             if (string.IsNullOrEmpty(newUserView.NewPassword1) || string.IsNullOrWhiteSpace(newUserView.NewPassword1))
             {
-                Services.MainView.ShowMessage("Invalid password", "Password cannot be empty");
+                MainView.ShowMessage("Invalid password", "Password cannot be empty");
                 return;
             }
 
             if (newUserView.NewPassword1 != newUserView.NewPassword2)
             {
-                Services.MainView.ShowMessage("Invalid password", "Requested passwords do not match");
+                MainView.ShowMessage("Invalid password", "Requested passwords do not match");
                 return;
             }
 
@@ -82,7 +82,7 @@ public partial class UsersCfg : SecurityPage
             }
             else
             {
-                Services.MainView.ShowMessage("Failed to create user", resp.ResultMessage);
+                MainView.ShowMessage("Failed to create user", resp.ResultMessage);
             }
         }
     }
@@ -113,7 +113,7 @@ public partial class UsersCfg : SecurityPage
             }
             else
             {
-                Services.MainView.ShowMessage("Failed to delete user", resp.ResultMessage);
+                MainView.ShowMessage("Failed to delete user", resp.ResultMessage);
             }
         }
     }
@@ -148,7 +148,7 @@ public partial class UsersCfg : SecurityPage
             }
             else
             {
-                Services.MainView.ShowMessage("Failed to change permission", resp.ResultMessage);
+                MainView.ShowMessage("Failed to change permission", resp.ResultMessage);
             }
         }
     }
@@ -171,12 +171,12 @@ public partial class UsersCfg : SecurityPage
         {
             if (string.IsNullOrEmpty(newUserView.NewPassword1) || string.IsNullOrWhiteSpace(newUserView.NewPassword1))
             {
-                Services.MainView.ShowMessage("Invalid password", "Password cannot be empty");
+                MainView.ShowMessage("Invalid password", "Password cannot be empty");
                 return;
             }
             if (newUserView.NewPassword1 != newUserView.NewPassword2)
             {
-                Services.MainView.ShowMessage("Invalid password", "Passwords do not match");
+                MainView.ShowMessage("Invalid password", "Passwords do not match");
                 return;
             }
 
@@ -191,7 +191,7 @@ public partial class UsersCfg : SecurityPage
             }
             else
             {
-                Services.MainView.ShowMessage("Failed to change password", resp.ResultMessage);
+                MainView.ShowMessage("Failed to change password", resp.ResultMessage);
             }
         }
     }

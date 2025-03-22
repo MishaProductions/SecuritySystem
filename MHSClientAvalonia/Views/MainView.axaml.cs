@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MHSClientAvalonia;
@@ -26,6 +27,7 @@ public partial class MainView : UserControl
     private readonly DispatcherTimer _reconnectTimer = new();
     private readonly DispatcherTimer _updateTimer = new();
     internal Visual VisualForUpdate { get { return (Visual?)VisualRoot ?? throw new Exception(); } }
+    private static FwUpdateWindow? FwUpdateWindow;
     public MainView()
     {
         InitializeComponent();
@@ -90,8 +92,6 @@ public partial class MainView : UserControl
     {
         Services.Preferences.SetBool("showandroidhint", false);
     }
-
-    public static FwUpdateWindow? FwUpdateWindow;
     private void SecurityClient_OnFwUpdateProgress(MHSApi.WebSocket.FwUpdateMsg msg)
     {
         Dispatcher.UIThread.Invoke(delegate
@@ -172,10 +172,7 @@ public partial class MainView : UserControl
         Dispatcher.UIThread.Invoke(delegate
       {
           var page = GetCurrentPage();
-          if (page != null)
-          {
-              page.OnSystemDisarm();
-          }
+          page?.OnSystemDisarm();
 
           SendNotification("The system is disarmed");
           UpdateSystemStatus();
@@ -260,10 +257,7 @@ public partial class MainView : UserControl
         Dispatcher.UIThread.Invoke(delegate
         {
             var page = GetCurrentPage();
-            if (page != null)
-            {
-                page.OnAnncVolChanged();
-            }
+            page?.OnAnncVolChanged();
         });
     }
 
@@ -272,13 +266,10 @@ public partial class MainView : UserControl
         Dispatcher.UIThread.Invoke(delegate
         {
             var page = GetCurrentPage();
-            if (page != null)
-            {
-                page.OnMusicVolChanged();
-            }
+            page?.OnMusicVolChanged();
         });
     }
-    public async void ShowMessage(string title, string content)
+    public static async void ShowMessage(string title, string content)
     {
         await new ContentDialog()
         {
@@ -302,10 +293,7 @@ public partial class MainView : UserControl
         Dispatcher.UIThread.Invoke(async delegate
         {
             var page = GetCurrentPage();
-            if (page != null)
-            {
-                page.OnZoneUpdate();
-            }
+            page?.OnZoneUpdate();
             await PlayZoneSound();
             UpdateSystemStatus();
         });
@@ -315,10 +303,7 @@ public partial class MainView : UserControl
         Dispatcher.UIThread.Invoke(async delegate
         {
             var page = GetCurrentPage();
-            if (page != null)
-            {
-                page.OnConnected();
-            }
+            page?.OnConnected();
 
             UpdatePageVisibility();
 
@@ -363,7 +348,7 @@ public partial class MainView : UserControl
             SendNotification("MHS client has disconnected from the device. Trying to connect...");
         });
     }
-    private async void SendNotification(string title)
+    private static async void SendNotification(string title)
     {
         var nf = new Notification
         {
@@ -381,21 +366,21 @@ public partial class MainView : UserControl
 
         }
     }
-    private async Task PlaySysTimer()
+    private static async Task PlaySysTimer()
     {
         if (!Services.Preferences.GetBool("armnoise", true))
             return;
         var wavfile = AssetLoader.Open(new Uri("avares://MHSClientAvalonia/Assets/systimer.wav"));
         await PlaySound(wavfile);
     }
-    private async Task PlayZoneSound()
+    private static async Task PlayZoneSound()
     {
         if (!Services.Preferences.GetBool("zonenoise", true))
             return;
         var wavfile = AssetLoader.Open(new Uri("avares://MHSClientAvalonia/Assets/zone.wav"));
         await PlaySound(wavfile);
     }
-    private async Task PlaySound(Stream wavfile)
+    private static async Task PlaySound(Stream wavfile)
     {
         if (Services.AudioPlayBack != null)
         {
@@ -424,15 +409,14 @@ public partial class MainView : UserControl
 
     private async void ArmDisarmBtn_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        AutoCompleteBox box = new AutoCompleteBox();
-        var dialog = new ContentDialog()
+        AutoCompleteBox box = new();
+        var dialog = new ContentDialog
         {
             Title = "Enter passcode",
             PrimaryButtonText = "Submit",
-            CloseButtonText = "Cancel"
+            CloseButtonText = "Cancel",
+            Content = box
         };
-
-        dialog.Content = box;
         box.ItemsSource = new List<string>() { "1234" };
 
         var result = await dialog.ShowAsync();
@@ -489,8 +473,7 @@ public partial class MainView : UserControl
 
     private void CurrentUser_Clicked(object? sender, RoutedEventArgs e)
     {
-        var ctl = sender as Control;
-        if (ctl != null)
+        if (sender is Control ctl)
         {
             FlyoutBase.ShowAttachedFlyout(ctl);
         }
@@ -636,6 +619,7 @@ public partial class MainView : UserControl
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(FirmwareUpdate))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(EventLog))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Download))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoginPage))]
     private static readonly Dictionary<string, Type> PageNames = new(){
         {"HomePage", typeof(HomePage)},
         {"MusicManager", typeof(MusicManager)},
@@ -652,7 +636,7 @@ public partial class MainView : UserControl
         {"Download", typeof(Download)}
     };
 
-    private async void NavigationView_ItemInvoked(object? sender, FluentAvalonia.UI.Controls.NavigationViewItemInvokedEventArgs e)
+    private async void NavigationView_ItemInvoked(object? sender, NavigationViewItemInvokedEventArgs e)
     {
         // send navigate away event to old page
         if (navigationView.Content is SecurityPage page)
@@ -677,8 +661,6 @@ public partial class MainView : UserControl
     }
     private void FrameView_Navigated(object sender, FluentAvalonia.UI.Navigation.NavigationEventArgs e)
     {
-        var page = e.Content as Control;
-
         if (e.SourcePageType.Name == "SettingsPage")
         {
             PageTitle.Text = "Settings";
@@ -686,11 +668,11 @@ public partial class MainView : UserControl
         else
         {
 
-            if (page != null)
+            if (e.Content is Control page)
             {
                 var typeName = page.GetType().Name;
 
-                foreach (NavigationViewItem nvi in GetNavigationViewItems(navigationView.MenuItems))
+                foreach (NavigationViewItem nvi in GetNavigationViewItems(navigationView.MenuItems).Cast<NavigationViewItem>())
                 {
                     if (nvi.Tag != null)
                     {
@@ -707,15 +689,15 @@ public partial class MainView : UserControl
         }
     }
 
-    private List<object> GetNavigationViewItems(IList<object>? root)
+    private static List<object> GetNavigationViewItems(IList<object>? root)
     {
         // not proud of this code
-        List<object> items = new List<object>();
+        List<object> items = [];
 
         if (root == null)
             return items;
 
-        foreach (NavigationViewItem nvi in root)
+        foreach (NavigationViewItem nvi in root.Cast<NavigationViewItem>())
         {
             items.AddRange(GetNavigationViewItems(nvi.MenuItems));
             items.Add(nvi);

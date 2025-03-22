@@ -300,7 +300,7 @@ namespace MHSClientAvalonia
                     }
                     catch (Exception ex)
                     {
-                        Services.MainView.ShowMessage("Update error", ex.ToString());
+                        MainView.ShowMessage("Update error", ex.ToString());
                     }
                 }
             }
@@ -338,7 +338,7 @@ namespace MHSClientAvalonia
                     }
                     catch (Exception ex)
                     {
-                        Services.MainView.ShowMessage("Update error (phase 2)", ex.ToString());
+                        MainView.ShowMessage("Update error (phase 2)", ex.ToString());
                     }
                 }
             }

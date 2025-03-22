@@ -961,7 +961,7 @@ namespace SecuritySystem.Modules.NXDisplay
                 Console.WriteLine("nextion: attempted to init weather page when not weather page!");
                 return;
             }
-            SendCommand("play 0,5,1");
+            //SendCommand("play 0,5,1");
             SetCmptVisible("j0", true);
             SetCmptVisible("tLdr", true);
             SetCmptText("tLdr", "Downloading Location data");
@@ -1448,6 +1448,7 @@ namespace SecuritySystem.Modules.NXDisplay
                         SystemManager.WriteToEventLog("System restart from Nextion Display");
                         PromptOpen = false;
                         SetPage("pageBoot");
+                        SendCommand("play 0,5,1");
                         Thread.Sleep(1000);
                         ShowPrompt("", "Restarting controller...", false, 0, "", false, null, "", false, null, "", false, null);
                         Configuration.Save();
@@ -1473,8 +1474,12 @@ namespace SecuritySystem.Modules.NXDisplay
                     "Yes", true, () =>
                     {
                         PromptOpen = false;
+                        SendCommand("play 0,5,0");
+                        ShowPrompt("", "Shutting down...", false, 0, "", false, null, "", false, null, "", false, null);
                         SystemManager.WriteToEventLog("System shutdown from Nextion Display");
                         Configuration.Save();
+                        Thread.Sleep(1000);
+
                         Process.Start("/sbin/poweroff").WaitForExit();
                     },
                     "", false, null,

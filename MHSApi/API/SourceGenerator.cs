@@ -33,6 +33,7 @@ namespace MHSApi.API
     [JsonSerializable(typeof(UserUpdatePasswordRequest))]
     [JsonSerializable(typeof(UserUpdatePermissionRequest))]
     [JsonSerializable(typeof(UserUpdateRequest))]
+    [JsonSerializable(typeof(StartAnncRequest))]
     [JsonSerializable(typeof(string))]
     internal partial class SourceGenerationContext : JsonSerializerContext
     {
