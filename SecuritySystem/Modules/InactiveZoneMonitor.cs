@@ -7,13 +7,14 @@ namespace SecuritySystem.Modules
 {
     public class InactiveZoneMonitor : Module
     {
-        private Dictionary<int, DateTime> LastReadyZone = []; // <Zone index, Last Ready>
-        private Dictionary<int, DateTime> IgnoreZones = []; // <Zone index, Ignore until>
+        private static Dictionary<int, DateTime> LastReadyZone = []; // <Zone index, Last Ready>
+        private static Dictionary<int, DateTime> IgnoreZones = []; // <Zone index, Ignore until>
         private System.Timers.Timer ZoneTimer = new();
+        private static TimeSpan alarmSpan = TimeSpan.FromMinutes(32);
         public override void OnRegister()
         {
             // TODO: maybe save this if system restarts
-            for(int i = 0; i < ZoneController.ZoneStates.Length; i++)
+            for (int i = 0; i < ZoneController.ZoneStates.Length; i++)
             {
                 LastReadyZone.Add(i, DateTime.Now);
             }
@@ -26,6 +27,19 @@ namespace SecuritySystem.Modules
             ZoneTimer.Start();
         }
 
+        public static bool IsInactive(int zoneIdx)
+        {
+            var lastActivity = DateTime.Now - LastReadyZone[zoneIdx];
+            if (lastActivity >= alarmSpan && !ZoneController.IsZoneReady(zoneIdx))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public override void OnUnregister()
         {
             SystemManager.OnZoneUpdate -= SystemManager_OnZoneUpdate;
@@ -33,11 +47,9 @@ namespace SecuritySystem.Modules
 
         private void SystemManager_OnInactiveZoneIgnore(int zone)
         {
-            Console.WriteLine("InactiveZoneMT: OnInactiveZoneIgnore: "+ zone);
+            Console.WriteLine("InactiveZoneMT: OnInactiveZoneIgnore: " + zone);
             DateTime ignoreUntil = DateTime.Now.AddHours(4);
-            if(!IgnoreZones.ContainsKey(zone))
-                IgnoreZones.Add(zone, ignoreUntil);
-            else
+            if (!IgnoreZones.TryAdd(zone, ignoreUntil))
                 IgnoreZones[zone] = ignoreUntil;
         }
 
@@ -59,9 +71,9 @@ namespace SecuritySystem.Modules
             foreach (var item in LastReadyZone)
             {
                 var lastReadyDur = DateTime.Now - item.Value;
-                if (lastReadyDur >= TimeSpan.FromMinutes(10))
+                if (lastReadyDur >= alarmSpan)
                 {
-                    if (ZoneController.ZoneStates[item.Key] == PinValue.Low)
+                    if (ZoneController.IsZoneReady(item.Key))
                     {
                         LastReadyZone[item.Key] = DateTime.Now;
                         continue;

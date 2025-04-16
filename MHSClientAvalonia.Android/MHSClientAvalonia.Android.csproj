@@ -2,7 +2,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0-android</TargetFramework>
-    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>30</SupportedOSPlatformVersion>
+      <MinimumAndroidVersion>26</MinimumAndroidVersion>
+  <TargetAndroidVersion>latest</TargetAndroidVersion> 
     <Nullable>enable</Nullable>
     <ApplicationId>com.MikhailProductions.MHSClient</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
@@ -19,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Android" Version="11.2.5" />
+    <PackageReference Include="Avalonia.Android" Version="11.2.7" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1" />
   </ItemGroup>
 

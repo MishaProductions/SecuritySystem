@@ -135,7 +135,7 @@ namespace SecuritySystem
                     idx = item.Value.ZoneNumber,
                     name = item.Value.Name,
                     type = item.Value.Type,
-                    ready = ZoneController.ZoneStates[item.Key] == PinValue.Low
+                    ready = ZoneController.IsZoneReady(item.Key)
                 };
                 result.zones[i] = obj;
             }

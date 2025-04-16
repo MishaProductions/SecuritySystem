@@ -2,5 +2,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="com.mikhailproductions.mhs">
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.RECORD_AUDIO"/>
-	<application android:label="MHS Client" android:icon="@drawable/Icon" />
+	<application android:label="MHS Client" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round"/>
 </manifest>

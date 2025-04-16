@@ -1,4 +1,5 @@
 ﻿using MHSApi.API;
+using SecuritySystem.Modules;
 using SecuritySystem.Modules.NXDisplay;
 using SecuritySystem.Utils;
 using System.Device.Gpio;
@@ -10,7 +11,7 @@ namespace SecuritySystem
     public static class ZoneController
     {
         private static GpioController? controller;
-        public static PinValue[] ZoneStates = new PinValue[20];
+        public static ZoneState[] ZoneStates = new ZoneState[20];
 
         public static bool IsReady
         {
@@ -19,17 +20,7 @@ namespace SecuritySystem
                 if (Configuration.Instance.Zones.Count == 0) return true;
                 foreach (var item in Configuration.Instance.Zones)
                 {
-                    if (ZoneStates[item.Key] == PinValue.Low)
-                    {
-
-                    }
-                    else
-                    {
-                        if (item.Value.Type != ZoneType.None)
-                        {
-                            return false;
-                        }
-                    }
+                    if (ZoneStates[item.Key] == ZoneState.NotReady && item.Value.Type != ZoneType.None) return false;
                 }
 
                 return true;
@@ -46,16 +37,54 @@ namespace SecuritySystem
 
             controller = Configuration.Instance.UseOrangePiDriver ? new GpioController(PinNumberingScheme.Logical, new OrangePiPCDriver()) : new GpioController(PinNumberingScheme.Logical);
 
-            ZoneStates = new PinValue[Configuration.Instance.Zones.Count];
+            ZoneStates = new ZoneState[Configuration.Instance.Zones.Count];
             foreach (var item in Configuration.Instance.Zones)
             {
                 var zoneIdx = item.Key;
                 controller.OpenPin(item.Value.GpioPin);
                 controller.SetPinMode(item.Value.GpioPin, PinMode.Input);
                 var state = controller.Read(item.Value.GpioPin);
-                ZoneStates[zoneIdx] = state;
+                ZoneStates[zoneIdx] = PinValueToZoneState(state);
                 Console.WriteLine(" - Pin #" + item.Value.GpioPin + " is " + state);
             }
+
+            SystemManager.OnInactiveZone += SystemManager_OnInactiveZone;
+            SystemManager.OnInactiveZoneIgnore += SystemManager_OnInactiveZoneIgnore;
+        }
+
+        private static ZoneState PinValueToZoneState(PinValue val)
+        {
+            return val == PinValue.High ? ZoneState.NotReady : ZoneState.Ready;
+        }
+
+        public static bool IsReadySet(ZoneState state)
+        {
+            return (state & ZoneState.Ready) != 0;
+        }
+        public static bool IsZoneReady(int idx)
+        {
+            return IsReadySet(ZoneStates[idx]);
+        }
+        public static bool IsTroubleSet(ZoneState state)
+        {
+            return (state & ZoneState.Trouble) != 0;
+        }
+
+        public static ZoneState Simplify(ZoneState state)
+        {
+            // remove trouble flag
+            return state & ~ZoneState.Trouble;
+        }
+
+        private static void SystemManager_OnInactiveZone(int index, TimeSpan lastReadyDur)
+        {
+            ZoneStates[index] |= ZoneState.Trouble;
+            SystemManager.SendZoneUpdateSingleToAll(true, index + 1, Configuration.Instance.Zones[index].Name, ZoneStates[index]);
+        }
+        private static void SystemManager_OnInactiveZoneIgnore(int index)
+        {
+            ZoneStates[index] |= ~ZoneState.Trouble;
+            SystemManager.SendZoneUpdateSingleToAll(true, index + 1, Configuration.Instance.Zones[index].Name, ZoneStates[index]);
         }
 
         public static void Start()
@@ -71,7 +100,7 @@ namespace SecuritySystem
                     string? s = Console.ReadLine();
                     if (s == "a")
                     {
-                        ZoneStates[0] = PinValue.High;
+                        ZoneStates[0] = ZoneState.NotReady;
                         SystemManager.SendZoneUpdateSingleToAll(true, 0, "Zoning", ZoneState.NotReady);
                         Console.WriteLine("set zone 1 to not ready");
 
@@ -93,7 +122,7 @@ namespace SecuritySystem
                     }
                     else if (s == "b")
                     {
-                        ZoneStates[0] = PinValue.Low;
+                        ZoneStates[0] = ZoneState.Ready;
                         SystemManager.SendZoneUpdateSingleToAll(true, 0, "Zoning", ZoneState.Ready);
                         Console.WriteLine("set zone 1 to ready");
                     }
@@ -113,15 +142,23 @@ namespace SecuritySystem
                     var zoneValue = controller.Read(zonePin);
                     var zoneIdx = zone.ZoneNumber;
                     var zoneUserValue = zoneIdx + 1;
+                    var oldValue = ZoneStates[zoneIdx];
 
-                    if (ZoneStates[zoneIdx] != zoneValue)
+                    var newZoneState = PinValueToZoneState(zoneValue);
+
+                    if (Simplify(ZoneStates[zoneIdx]) != newZoneState)
                     {
+                        // check if the zone was "inactive" previously and now ready, if so remove trouble flag. Add it back if nessesary
+                        if (newZoneState == ZoneState.Ready && InactiveZoneMonitor.IsInactive(zoneIdx))
+                            ZoneStates[zoneIdx] &= ~ZoneState.Trouble;
+                        else if (IsTroubleSet(oldValue)) ZoneStates[zoneIdx] |= ZoneState.Trouble;
+
                         //zone state changed
-                        ZoneStates[zoneIdx] = zoneValue;
+                        ZoneStates[zoneIdx] = newZoneState;
 
                         if (zone.Type != ZoneType.None)
                         {
-                            SystemManager.SendZoneUpdateSingleToAll(true, zoneUserValue, zone.Name, zoneValue == PinValue.High ? ZoneState.NotReady : ZoneState.Ready);
+                            SystemManager.SendZoneUpdateSingleToAll(true, zoneUserValue, zone.Name, ZoneStates[zoneIdx]);
 
                             if (zoneValue == PinValue.High)
                             {

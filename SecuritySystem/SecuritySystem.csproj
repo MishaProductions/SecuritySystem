@@ -21,8 +21,8 @@
 		<PackageReference Include="HttpMultipartParser" Version="9.0.0" />
 		<PackageReference Include="Iot.Device.Bindings" Version="3.2.0" />
 		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
-		<PackageReference Include="System.IO.Ports" Version="9.0.1" />
-		<PackageReference Include="System.Text.Json" Version="9.0.1" />
+		<PackageReference Include="System.IO.Ports" Version="9.0.4" />
+		<PackageReference Include="System.Text.Json" Version="9.0.4" />
 		<PackageReference Include="Tmds.DBus" Version="0.21.2" />
 	</ItemGroup>
 	<ItemGroup>

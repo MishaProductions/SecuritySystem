@@ -89,7 +89,7 @@ namespace SecuritySystem.Modules
             string thing = "";
             foreach (var item in Configuration.Instance.Zones)
             {
-                string color = ZoneController.ZoneStates[item.Key] == PinValue.Low ? "green" : "red";
+                string color = ZoneController.IsZoneReady(item.Key) ? "green" : "red";
                 if (item.Value.Type == ZoneType.None)
                     color = "gray";
                 thing += "<p style=\"color:" + color + ";\"" + $">Zone #{item.Key + 1}: {item.Value.Name}</p>";

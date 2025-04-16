@@ -224,7 +224,7 @@ namespace SecuritySystem.WebSrv.Websocket
                 obj.idx = item.Value.ZoneNumber;
                 obj.name = item.Value.Name;
                 obj.type = item.Value.Type;
-                obj.ready = ZoneController.ZoneStates[item.Key] == System.Device.Gpio.PinValue.Low;
+                obj.ready = ZoneController.IsZoneReady(item.Key);
                 zonesContent[i++] = obj;
             }
 

@@ -13,11 +13,11 @@ using System.Timers;
 
 namespace SecuritySystem.Modules.NXDisplay
 {
-    public class NextionDisplay : Module
+    public class NextionDisplay(string comport) : Module
     {
         private Thread? packetReader;
         private bool KeypadSendCommands = true;
-        private string? comport;
+        private string? comport = comport;
         public static bool DoorChime = true;
         public bool ShufflePlaylist = false;
         private SerialPort? _port;
@@ -29,6 +29,7 @@ namespace SecuritySystem.Modules.NXDisplay
         public bool WlanAuthenticated = false;
         public bool IsSleepMode = false;
         public bool WarningFlash = false;
+        public bool ZoneFlash = false;
         public bool ImageState = false;
         private List<TroubleLog> TroubleLog = [];
         public int ImageId = 2;
@@ -47,11 +48,6 @@ namespace SecuritySystem.Modules.NXDisplay
                     Console.WriteLine("set port to null");
                 }
             }
-        }
-
-        public NextionDisplay(string comport)
-        {
-            this.comport = comport;
         }
         #region Module
         public override void OnRegister()
@@ -106,16 +102,37 @@ namespace SecuritySystem.Modules.NXDisplay
         #region Event handlers
         private void HandleWarningFlash(object? sender, ElapsedEventArgs e)
         {
-            if (!WarningFlash || currentPage != "pageHome") return;
+            if (currentPage != "pageHome") return;
 
-            if (ImageState)
+            if (WarningFlash)
             {
-                SetCmptVisible("pStatus", false);
+                if (ImageState)
+                {
+                    SetCmptVisible("pStatus", false);
+                }
+                else
+                {
+                    SetCmptVisible("pStatus", true);
+                }
             }
-            else
+
+            if (ZoneFlash)
             {
-                SetCmptVisible("pStatus", true);
+                bool hasTrouble = false;
+                int i = 1;
+                foreach (var item in ZoneController.ZoneStates)
+                {
+                    if (ZoneController.IsTroubleSet(item))
+                    {
+                        hasTrouble = true;
+                        SetZoneColor(i, item, !ImageState);
+                    }
+                    i++;
+                }
+
+                ZoneFlash = hasTrouble;
             }
+
             ImageState = !ImageState;
         }
         private void HandleWeatherTimer(object? sender, ElapsedEventArgs e)
@@ -194,6 +211,10 @@ namespace SecuritySystem.Modules.NXDisplay
                     if (DoorChime)
                     {
                         ButtonBeep();
+
+                        // wake screen
+                        SendCommand("click bWait,0");
+                        SendCommand("click bWait,1");
                     }
                 }
             }
@@ -207,14 +228,7 @@ namespace SecuritySystem.Modules.NXDisplay
                     }
                     else
                     {
-                        if (ZoneController.ZoneStates[item.Key] == PinValue.High)
-                        {
-                            SetZoneStatus(item.Value.ZoneNumber + 1, item.Value.Name, ZoneState.NotReady);
-                        }
-                        else
-                        {
-                            SetZoneStatus(item.Value.ZoneNumber + 1, item.Value.Name, ZoneState.Ready);
-                        }
+                        SetZoneStatus(item.Value.ZoneNumber + 1, item.Value.Name, ZoneController.ZoneStates[item.Key]);
                     }
                 }
             }
@@ -243,25 +257,33 @@ namespace SecuritySystem.Modules.NXDisplay
         private void SystemManager_OnInactiveZone(int idx, TimeSpan sinceInactive)
         {
             TroubleBeep();
-            if (!PromptOpen && !inactiveZoneWarnShowing)
+            if (inactiveZoneWarnShowing) return;
+            inactiveZoneWarnShowing = true;
+            TroubleLog.Add(new TroubleLog() { Description = $"The zone {idx + 1} has been not ready for {(int)sinceInactive.TotalMinutes}mins", Title = "Inactive Zone", Type = TroubleType.InactiveZone, ZoneIndex = idx });
+            UpdateStatusText();
+            UpdateTroubleCondition();
+            // old logic
+            /*if (!PromptOpen && !inactiveZoneWarnShowing)
             {
                 inactiveZoneWarnShowing = true;
 
-                ShowPrompt("Inactive Zone", $"The zone {idx+1} has been\r\nnot ready for {(int)sinceInactive.TotalMinutes}mins\r\nStop alarm or ignore?", true,
-                2, "STOPALRM", true, ()=> {
+                ShowPrompt("Inactive Zone", $"The zone {idx + 1} has been\r\nnot ready for {(int)sinceInactive.TotalMinutes}mins\r\nStop alarm or ignore?", true,
+                2, "STOPALRM", true, () =>
+                {
                     inactiveZoneWarnShowing = false;
                     PromptOpen = false;
 
                     SystemManager.SendIgnoreInactiveZone(idx);
 
                     SetPage("pageHome");
-                }, "", false, null, "IGNORE", true, () => {
+                }, "", false, null, "IGNORE", true, () =>
+                {
                     inactiveZoneWarnShowing = false;
                     PromptOpen = false;
 
                     SetPage("pageHome");
                 }, 21152);
-            }
+            }*/
         }
         #endregion
         #region Firmware update
@@ -500,6 +522,7 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand($"rtc4={DateTime.Now.Minute}");
             SendCommand($"rtc5={DateTime.Now.Second}");
             SendCommand($"vis pStatus,0");
+            SetCmptPic("pNetwork", 1);
             SetCmptVisible("bShowT", false);
             SendCommand($"thsp=0");
             RefreshWeather();
@@ -544,6 +567,10 @@ namespace SecuritySystem.Modules.NXDisplay
             "Next", true, () =>
             {
                 TroubleLog.Remove(t);
+                if (t.Type == TroubleType.InactiveZone)
+                {
+                    SystemManager.SendIgnoreInactiveZone(t.ZoneIndex);
+                }
                 Console.WriteLine("go to next log");
                 UpdateTroubleCondition();
             }, 21152
@@ -557,6 +584,10 @@ namespace SecuritySystem.Modules.NXDisplay
             "Done", true, () =>
             {
                 TroubleLog.Remove(t);
+                if (t.Type == TroubleType.InactiveZone)
+                {
+                    SystemManager.SendIgnoreInactiveZone(t.ZoneIndex);
+                }
                 Console.WriteLine("go home");
                 SetPage("pageHome");
             }, 21152
@@ -584,11 +615,7 @@ namespace SecuritySystem.Modules.NXDisplay
             //We need to verify that all zones are indeed ready (never trust the client!)
             foreach (var item in Configuration.Instance.Zones)
             {
-                if (ZoneController.ZoneStates[item.Key] == PinValue.Low)
-                {
-
-                }
-                else
+                if (!ZoneController.IsZoneReady(item.Key))
                 {
                     if (item.Value.Type != ZoneType.None)
                     {
@@ -669,7 +696,18 @@ namespace SecuritySystem.Modules.NXDisplay
             //set zone name
             SendCommand($"z{zone}.txt=\"#{zone}: {name}\"");
 
-            //set color
+            SetZoneColor(zone, ready, true);
+
+            if (ZoneController.IsTroubleSet(ready))
+            {
+                ZoneFlash = true;
+            }
+
+            UpdateStatusText();
+        }
+
+        private void SetZoneColor(int zone, ZoneState ready, bool showYellow)
+        {
             if (ready == ZoneState.Unconfigured)
             {
                 SendCommand($"z{zone}.pco=50712");
@@ -683,7 +721,11 @@ namespace SecuritySystem.Modules.NXDisplay
                 //not ready
                 SendCommand($"z{zone}.pco=63488");
             }
-            UpdateStatusText();
+
+            if (ZoneController.IsTroubleSet(ready) && showYellow)
+            {
+                SendCommand($"z{zone}.pco=65504");
+            }
         }
         internal void SendCommand(string command)
         {
@@ -902,7 +944,7 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             SendCommand("click bWait,0");
             SendCommand("click bWait,1");
-            
+
             SetDispPage("pageSysMsg");
 
             // setup basics
@@ -1308,24 +1350,7 @@ namespace SecuritySystem.Modules.NXDisplay
                 else
                 {
                     Console.WriteLine("keypad: Arming system");
-                    bool ready = true;
-                    //We need to verify that all zones are indeed ready (never trust the client!)
-                    foreach (var item in Configuration.Instance.Zones)
-                    {
-                        if (ZoneController.ZoneStates[item.Key] == PinValue.Low)
-                        {
-
-                        }
-                        else
-                        {
-                            if (item.Value.Type != ZoneType.None)
-                            {
-                                //umm
-                                ready = false;
-                            }
-                        }
-                    }
-                    if (ready)
+                    if (ZoneController.IsReady)
                     {
                         SystemManager.ArmSystem();
                     }
@@ -1540,10 +1565,12 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand("page " + pg);
         }
     }
+    [Flags] // a zone can have trouble and be ready at same time
     public enum ZoneState
     {
         Unconfigured,
         Ready,
         NotReady,
+        Trouble = 4
     }
 }

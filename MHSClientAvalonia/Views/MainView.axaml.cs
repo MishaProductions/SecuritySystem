@@ -833,7 +833,7 @@ public partial class MainView : UserControl
                     CloseButtonText = "Ok"
                 }.ShowAsync();
 
-                ChangePW_Click(null, new Avalonia.Interactivity.RoutedEventArgs());
+                ChangePW_Click(null, new RoutedEventArgs());
                 return;
             }
 
@@ -882,7 +882,7 @@ public partial class MainView : UserControl
                     CloseButtonText = "Ok"
                 }.ShowAsync();
 
-                ChangePW_Click(null, new Avalonia.Interactivity.RoutedEventArgs());
+                ChangePW_Click(null, new RoutedEventArgs());
                 return;
             }
         }
