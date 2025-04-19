@@ -35,6 +35,7 @@ namespace MHSApi.API
     [JsonSerializable(typeof(UserUpdateRequest))]
     [JsonSerializable(typeof(StartAnncRequest))]
     [JsonSerializable(typeof(JsonZones))]
+    [JsonSerializable(typeof(RequestWithCode))]
     [JsonSerializable(typeof(string))]
     internal partial class SourceGenerationContext : JsonSerializerContext
     {

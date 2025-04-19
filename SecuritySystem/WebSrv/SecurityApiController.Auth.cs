@@ -41,7 +41,7 @@ namespace SecuritySystem
                     {
                         if (item.Username == username)
                         {
-                            if (item.PasswordHash.ToLower() == Sha256(password).ToLower())
+                            if (item.PasswordHash.Equals(Sha256(password), StringComparison.CurrentCultureIgnoreCase))
                             {
                                 user = item;
                             }
@@ -193,7 +193,7 @@ namespace SecuritySystem
                     }
 
                     // check if old password is correct
-                    if (currentUser.PasswordHash.ToLower() == Sha256(fullRequest.OldPassword).ToLower())
+                    if (currentUser.PasswordHash.Equals(Sha256(fullRequest.OldPassword), StringComparison.CurrentCultureIgnoreCase))
                     {
                         // old passowrd is fine, validate new password and change it
                         if (!string.IsNullOrEmpty(fullRequest.NewPassword))
@@ -231,7 +231,7 @@ namespace SecuritySystem
             }
         }
 
-        private ApiUser Json2ApiUser(User currentUser)
+        private static ApiUser Json2ApiUser(User currentUser)
         {
             return new ApiUser() { ID = currentUser.ID, Username = currentUser.Username, Permissions = currentUser.Permissions };
         }
@@ -247,7 +247,7 @@ namespace SecuritySystem
                 return;
             }
 
-            List<ApiUser> response = new List<ApiUser>();
+            List<ApiUser> response = [];
             foreach (var item in Configuration.Instance.Users)
             {
                 response.Add(Json2ApiUser(item));
@@ -269,16 +269,11 @@ namespace SecuritySystem
 
             if (HttpContext.Request.HttpVerb == HttpVerbs.Patch)
             {
-                string json = await HttpContext.GetRequestBodyAsStringAsync();
-                if (json == null) throw new HttpException(System.Net.HttpStatusCode.BadRequest);
-
-                UserUpdateRequest? type = JsonConvert.DeserializeObject<UserUpdateRequest>(json);
-                if (type == null) throw new HttpException(System.Net.HttpStatusCode.BadRequest);
-
+                string json = await HttpContext.GetRequestBodyAsStringAsync() ?? throw new HttpException(System.Net.HttpStatusCode.BadRequest);
+                UserUpdateRequest? type = JsonConvert.DeserializeObject<UserUpdateRequest>(json) ?? throw new HttpException(System.Net.HttpStatusCode.BadRequest);
                 if (type.type == UserUpdateRequestType.Permission)
                 {
-                    UserUpdatePermissionRequest? perm = JsonConvert.DeserializeObject<UserUpdatePermissionRequest>(json);
-                    if (perm == null) throw new HttpException(System.Net.HttpStatusCode.BadRequest);
+                    UserUpdatePermissionRequest? perm = JsonConvert.DeserializeObject<UserUpdatePermissionRequest>(json) ?? throw new HttpException(System.Net.HttpStatusCode.BadRequest);
 
                     // verify that at least 1 user has admin permission AFTER changing target user permission
                     // when changing admin permission to user
@@ -316,9 +311,7 @@ namespace SecuritySystem
                 }
                 else if (type.type == UserUpdateRequestType.Password)
                 {
-                    UserUpdatePasswordRequest? pw = JsonConvert.DeserializeObject<UserUpdatePasswordRequest>(json);
-                    if (pw == null) throw new HttpException(System.Net.HttpStatusCode.BadRequest);
-
+                    UserUpdatePasswordRequest? pw = JsonConvert.DeserializeObject<UserUpdatePasswordRequest>(json) ?? throw new HttpException(System.Net.HttpStatusCode.BadRequest);
                     foreach (var item in Configuration.Instance.Users)
                     {
                         if (item.ID.ToString() == id)

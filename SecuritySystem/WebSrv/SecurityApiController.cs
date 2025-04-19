@@ -124,8 +124,10 @@ namespace SecuritySystem
             User? currentUser = await GetUserFromToken();
             if (currentUser == null) return;
 
-            var result = new JsonZones();
-            result.zones = new JsonZone[Configuration.Instance.Zones.Count];
+            var result = new JsonZones
+            {
+                zones = new JsonZone[Configuration.Instance.Zones.Count]
+            };
 
             int i = 0;
             foreach (var item in Configuration.Instance.Zones)

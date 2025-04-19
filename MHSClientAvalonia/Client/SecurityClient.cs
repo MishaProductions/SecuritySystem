@@ -297,9 +297,7 @@ namespace MHSClientAvalonia.Client
 
         public async Task<Result> ArmOrDisarm(string code)
         {
-            string apiendpoint = (IsSysArmed ? Endpoints.Disarm : Endpoints.Arm);
-
-            return await DoSimplePost<ApiResponse>(apiendpoint, new RequestWithCode(code));
+            return await DoSimplePost<ApiResponse>(IsSysArmed ? Endpoints.Disarm : Endpoints.Arm, new RequestWithCode(code));
         }
         /// <summary>
         /// UpdateInformationContent?
