@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using MHSApi.WebSocket.AudioIn;
-using MHSClientAvalonia.Client;
+using MHSClientAvalonia.Utils;
 using OpenTK.Audio.OpenAL;
 
-namespace MHSClientAvalonia.Utils
+namespace MHSClientAvalonia.Desktop
 {
     public class OpenTKAudioCapture : AudioCaptureDriver
     {

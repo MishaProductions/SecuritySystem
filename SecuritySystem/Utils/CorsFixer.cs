@@ -1,16 +1,11 @@
 ﻿using EmbedIO;
 using EmbedIO.Routing;
 
-namespace SecuritySystem
+namespace SecuritySystem.Utils
 {
-    internal class CorsFixer : WebModuleBase
+    internal class CorsFixer(string baseRoute) : WebModuleBase(baseRoute)
     {
         public override bool IsFinalHandler => false;
-
-        public CorsFixer(string baseRoute) : base(baseRoute)
-        {
-
-        }
 
         protected override Task OnRequestAsync(IHttpContext context)
         {

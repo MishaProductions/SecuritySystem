@@ -5,8 +5,8 @@ namespace SecuritySystem.Utils
 {
     public static class MusicPlayer
     {
-        public static readonly List<string> MusicFiles = new();
-        public static readonly List<string> AnncFiles = new();
+        public static readonly List<string> MusicFiles = [];
+        public static readonly List<string> AnncFiles = [];
 
         public static bool MusicPlaying { get { return musicProc.IsPlaying; } }
         public static bool AnncPlaying { get { return anncProc.IsPlaying; } }
@@ -18,8 +18,19 @@ namespace SecuritySystem.Utils
         private static readonly Player anncSfx = new();
         private static readonly Player tickSfx = new();
         private static readonly Player armAnnc = new();
+        private static int MusicFadeTime = 40;
+        private static int MusicFadeToVolume = 40;
+
 
         public static bool PlaylistMode { get; private set; }
+        public static event EventHandler? OnMusicStop;
+        public static event EventHandler? OnAnncStop;
+
+        public static event EventHandler? OnMusicVolumeChanged;
+        public static event EventHandler? OnAnncVolumeChanged;
+        public static event MusicStartedEventArgs? OnMusicStarted;
+        public static event MusicStartedEventArgs? OnAnncStarted;
+
         public static string CurrentSongName
         {
             get
@@ -68,17 +79,6 @@ namespace SecuritySystem.Utils
                 musicProc.Volume = value;
             }
         }
-        private static int MusicFadeTime = 40;
-        private static int MusicFadeToVolume = 40;
-
-        public static event EventHandler? OnMusicStop;
-        public static event EventHandler? OnAnncStop;
-
-        public static event EventHandler? OnMusicVolumeChanged;
-        public static event EventHandler? OnAnncVolumeChanged;
-        public static event MusicStartedEventArgs? OnMusicStarted;
-        public static event MusicStartedEventArgs? OnAnncStarted;
-        private static int MusicIdx = 0;
         static MusicPlayer()
         {
             musicProc.OnStop += MusicProc_OnStop;
@@ -258,7 +258,6 @@ namespace SecuritySystem.Utils
             }
             musicProc.ClearPlaylist();
             string fileName = MusicFiles[a];
-            MusicIdx = a;
             PlaylistMode = false;
             Console.WriteLine("[music] PlayMusic() with " + fileName);
             ModuleController.GetDisplays().First().PlayMusic("/musics/" + fileName);

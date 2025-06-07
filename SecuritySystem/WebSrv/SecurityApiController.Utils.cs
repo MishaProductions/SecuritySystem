@@ -72,12 +72,8 @@ namespace SecuritySystem
         /// <exception cref="EmbedIO.HttpException"></exception>
         public async Task<T> ParseRequestJson<T>()
         {
-            string json = await HttpContext.GetRequestBodyAsStringAsync();
-            if (json == null) throw new HttpException(System.Net.HttpStatusCode.BadRequest);
-
-            T? c = JsonConvert.DeserializeObject<T>(json);
-            if (c == null) throw new HttpException(System.Net.HttpStatusCode.BadRequest);
-
+            string json = await HttpContext.GetRequestBodyAsStringAsync() ?? throw new HttpException(System.Net.HttpStatusCode.BadRequest);
+            T? c = JsonConvert.DeserializeObject<T>(json) ?? throw new HttpException(System.Net.HttpStatusCode.BadRequest);
             return c;
         }
     }

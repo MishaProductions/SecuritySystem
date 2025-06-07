@@ -7,10 +7,10 @@ namespace SecuritySystem.Modules
 {
     public class InactiveZoneMonitor : Module
     {
-        private static Dictionary<int, DateTime> LastReadyZone = []; // <Zone index, Last Ready>
-        private static Dictionary<int, DateTime> IgnoreZones = []; // <Zone index, Ignore until>
-        private System.Timers.Timer ZoneTimer = new();
-        private static TimeSpan alarmSpan = TimeSpan.FromMinutes(32);
+        private static readonly Dictionary<int, DateTime> LastReadyZone = []; // <Zone index, Last Ready>
+        private static readonly Dictionary<int, DateTime> IgnoreZones = []; // <Zone index, Ignore until>
+        private readonly System.Timers.Timer ZoneTimer = new();
+        private static readonly TimeSpan alarmSpan = TimeSpan.FromMinutes(32);
         public override void OnRegister()
         {
             // TODO: maybe save this if system restarts

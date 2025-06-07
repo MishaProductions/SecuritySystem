@@ -31,7 +31,7 @@ namespace SecuritySystem.Modules.NXDisplay
         public bool WarningFlash = false;
         public bool ZoneFlash = false;
         public bool ImageState = false;
-        private List<TroubleLog> TroubleLog = [];
+        private readonly List<TroubleLog> TroubleLog = [];
         public int ImageId = 2;
         string currentPage = "pageHome";
         private SerialPort? SerialPort
@@ -186,19 +186,19 @@ namespace SecuritySystem.Modules.NXDisplay
         }
         public void StopMusic()
         {
-            SendCommand("pageHome.wavMusic.en=0");
+            //SendCommand("pageHome.wavMusic.en=0");
         }
         public void PlayAnnc(string path)
         {
-            if (currentPage != "pageHome") return;
+            /*if (currentPage != "pageHome") return;
             string properPath = "sd0" + path.Replace(".mp3", ".wav").Replace(".flac", ".wav");
             Console.WriteLine("Play annc " + properPath);
             SendCommand("pageHome.wavAnnc.path=\"" + properPath + "\"");
-            SendCommand("pageHome.wavAnnc.en=1");
+            SendCommand("pageHome.wavAnnc.en=1");*/
         }
         public void StopAnnc()
         {
-            SendCommand("pageHome.wavAnnc.en=0");
+            //SendCommand("pageHome.wavAnnc.en=0");
         }
         private void SystemManager_OnZoneUpdate(bool single, int zone, string name, ZoneState ready)
         {
@@ -287,7 +287,7 @@ namespace SecuritySystem.Modules.NXDisplay
         }
         #endregion
         #region Firmware update
-        private uint ReadFileSize(byte[] firmware)
+        private static uint ReadFileSize(byte[] firmware)
         {
             BinaryReader br = new(new MemoryStream(firmware));
             br.BaseStream.Position = 0x3C;
@@ -407,7 +407,6 @@ namespace SecuritySystem.Modules.NXDisplay
             var remainingBlocks = (int)Math.Ceiling((double)(fwsize / blockSize));
             int blocksSent = 0;
             BinaryReader fw = new(new MemoryStream(FirmwareData));
-            DateTime starttime = DateTime.Now;
             UpdateProgressString = "Sending data";
             DeviceModel.BroadcastFwUpdateProgress("Generic Nextion Display", UpdateProgressString, 0);
             while (remainingBlocks != 0)

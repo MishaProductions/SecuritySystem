@@ -1,5 +1,6 @@
 ﻿using EmbedIO;
 using EmbedIO.WebApi;
+using SecuritySystem.Utils;
 using SecuritySystem.WebSrv.Websocket;
 using System.Net;
 using System.Net.Sockets;
