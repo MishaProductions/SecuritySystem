@@ -20,6 +20,7 @@ namespace SecuritySystem.Modules.NXDisplay
         private string? comport = comport;
         public static bool DoorChime = true;
         public bool ShufflePlaylist = false;
+        public bool LoopPlaylist = false;
         private SerialPort? _port;
         public int UpdateProgress = 0;
         public bool UpdateFail = false;
@@ -32,6 +33,7 @@ namespace SecuritySystem.Modules.NXDisplay
         public bool ZoneFlash = false;
         public bool ImageState = false;
         private readonly List<TroubleLog> TroubleLog = [];
+        private DateTime lastDisplayPing;
         public int ImageId = 2;
         string currentPage = "pageHome";
         private SerialPort? SerialPort
@@ -154,8 +156,6 @@ namespace SecuritySystem.Modules.NXDisplay
             if (currentPage == "pageMusic")
             {
                 SendCommand($"tCurrentSong.txt=\"Current file: none\"");
-                SendCommand("vis bPlaySelMusic,1");
-                SendCommand("vis bPlayAllMusic,1");
             }
         }
 
@@ -527,6 +527,9 @@ namespace SecuritySystem.Modules.NXDisplay
             RefreshWeather();
             SystemManager_OnZoneUpdate(false, 0, "", ZoneState.Unconfigured);
 
+            SendCommand("audio0=0");
+            SendCommand("audio1=0");
+
             UpdateTroubleCondition();
         }
 
@@ -557,6 +560,7 @@ namespace SecuritySystem.Modules.NXDisplay
             }
 
             var t = TroubleLog[0];
+            Console.WriteLine("troubleLog count: " + TroubleLog.Count);
 
             if (TroubleLog.Count > 1)
             {
@@ -846,11 +850,17 @@ namespace SecuritySystem.Modules.NXDisplay
                         case 0x88:
                             //Nextion ready event
                             Console.WriteLine("Warning: keypad restarted");
-                            TroubleLog.Add(new TroubleLog()
+
+                            if (TroubleLog.Count == 0)
                             {
-                                Title = "Unexpected restart",
-                                Description = "The display has unexpectedly restarted.\r\nVerify that the power supply voltage and\r\namperage is correct."
-                            });
+                                TroubleLog.Add(new TroubleLog()
+                                {
+                                    Title = "Unexpected restart",
+                                    Description = "The display has unexpectedly restarted.\r\nVerify that the power supply voltage and\r\namperage is correct.",
+                                    Type = TroubleType.DisplayPowerLoss
+                                });
+
+                            }
 
                             InitKeypad();
                             break;
@@ -1213,19 +1223,10 @@ namespace SecuritySystem.Modules.NXDisplay
 
                 SendCommand($"select0.path=\"{musicList}\"");
 
-                if (MusicPlayer.AnncPlaying)
-                {
-                    SendCommand("vis bPlayAnnc,0");
-                }
-                if (MusicPlayer.MusicPlaying)
-                {
-                    SendCommand("vis bPlaySelMusic,0");
-                    SendCommand("vis bPlayAllMusic,0");
-                }
-
                 SendCommand("h1.val=" + MusicPlayer.MusicVol);
                 SendCommand("h2.val=" + MusicPlayer.Anncvol);
                 SendCommand("sw0.val=" + (ShufflePlaylist ? "1" : "0"));
+                SendCommand("sw1.val=" + (LoopPlaylist ? "1" : "0"));
 
                 if (MusicPlayer.PlaylistMode)
                 {
@@ -1266,8 +1267,6 @@ namespace SecuritySystem.Modules.NXDisplay
                 MusicPlayer.PlayAllMusic(MusicPlayer.MusicFiles);
 
                 SendCommand($"tCurrentSong.txt=\"{MusicPlayer.CurrentSongName}\"");
-                SendCommand("vis bPlaySelMusic,0");
-                SendCommand("vis bPlayAllMusic,0");
 
                 SendCommand("vis bPlaylistBack,1");
                 SendCommand("vis bPlaylistNext,1");
@@ -1277,9 +1276,6 @@ namespace SecuritySystem.Modules.NXDisplay
                 if (!MusicPlayer.MusicPlaying)
                     return;
                 MusicPlayer.StopMusic();
-
-                SendCommand("vis bPlaySelMusic,1");
-                SendCommand("vis bPlayAllMusic,1");
 
                 SendCommand("vis bPlaylistBack,0");
                 SendCommand("vis bPlaylistNext,0");
@@ -1291,10 +1287,6 @@ namespace SecuritySystem.Modules.NXDisplay
                 MusicPlayer.PlayMusic(a);
 
                 SendCommand("tCurrentSong.txt=\"" + MusicPlayer.CurrentSongName + "\"");
-
-                SendCommand("vis bPlaySelMusic,0");
-                SendCommand("vis bPlayAllMusic,0");
-
                 SendCommand("vis bPlaylistBack,0");
                 SendCommand("vis bPlaylistNext,0");
             }
@@ -1304,6 +1296,12 @@ namespace SecuritySystem.Modules.NXDisplay
                     return;
                 MusicPlayer.StopAnnc();
                 //SendCommand("vis bPlayAnnc,1");
+            }
+            else if (x == "ping controller")
+            {
+                lastDisplayPing = DateTime.UtcNow;
+                SendCommand("click bPingResponse,0");
+                SendCommand("click bPingResponse,1");
             }
             else if (x == "playlist next")
             {
@@ -1395,6 +1393,16 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 ShufflePlaylist = true;
                 MusicPlayer.SetMusicShuffle(true);
+            }
+            else if (x == "setloop 0")
+            {
+                LoopPlaylist = false;
+                MusicPlayer.SetMusicLoop(false);
+            }
+            else if (x == "setloop 1")
+            {
+                LoopPlaylist = true;
+                MusicPlayer.SetMusicLoop(true);
             }
             else if (x == "sysmsg init")
             {

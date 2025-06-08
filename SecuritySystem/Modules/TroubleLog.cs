@@ -10,5 +10,6 @@ public class TroubleLog
 public enum TroubleType
 {
     Unknown = 0,
-    InactiveZone = 1
+    InactiveZone = 1,
+    DisplayPowerLoss = 2
 }

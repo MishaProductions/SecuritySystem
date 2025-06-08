@@ -18,8 +18,9 @@ namespace SecuritySystem.Utils
         private static readonly Player anncSfx = new();
         private static readonly Player tickSfx = new();
         private static readonly Player armAnnc = new();
-        private static int MusicFadeTime = 40;
-        private static int MusicFadeToVolume = 40;
+        private static int MusicFadeTime = 30;
+        private static int MusicFadeToVolume = 50;
+        private static bool ShuffleMusic = false;
 
 
         public static bool PlaylistMode { get; private set; }
@@ -248,7 +249,7 @@ namespace SecuritySystem.Utils
                 Console.WriteLine(strings[i]);
             }
 
-            musicProc.PlaylistPlay(strings, true, true);
+            musicProc.PlaylistPlay(strings, true, ShuffleMusic);
         }
         internal static void PlayMusic(int a)
         {
@@ -402,6 +403,7 @@ namespace SecuritySystem.Utils
 
         public static void SetMusicShuffle(bool should)
         {
+            ShuffleMusic = should;
             musicProc.UpdatePlaylistShuffle(should);
         }
 
