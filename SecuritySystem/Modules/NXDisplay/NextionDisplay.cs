@@ -665,13 +665,18 @@ namespace SecuritySystem.Modules.NXDisplay
                 SendCommand($"tsw bDArmSys,1");
                 SendCommand($"bDArmSys.txt=\"Disarm\"");
                 SendCommand($"vis bSettings,0");
+                SetCmptVisible("bSettingsBg", false);
                 SendCommand($"vis bMusicLoop,0");
+                SetCmptVisible("bMusicLoopBg", false);
                 SendCommand($"vis b0,0");
             }
             else
             {
+                SetCmptVisible("bSettingsBg", true);
                 SendCommand($"vis bSettings,1");
+                SetCmptVisible("bMusicLoopBg", true);
                 SendCommand($"vis bMusicLoop,1");
+                
                 SendCommand($"vis b0,1");
                 SendCommand($"bDArmSys.txt=\"Arm System\"");
                 SendCommand($"pageHome.bIsSystemArmed.val=0");

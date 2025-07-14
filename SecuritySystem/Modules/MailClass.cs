@@ -31,7 +31,7 @@ namespace SecuritySystem.Modules
         {
             if (Configuration.Instance.NotificationLevel == 2)
             {
-                SendMail($"<h1>Zone #{zone}: {name} is {ready}</h1><br>" + GenerateZoneBlock(), "[security system] zone state change");
+                SendMail($"<h1>Zone #{zone}: {name} is {ready}</h1><br>" + GenerateZoneBlock() + "<br>" + GenerateFooter(), $"[security system] zone state change ({DateTime.Now.ToString("MM/dd/yyyy")})");
             }
         }
         public static void SendMail(string contents, string subject)
@@ -98,5 +98,9 @@ namespace SecuritySystem.Modules
             return thing;
         }
 
+        private static string GenerateFooter()
+        {
+            return $"<br><small>This message was generated at {DateTime.Now} local time.</small>";
+        }
     }
 }
