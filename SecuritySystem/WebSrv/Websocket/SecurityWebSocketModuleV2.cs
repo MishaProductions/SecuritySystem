@@ -194,7 +194,7 @@ namespace SecuritySystem.WebSrv.Websocket
             }
         }
 
-        private SystemStateChange BuildSystemStateChange(bool beep)
+        private static SystemStateChange BuildSystemStateChange(bool beep)
         {
             SystemStateChange state = new()
             {
@@ -207,9 +207,14 @@ namespace SecuritySystem.WebSrv.Websocket
             };
             return state;
         }
-        private AuthenticationOK BuildAuthenticationOK()
+        private static AuthenticationOK BuildAuthenticationOK()
         {
-            return new AuthenticationOK(BuildSystemStateChange(false), BuildZoneUpdate());
+            return new AuthenticationOK(BuildSystemStateChange(false), BuildZoneUpdate(), BuildMusicState());
+        }
+
+        private static MusicState BuildMusicState()
+        {
+            return new MusicState(MusicPlayer.MusicVol, MusicPlayer.Anncvol, MusicPlayer.MusicPlaying ? MusicPlayer.CurrentSongName : null, MusicPlayer.AnncPlaying ? MusicPlayer.CurrentAnnc : null);
         }
 
         private static ZoneUpdate BuildZoneUpdate()

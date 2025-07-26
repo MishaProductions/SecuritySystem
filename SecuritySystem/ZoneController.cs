@@ -35,7 +35,7 @@ namespace SecuritySystem
                 return;
             }
 
-            controller = Configuration.Instance.UseOrangePiDriver ? new GpioController(PinNumberingScheme.Logical, new OrangePiPCDriver()) : new GpioController(PinNumberingScheme.Logical);
+            controller = Configuration.Instance.UseOrangePiDriver ? new GpioController(new OrangePiPCDriver()) : new GpioController();
 
             ZoneStates = new ZoneState[Configuration.Instance.Zones.Count];
             foreach (var item in Configuration.Instance.Zones)

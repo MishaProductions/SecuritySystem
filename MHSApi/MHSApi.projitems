@@ -35,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\AuthenticationOK.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicPlayerVolumeChange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicStarted.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicState.cs"/>
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\MusicStopped.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\SystemStateChange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WebSocket\ZoneUpdate.cs" />

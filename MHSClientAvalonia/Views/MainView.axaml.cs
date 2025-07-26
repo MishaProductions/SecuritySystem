@@ -28,6 +28,8 @@ public partial class MainView : UserControl
     private readonly DispatcherTimer _updateTimer = new();
     internal Visual VisualForUpdate { get { return (Visual?)VisualRoot ?? throw new Exception(); } }
     private static FwUpdateWindow? FwUpdateWindow;
+
+    private static bool ErrorShowing = false;
     public MainView()
     {
         InitializeComponent();
@@ -61,7 +63,7 @@ public partial class MainView : UserControl
 
                 if (insetsManager != null)
                 {
-                    insetsManager.DisplayEdgeToEdge = false;
+                    insetsManager.DisplayEdgeToEdgePreference = false;
                     insetsManager.IsSystemBarVisible = false;
                 }
             }
@@ -116,7 +118,7 @@ public partial class MainView : UserControl
             }
         });
     }
-    private void SecurityClient_OnMusicStarted(string fileName, bool isLive)
+    private void SecurityClient_OnMusicStarted(string? fileName, bool isLive)
     {
         Dispatcher.UIThread.Invoke(delegate
         {
@@ -132,7 +134,7 @@ public partial class MainView : UserControl
             page?.OnMusicFileChanged(null, false);
         });
     }
-    private void SecurityClient_OnAnncStarted(string fileName, bool isLive)
+    private void SecurityClient_OnAnncStarted(string? fileName, bool isLive)
     {
         Dispatcher.UIThread.Invoke(delegate
         {
@@ -280,13 +282,16 @@ public partial class MainView : UserControl
     }
     private async void SecurityClient_OnAuthenticationFailure(object? sender, EventArgs e)
     {
+        if (ErrorShowing) return; // avoid duplicate error messages
+        ErrorShowing = true;
         await new ContentDialog()
         {
             Title = "Something went wrong",
-            Content = "Something went wrong while authenticating with the websocket. Press OK to visit the login page. If that does not work, try to restart your security system controller, update your client, or try a firmware update.",
+            Content = "Something went wrong while authenticating with the websocket. If that does not work, try to restart your security system controller, update your client, or try a firmware update. Returning to login view.",
             CloseButtonText = "OK",
         }.ShowAsync();
         await NavigateTo(typeof(LoginPage));
+        ErrorShowing = false;
     }
     private void SecurityClient_OnZoneUpdate(object? sender, EventArgs e)
     {
@@ -487,6 +492,21 @@ public partial class MainView : UserControl
     /// Navigates to page by tag
     /// </summary>
     /// <param name="page">The page tag</param>
+    // TODO: better way to do this
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HomePage))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MusicManager))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AlarmHistory))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Weather))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CfgOverview))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ZonesCfg))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UsersCfg))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NotificationsCfg))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(AboutPage))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MaintenanceOverview))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(FirmwareUpdate))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(EventLog))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Download))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(LoginPage))]
     public async Task NavigateTo(Type page, bool clearBackStack = false)
     {
         if (page == null)
@@ -605,21 +625,6 @@ public partial class MainView : UserControl
         await NavigateTo(typeof(Download));
     }
 
-    // TODO: better way to do this
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(HomePage))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(MusicManager))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(AlarmHistory))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Weather))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(CfgOverview))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ZonesCfg))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(UsersCfg))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(NotificationsCfg))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(AboutPage))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(MaintenanceOverview))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(FirmwareUpdate))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(EventLog))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(Download))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoginPage))]
     private static readonly Dictionary<string, Type> PageNames = new(){
         {"HomePage", typeof(HomePage)},
         {"MusicManager", typeof(MusicManager)},
@@ -633,7 +638,8 @@ public partial class MainView : UserControl
         {"MaintenanceOverview", typeof(MaintenanceOverview)},
         {"FirmwareUpdate", typeof(FirmwareUpdate)},
         {"EventLog", typeof(EventLog)},
-        {"Download", typeof(Download)}
+        {"Download", typeof(Download)},
+        {"Login", typeof(LoginPage)}
     };
 
     private async void NavigationView_ItemInvoked(object? sender, NavigationViewItemInvokedEventArgs e)

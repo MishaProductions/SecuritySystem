@@ -9,10 +9,10 @@ namespace MHSClientAvalonia.Pages;
 
 public partial class MusicManager : SecurityPage
 {
-    private ObservableCollection<string> MusicFiles = new ObservableCollection<string>();
-    private ObservableCollection<string> AnncFiles = new ObservableCollection<string>();
-    private bool anncChanging = false;
-    private bool musicChanging = false;
+    private readonly ObservableCollection<string> MusicFiles = [];
+    private readonly ObservableCollection<string> AnncFiles = [];
+    private bool anncChanging = true;
+    private bool musicChanging = true;
 
     public MusicManager()
     {
@@ -46,8 +46,17 @@ public partial class MusicManager : SecurityPage
         listMusic.ItemsSource = MusicFiles;
         listAnnc.ItemsSource = AnncFiles;
 
+        anncChanging = true;
+        musicChanging = true;
+
         AnncVolumeSlider.Value = Services.SecurityClient.AnncVol;
         MusicVolumeSlider.Value = Services.SecurityClient.MusicVol;
+
+        anncChanging = false;
+        musicChanging = false;
+
+        OnMusicFileChanged(Services.SecurityClient.CurrentlyPlayingMusic, false);
+        OnAnncChanged(Services.SecurityClient.CurrentlyPlayingAnnc, false);
 
         HideLoadingBar();
     }
@@ -97,6 +106,7 @@ public partial class MusicManager : SecurityPage
         base.OnAnncVolChanged();
         anncChanging = true;
         AnncVolumeSlider.Value = Services.SecurityClient.AnncVol;
+        anncChanging = false;
     }
 
     public override void OnMusicVolChanged()
@@ -104,6 +114,7 @@ public partial class MusicManager : SecurityPage
         base.OnMusicVolChanged();
         musicChanging = true;
         MusicVolumeSlider.Value = Services.SecurityClient.MusicVol;
+        musicChanging = false;
     }
 
     public override void OnMusicFileChanged(string? fileName, bool isLive)
@@ -135,21 +146,13 @@ public partial class MusicManager : SecurityPage
 
     private async void AnncVol_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
-        if (anncChanging)
-        {
-            anncChanging = false;
-            return;
-        }
+        if (anncChanging) return;
         await Services.SecurityClient.SetAnncVolume((int)e.NewValue);
     }
 
     private async void MusicVol_ValueChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)
     {
-        if (musicChanging)
-        {
-            musicChanging = false;
-            return;
-        }
+        if (musicChanging) return;
         await Services.SecurityClient.SetMusicVolume((int)e.NewValue);
     }
 

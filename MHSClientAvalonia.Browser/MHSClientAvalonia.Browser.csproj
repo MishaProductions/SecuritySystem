@@ -5,11 +5,11 @@
 		<DebuggerSupport>true</DebuggerSupport>
 		<WasmBuildNative>true</WasmBuildNative>
 		<WasmDebugLevel>5</WasmDebugLevel>
-		<PublishTrimmed>true</PublishTrimmed> <!--TODO: Fix-->
+		<PublishTrimmed>false</PublishTrimmed> <!--TODO: Fix-->
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Avalonia.Browser" Version="11.2.8" />
+		<PackageReference Include="Avalonia.Browser" Version="11.3.2" />
 	</ItemGroup>
 
 	<ItemGroup>

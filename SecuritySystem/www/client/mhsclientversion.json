@@ -1,8 +1,9 @@
 {
-  "changelog": "Improved UI and some bug fixes",
-  "serverVersion": "4.0.1.5",
+  "changelog": "Improved Music Manager UI and stability",
+  "serverVersion": "4.0.1.6",
   "files": {
     "win64": [ "MHSClientAvalonia.Desktop.exe" ],
-    "linux64": [ "MHSClientAvalonia.Desktop" ]
+    "linux64": [ "MHSClientAvalonia.Desktop" ],
+    "android": "com.mikhailproductions.mhs-Signed.apk"
   }
 }

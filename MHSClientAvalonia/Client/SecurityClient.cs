@@ -52,6 +52,8 @@ namespace MHSClientAvalonia.Client
 
         public int AnncVol { get; set; }
         public int MusicVol { get; set; }
+        public string? CurrentlyPlayingMusic { get; private set; }
+        public string? CurrentlyPlayingAnnc { get; private set; }
         public SecurityClient()
         {
             Console.WriteLine("SecurityClient cctor");
@@ -101,11 +103,24 @@ namespace MHSClientAvalonia.Client
                     }
                     else if (msg.type == MessageType.AuthOK)
                     {
+                        var msgProper = (AuthenticationOK)msg;
                         IsConnected = true;
-                        ProcessStateChange(((AuthenticationOK)msg).State, true);
-                        ProcessZoneUpdate(((AuthenticationOK)msg).Zones, true);
-                        await SendMusicManagerThings();
+                        ProcessStateChange(msgProper.State, true);
+                        ProcessZoneUpdate(msgProper.Zones, true);
                         OnConnected?.Invoke(this, new EventArgs());
+
+
+                        // Notify the client about the currently playing music/announcements and their volumes
+                        MusicVol = msgProper.MusicState.MusicVolume;
+                        AnncVol = msgProper.MusicState.AnnouncementVolume;
+                        CurrentlyPlayingMusic = msgProper.MusicState.CurrentlyPlayingMusic;
+                        CurrentlyPlayingAnnc = msgProper.MusicState.CurrentlyPlayingAnnouncement;
+
+                        OnAnncStarted?.Invoke(msgProper.MusicState.CurrentlyPlayingAnnouncement, false);
+                        OnMusicStarted?.Invoke(msgProper.MusicState.CurrentlyPlayingMusic, false);
+
+                        OnMusicVolChanged?.Invoke(null, new());
+                        OnAnncVolChanged?.Invoke(null, new());
                     }
                     else if (msg.type == MessageType.SystemStateChange)
                     {
@@ -141,7 +156,7 @@ namespace MHSClientAvalonia.Client
                     else if (msg.type == MessageType.AnncStarted)
                     {
                         var msg2 = ((AnncStarted)msg) ?? throw new Exception("cannot be null");
-                        OnAnncStarted?.Invoke(msg2.AnncFileName ?? "null", msg2.IsLive);
+                        OnAnncStarted?.Invoke(msg2.AnncFileName, msg2.IsLive);
                     }
                     else if (msg.type == MessageType.AnncStopped)
                     {
@@ -164,13 +179,6 @@ namespace MHSClientAvalonia.Client
         public async Task SetMusicVolume(int newValue)
         {
             await ws.Send(JsonSerializer.Serialize(new MusicPlayerVolumeChange(newValue), SourceGenerationContext.Default.MusicPlayerVolumeChange));
-        }
-
-        private async Task SendMusicManagerThings()
-        {
-            // request music/annc volume
-            await SetAnncVolume(-1);
-            await SetMusicVolume(-1);
         }
 
         private void ProcessStateChange(SystemStateChange state, bool initial)
@@ -684,7 +692,7 @@ namespace MHSClientAvalonia.Client
         public delegate void ProgressEventHandler(int progress);
         public delegate void OnSystemTimer(bool arming, int timer);
         public delegate void OnSystemUpdateProgress(FwUpdateMsg msg);
-        public delegate void MusicStartedEventHandler(string fileName, bool isLive);
+        public delegate void MusicStartedEventHandler(string? fileName, bool isLive);
     }
     public class Result(SecurityApiResult result, string message, object? value)
     {

@@ -46,6 +46,20 @@ namespace SecuritySystem.Utils
                 }
             }
         }
+        public static string CurrentAnnc
+        {
+            get
+            {
+                if (AnncPlaying)
+                {
+                    return anncProc.GetPlaylistFileNameByIndex(anncProc.PlaylistIndex);
+                }
+                else
+                {
+                    return "None";
+                }
+            }
+        }
         public static int Anncvol
         {
             get
