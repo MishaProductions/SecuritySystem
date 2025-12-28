@@ -157,8 +157,6 @@ namespace SecuritySystem.WebSrv.Websocket
                                 var musicMsg = (MusicPlayerVolumeChange)x;
                                 if (musicMsg.MusicVolume != -1)
                                 {
-                                    // update volume
-                                    Console.WriteLine("websocket: update music volume to " + musicMsg.MusicVolume);
                                     MusicPlayer.MusicVol = musicMsg.MusicVolume;
                                 }
                                 else
@@ -174,8 +172,6 @@ namespace SecuritySystem.WebSrv.Websocket
                                 var musicMsg = (AnncPlayerVolumeChange)x;
                                 if (musicMsg.AnncVolume != -1)
                                 {
-                                    // update volume
-                                    Console.WriteLine("websocket: update annc volume to " + musicMsg.AnncVolume);
                                     MusicPlayer.Anncvol = musicMsg.AnncVolume;
                                 }
                                 else

@@ -1,6 +1,6 @@
 ﻿Zone 1: GPIO 4 / PA6
 Zone 2: GPIO 5 / PA7
 Zone 3: GPIO 6 / PA8
-Zone 4: GPIO 13 / PA9
-Zone 5: GPIO 19 / PA10
+Zone 4: GPIO 13 / PA9 (needs to change)
+Zone 5: GPIO 19 / PA10 (needs to change)
 Zone 8: GPIO 26 / PA20

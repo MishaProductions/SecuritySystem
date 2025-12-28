@@ -304,7 +304,7 @@ namespace SecuritySystem.Utils
             return RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && File.Exists(LibmpvPath);
         }
 
-        public const string LibmpvPath = "/usr/lib/arm-linux-gnueabihf/libmpv.so";
+        public const string LibmpvPath = "/usr/lib/aarch64-linux-gnu/libmpv.so";
 
         [LibraryImport(LibmpvPath, StringMarshalling = StringMarshalling.Utf8)]
         private static partial nint mpv_create();

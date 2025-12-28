@@ -29,6 +29,8 @@ namespace SecuritySystem.Modules
 
         public static bool IsInactive(int zoneIdx)
         {
+            if (!LastReadyZone.ContainsKey(zoneIdx)) return false;
+
             var lastActivity = DateTime.Now - LastReadyZone[zoneIdx];
             if (lastActivity >= alarmSpan && !ZoneController.IsZoneReady(zoneIdx))
             {
@@ -71,18 +73,26 @@ namespace SecuritySystem.Modules
             foreach (var item in LastReadyZone)
             {
                 var lastReadyDur = DateTime.Now - item.Value;
-                if (lastReadyDur >= alarmSpan)
+
+                // check if zone was shut
+                if (ZoneController.IsZoneReady(item.Key))
                 {
-                    if (ZoneController.IsZoneReady(item.Key))
+                    // check if was shut after the alarm
+                    if (lastReadyDur >= alarmSpan)
                     {
-                        LastReadyZone[item.Key] = DateTime.Now;
-                        continue;
+                        TroubleManager.RmTroubleByZoneIdxInactivity(item.Key);
                     }
 
+                    LastReadyZone[item.Key] = DateTime.Now;
+                }
+                // check if zone was opened after the warning time passed
+                else if (lastReadyDur >= alarmSpan)
+                {
                     if (IgnoreZones.ContainsKey(item.Key))
                     {
                         if (IgnoreZones[item.Key] <= DateTime.Now)
                         {
+                            // after some hours, remove the zone from the ignore list
                             Console.WriteLine("InactiveZoneMT: remove expired entry for zone " + item.Key);
                             IgnoreZones.Remove(item.Key);
                         }
@@ -93,12 +103,18 @@ namespace SecuritySystem.Modules
                         }
                     }
 
+                    // play inactivity message
                     Console.WriteLine($"InactiveZoneMT: ***Found inactive zone {item.Key} since {lastReadyDur} time");
                     var idx = MusicPlayer.AnncFiles.IndexOf("standclear.mp3");
                     if (idx != -1)
                         MusicPlayer.PlayAnnc(idx);
 
                     SystemManager.InactiveZone(item.Key, lastReadyDur);
+
+                    if (!TroubleManager.InactivityZoneFaultExists(item.Key))
+                    {
+                        TroubleManager.InsertTroubleCondition(ZoneInactivityTroubleCondition.Create(item.Key, item.Value));
+                    }
                 }
             }
         }

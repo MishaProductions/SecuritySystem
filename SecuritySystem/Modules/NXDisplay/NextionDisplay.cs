@@ -32,7 +32,6 @@ namespace SecuritySystem.Modules.NXDisplay
         public bool WarningFlash = false;
         public bool ZoneFlash = false;
         public bool ImageState = false;
-        private readonly List<TroubleLog> TroubleLog = [];
         private DateTime lastDisplayPing;
         public int ImageId = 2;
         string currentPage = "pageHome";
@@ -66,6 +65,9 @@ namespace SecuritySystem.Modules.NXDisplay
             SystemManager.OnSystemDisarm += SystemManager_OnSystemDisarm;
             SystemManager.OnSysTimerEvent += SystemManager_OnSysTimerEvent;
             SystemManager.OnInactiveZone += SystemManager_OnInactiveZone;
+
+            TroubleManager.OnNewCondition += TroubleManager_OnNewCondition;
+            TroubleManager.OnConditionCleared += TroubleManager_OnClearCondition;
         }
 
         public override void OnUnregister()
@@ -253,37 +255,22 @@ namespace SecuritySystem.Modules.NXDisplay
             AlarmBeep();
             UpdateStatusText();
         }
-        private bool inactiveZoneWarnShowing = false;
         private void SystemManager_OnInactiveZone(int idx, TimeSpan sinceInactive)
         {
             TroubleBeep();
-            if (inactiveZoneWarnShowing) return;
-            inactiveZoneWarnShowing = true;
-            TroubleLog.Add(new TroubleLog() { Description = $"The zone {idx + 1} has been not ready for {(int)sinceInactive.TotalMinutes}mins", Title = "Inactive Zone", Type = TroubleType.InactiveZone, ZoneIndex = idx });
             UpdateStatusText();
             UpdateTroubleCondition();
-            // old logic
-            /*if (!PromptOpen && !inactiveZoneWarnShowing)
-            {
-                inactiveZoneWarnShowing = true;
-
-                ShowPrompt("Inactive Zone", $"The zone {idx + 1} has been\r\nnot ready for {(int)sinceInactive.TotalMinutes}mins\r\nStop alarm or ignore?", true,
-                2, "STOPALRM", true, () =>
-                {
-                    inactiveZoneWarnShowing = false;
-                    PromptOpen = false;
-
-                    SystemManager.SendIgnoreInactiveZone(idx);
-
-                    SetPage("pageHome");
-                }, "", false, null, "IGNORE", true, () =>
-                {
-                    inactiveZoneWarnShowing = false;
-                    PromptOpen = false;
-
-                    SetPage("pageHome");
-                }, 21152);
-            }*/
+        }
+        private void TroubleManager_OnNewCondition(TroubleCondition condition)
+        {
+            TroubleBeep();
+            UpdateStatusText();
+            UpdateTroubleCondition();
+        }
+        private void TroubleManager_OnClearCondition(TroubleCondition condition)
+        {
+            UpdateStatusText();
+            UpdateTroubleCondition();
         }
         #endregion
         #region Firmware update
@@ -520,7 +507,6 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand($"rtc3={DateTime.Now.Hour}");
             SendCommand($"rtc4={DateTime.Now.Minute}");
             SendCommand($"rtc5={DateTime.Now.Second}");
-            SendCommand($"vis pStatus,0");
             SetCmptPic("pNetwork", 1);
             SetCmptVisible("bShowT", false);
             SendCommand($"thsp=0");
@@ -535,67 +521,43 @@ namespace SecuritySystem.Modules.NXDisplay
 
         private void UpdateTroubleCondition()
         {
-            if (TroubleLog.Count == 0)
+            Console.WriteLine("UpdateTroubleCondition, count=" + TroubleManager.ActiveConditions.Count);
+            if (TroubleManager.ActiveConditions.Count == 0)
             {
                 WarningFlash = false;
                 SetCmptVisible("bShowT", false);
                 SetCmptVisible("pStatus", false);
-                return;
             }
-
-            //TroubleBeep();
-            WarningFlash = true;
-            SetCmptPic("pageHome.pStatus", 9);
-            SetCmptVisible("bShowT", true);
-            SetCmptVisible("pStatus", true);
+            else
+            {
+                WarningFlash = true;
+                SetCmptPic("pageHome.pStatus", 9);
+                SetCmptVisible("bShowT", true);
+                SetCmptVisible("pStatus", true);
+            }
         }
 
         private void HandleShowTrouble()
         {
-            if (TroubleLog.Count == 0)
+            if (TroubleManager.ActiveConditions.Count == 0)
             {
                 SetPage("pageHome");
                 UpdateTroubleCondition();
                 return;
             }
 
-            var t = TroubleLog[0];
-            Console.WriteLine("troubleLog count: " + TroubleLog.Count);
+            var t = TroubleManager.ActiveConditions[0];
+            Console.WriteLine("troubleLog count: " + TroubleManager.ActiveConditions.Count);
 
-            if (TroubleLog.Count > 1)
-            {
-                ShowPrompt(t.Title, t.Description, true, 9,
-            "", false, null,
-            "", false, null,
-            "Next", true, () =>
-            {
-                TroubleLog.Remove(t);
-                if (t.Type == TroubleType.InactiveZone)
-                {
-                    SystemManager.SendIgnoreInactiveZone(t.ZoneIndex);
-                }
-                Console.WriteLine("go to next log");
-                UpdateTroubleCondition();
-            }, 21152
-            );
-            }
-            else
-            {
-                ShowPrompt(t.Title, t.Description, true, 9,
-            "", false, null,
-            "", false, null,
-            "Done", true, () =>
-            {
-                TroubleLog.Remove(t);
-                if (t.Type == TroubleType.InactiveZone)
-                {
-                    SystemManager.SendIgnoreInactiveZone(t.ZoneIndex);
-                }
-                Console.WriteLine("go home");
-                SetPage("pageHome");
-            }, 21152
-            );
-            }
+            ShowPrompt(t.Title, t.GetDescription(), true, 9,
+        "", false, null,
+        "", false, null,
+        TroubleManager.ActiveConditions.Count > 1 ? "Next" : "Done", true, () =>
+        {
+            TroubleManager.RemoveTroubleCondition(t);
+            Console.WriteLine("go to next log");
+            HandleShowTrouble();
+        }, 21152);
         }
 
         public async void RefreshWeather()
@@ -676,7 +638,7 @@ namespace SecuritySystem.Modules.NXDisplay
                 SendCommand($"vis bSettings,1");
                 SetCmptVisible("bMusicLoopBg", true);
                 SendCommand($"vis bMusicLoop,1");
-                
+
                 SendCommand($"vis b0,1");
                 SendCommand($"bDArmSys.txt=\"Arm System\"");
                 SendCommand($"pageHome.bIsSystemArmed.val=0");
@@ -855,17 +817,7 @@ namespace SecuritySystem.Modules.NXDisplay
                         case 0x88:
                             //Nextion ready event
                             Console.WriteLine("Warning: keypad restarted");
-
-                            if (TroubleLog.Count == 0)
-                            {
-                                TroubleLog.Add(new TroubleLog()
-                                {
-                                    Title = "Unexpected restart",
-                                    Description = "The display has unexpectedly restarted.\r\nVerify that the power supply voltage and\r\namperage is correct.",
-                                    Type = TroubleType.DisplayPowerLoss
-                                });
-
-                            }
+                            TroubleManager.InsertTroubleCondition(DispayUnexpectedResetTroubleCondition.Create());
 
                             InitKeypad();
                             break;
@@ -887,7 +839,6 @@ namespace SecuritySystem.Modules.NXDisplay
                         case 0x70:
                             //Text sent
                             var x = Encoding.ASCII.GetString(p, 1, p.Length - 4);
-                            Console.WriteLine("Got text: " + x);
 
                             HandleStringCommand(x);
                             break;
@@ -1503,6 +1454,34 @@ namespace SecuritySystem.Modules.NXDisplay
                     ShowNotImpl(x);
                 }
             }
+            else if (x == "doServiceRestart")
+            {
+                if (!Configuration.Instance.SystemArmed)
+                {
+                    ShowPrompt("Warning", "System will not be monitoring while service restart in progres.\nContinue?", true, 9,
+                    "Yes", true, () =>
+                    {
+                        PromptOpen = false;
+                        SendCommand("play 0,5,0");
+                        ShowPrompt("", "Restarting service...", false, 0, "", false, null, "", false, null, "", false, null);
+                        SystemManager.WriteToEventLog("Service restart from Nextion Display");
+                        Configuration.Save();
+                        Thread.Sleep(1000);
+
+                        Process.Start("/usr/bin/systemctl", "restart secsys").WaitForExit();
+                    },
+                    "", false, null,
+                    "No", true, () =>
+                    {
+                        PromptOpen = false;
+                        SetPage("pageSettings");
+                    }, 49152);
+                }
+                else
+                {
+                    ShowNotImpl(x);
+                }
+            }
             else if (x == "doSystemPowerOff")
             {
                 if (!Configuration.Instance.SystemArmed)
@@ -1540,7 +1519,11 @@ namespace SecuritySystem.Modules.NXDisplay
                 //wrong password
                 //SendCommand($"click bCancel,1");
                 //SendCommand($"click bCancel,1");
-                ShowNotImpl(x);
+                ShowSimpleWarning("Error", "Network username or password is incorrect", () =>
+            {
+                PromptOpen = false;
+                InitKeypad();
+            });
             }
         }
         public void HideHud()

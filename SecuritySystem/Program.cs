@@ -84,11 +84,11 @@ namespace SecuritySystem
             DeviceSubsys.DeviceModel.InitializeAll();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                ModuleController.RegisterModule(new NextionDisplay("/dev/ttyS3"));
+                ModuleController.RegisterModule(new NextionDisplay("/dev/ttyAMA0"));
             }
 
-            Console.WriteLine("Start InactiveZoneMonitor module");
-            ModuleController.RegisterModule(new InactiveZoneMonitor());
+            //Console.WriteLine("Start InactiveZoneMonitor module");
+            //ModuleController.RegisterModule(new InactiveZoneMonitor());
 
             Console.WriteLine("Starting webserver");
             HttpFrontendServer.Start();

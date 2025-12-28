@@ -98,7 +98,7 @@ namespace SecuritySystem.Utils
             {
                 if ((DateTime.Now - LastUpdateTime).Minutes >= 2)
                 {
-                    await UpdateTempSensorInfo();
+                    //await UpdateTempSensorInfo();
                 }
 
                 if ((DateTime.Now - LastUpdateTime).Hours >= 1)

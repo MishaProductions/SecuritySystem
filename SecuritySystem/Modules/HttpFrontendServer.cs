@@ -81,7 +81,7 @@ namespace SecuritySystem.Modules
             }
 
             var server = new WebServer(o => o
-                 .WithUrlPrefixes("https://*:443/")
+                 .WithUrlPrefixes("https://*:443/", "http://*:80/")
                  .WithMode(HttpListenerMode.EmbedIO).WithCertificate(cert))
              // First, we will configure our web server by adding Modules.
              .WithModule(new CorsFixer("/"))
@@ -141,7 +141,7 @@ namespace SecuritySystem.Modules
             _isWebserverRunning = true;
 
             new Thread(WebServerThread).Start();
-            new Thread(HttpsRedirectThead).Start();
+            //new Thread(HttpsRedirectThead).Start();
         }
     }
 }

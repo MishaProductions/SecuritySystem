@@ -35,6 +35,6 @@ dotnet publish MHSClientAvalonia.Android
 cp -r MHSClientAvalonia.Android/bin/Release/net9.0-android/publish/com.mikhailproductions.mhs-Signed.apk SecuritySystem/www/client/android/
 
 echo building controller
-dotnet publish SecuritySystem --runtime linux-arm
+dotnet publish SecuritySystem --runtime linux-arm64
 
 echo compilation finished
