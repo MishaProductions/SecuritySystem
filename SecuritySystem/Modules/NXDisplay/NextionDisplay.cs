@@ -35,6 +35,8 @@ namespace SecuritySystem.Modules.NXDisplay
         private DateTime lastDisplayPing;
         public int ImageId = 2;
         string currentPage = "pageHome";
+        private int FwUpdateBuadRate = 256000; // note: 512000 or higher didnt work for me
+        private int NormalBaudRate = 115200;
         private SerialPort? SerialPort
         {
             get
@@ -86,12 +88,28 @@ namespace SecuritySystem.Modules.NXDisplay
             SystemManager.OnSysTimerEvent -= SystemManager_OnSysTimerEvent;
         }
 
+        private void LcdBoot()
+        {
+            if (!KeypadSendCommands)
+                return;
+
+            Console.WriteLine("NextionDisplay: initializing");
+
+            SetCmptVal("pageBoot.j0", "100");
+            SendCommand("bkcmd=2");
+
+            SetPage("pageAppInit");
+            SetCmptText("t0", "Display Initializing...");
+            SetCmptText("t1", "Downloading Configuration");
+        }
+
         private void Init()
         {
-            SerialPort = new SerialPort(comport, 9600);
+            SerialPort = new SerialPort(comport, NormalBaudRate);
             SerialPort.Open();
             packetReader = new(PacketRxThread);
             packetReader.Start();
+            LcdBoot();
             InitKeypad();
 
             var aTimer = new System.Timers.Timer(1000 * 60 * 30); // update every 30 minutes (in milliseconds)
@@ -291,7 +309,7 @@ namespace SecuritySystem.Modules.NXDisplay
 
             FirmwareData = firmware;
 
-            UpdateProgressString = "Initializing...";
+            UpdateProgressString = "Initializing Update...";
             DeviceModel.BroadcastFwUpdateProgress("Generic Nextion Display", UpdateProgressString, 0);
 
             Console.WriteLine("Updating nextion display at " + comport);
@@ -300,7 +318,7 @@ namespace SecuritySystem.Modules.NXDisplay
                 throw new Exception("comport cannot be NULL");
             }
             //wait for other thread to die
-            Thread.Sleep(2000);
+            Thread.Sleep(5000);
             Thread worker = new(FirmwareUpdateThread);
             worker.Start();
         }
@@ -309,7 +327,7 @@ namespace SecuritySystem.Modules.NXDisplay
             if (FirmwareData == null) throw new Exception("firmware to upload cannot be null");
 
             // The code here is based on https://github.com/MMMZZZZ/Nexus/blob/master/Nexus.py
-            SerialPort = new SerialPort(comport, 9600)
+            SerialPort = new SerialPort(comport, NormalBaudRate)
             {
                 // This is very important when using any SerialPort methods that make use of string or char types
                 // Byte values will be truncated to byte values allowed in codepage
@@ -355,10 +373,12 @@ namespace SecuritySystem.Modules.NXDisplay
             SendCommand("dim=15");
             SendCommand("sleep=0");
             Console.WriteLine("Initiating upload...");
-            SendCommand($"whmi-wris {fwsize},9600,1");
+
+            // Use higher buad rate for firmware upload
+            SendCommand($"whmi-wris {fwsize}," + FwUpdateBuadRate + ",1");
 
             SerialPort.Close();
-            SerialPort = new SerialPort(comport, 9600)
+            SerialPort = new SerialPort(comport, FwUpdateBuadRate)
             {
                 // This is very important when using any SerialPort methods that make use of string or char types
                 // Byte values will be truncated to byte values allowed in codepage
@@ -376,7 +396,7 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 while ((lastval = SerialPort.ReadByte()) != 0x05)
                 {
-
+                    Console.WriteLine("read " + lastval);
                 }
             }
             catch (Exception ex)
@@ -488,11 +508,6 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             if (!KeypadSendCommands)
                 return;
-
-            Console.WriteLine("NextionDisplay: initializing");
-
-            SetCmptVal("pageBoot.j0", "100");
-            SendCommand("bkcmd=3");
 
             currentPage = "pageHome";
             if (navigate)
@@ -869,6 +884,14 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             SendCommand($"{name}.val={val}");
         }
+        private void SetCmptVal(string name, int val)
+        {
+            SendCommand($"{name}.val={val}");
+        }
+        private void SetCmptVal(string name, bool val)
+        {
+            SendCommand($"{name}.val={(val ? 1 : 0)}");
+        }
         private void SetCmptPic(string name, string val)
         {
             SendCommand($"{name}.val={val}");
@@ -1102,6 +1125,37 @@ namespace SecuritySystem.Modules.NXDisplay
                     return;
                 }
 
+                SendCommand("sw0.val=" + (DoorChime ? "1" : "0"));
+            }
+            else if (x == "init displaycfg")
+            {
+                if (Configuration.Instance.SystemArmed)
+                {
+                    SetPage("pageHome");
+                    return;
+                }
+                currentPage = "pageConfig";
+
+                if (OperatingSystem.IsLinux())
+                {
+                    double ramUse = CpuMemoryMetrics4LinuxUtils.GetOccupiedMemoryPercentage();
+                    double cpuUse = CpuMemoryMetrics4LinuxUtils.GetOverallCpuUsagePercentage();
+                    double temp = int.Parse(File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
+
+                    SendCommand("tRamUse.txt=\"RAM usage: " + ramUse + "%\"");
+                    SendCommand("tCpuUse.txt=\"CPU usage: " + cpuUse + "%\"");
+                    SendCommand("tCpuTemp.txt=\"CPU temp: " + temp + "C\"");
+                }
+                else
+                {
+                    SendCommand("tRamUse.txt=\"RAM usage: Unsupported\"");
+                    SendCommand("tCpuUse.txt=\"CPU usage: Unsupported\"");
+                    SendCommand("tCpuTemp.txt=\"CPU temp: Unsupported\"");
+                }
+
+                SendCommand("tBldDate.txt=\"Controller build time: " + new DateTime(Builtin.CompileTime) + "\"");
+                SendCommand("tSysUptime.txt=\"System uptime: " + GetReadableTimeSpan(TimeSpan.FromMilliseconds(Environment.TickCount64)) + "\"");
+
                 //Set the IP Address
                 bool fail = false;
                 try
@@ -1124,30 +1178,6 @@ namespace SecuritySystem.Modules.NXDisplay
                 {
                     SendCommand("desc0.txt=\"Connecting to WI-FI failed.");
                 }
-
-
-                SendCommand("tBldDate.txt=\"Controller build time: " + new DateTime(Builtin.CompileTime) + "\"");
-                SendCommand("tSysUptime.txt=\"System uptime: " + TimeSpan.FromMilliseconds(Environment.TickCount64) + "\"");
-
-                if (OperatingSystem.IsLinux())
-                {
-                    double ramUse = CpuMemoryMetrics4LinuxUtils.GetOccupiedMemoryPercentage();
-                    double cpuUse = CpuMemoryMetrics4LinuxUtils.GetOverallCpuUsagePercentage();
-                    double temp = int.Parse(File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
-
-                    SendCommand("tRamUse.txt=\"RAM usage: " + ramUse + "%\"");
-                    SendCommand("tCpuUse.txt=\"CPU usage: " + cpuUse + "%\"");
-                    SendCommand("tCpuTemp.txt=\"CPU temp: " + temp + "C\"");
-                }
-                else
-                {
-                    SendCommand("tRamUse.txt=\"RAM usage: Unsupported\"");
-                    SendCommand("tCpuUse.txt=\"CPU usage: Unsupported\"");
-                    SendCommand("tCpuTemp.txt=\"CPU temp: Unsupported\"");
-                }
-
-
-                SendCommand("sw0.val=" + (DoorChime ? "1" : "0"));
             }
             else if (x == "init pageAnnc" || x == "pageAnnc")
             {
@@ -1177,6 +1207,8 @@ namespace SecuritySystem.Modules.NXDisplay
                     musicList += item + "\r\n";
                 }
 
+                SetCmptVisible("tLdr", true);
+
                 SendCommand($"select0.path=\"{musicList}\"");
 
                 SendCommand("h1.val=" + MusicPlayer.MusicVol);
@@ -1199,6 +1231,8 @@ namespace SecuritySystem.Modules.NXDisplay
                 {
                     SendCommand("tCurrentSong.txt=\"" + MusicPlayer.CurrentSongName + "\"");
                 }
+
+                SetCmptVisible("tLdr", false);
             }
             else if (x == "init WeatherPage")
             {
@@ -1510,6 +1544,10 @@ namespace SecuritySystem.Modules.NXDisplay
                     ShowNotImpl(x);
                 }
             }
+            else if (x.StartsWith("syssetup "))
+            {
+                HandleSystemSetup(x.Replace("syssetup ", ""));
+            }
             else
             {
 
@@ -1523,6 +1561,140 @@ namespace SecuritySystem.Modules.NXDisplay
             {
                 PromptOpen = false;
                 InitKeypad();
+            });
+            }
+        }
+
+        // https://stackoverflow.com/a/34391569/11250752
+        public string GetReadableTimeSpan(TimeSpan value)
+        {
+            string duration = "";
+
+            var totalDays = (int)value.TotalDays;
+            if (totalDays >= 1)
+            {
+                duration = totalDays + " day" + (totalDays > 1 ? "s" : string.Empty);
+                value = value.Add(TimeSpan.FromDays(-1 * totalDays));
+            }
+
+            var totalHours = (int)value.TotalHours;
+            if (totalHours >= 1)
+            {
+                if (totalDays >= 1)
+                {
+                    duration += ", ";
+                }
+                duration += totalHours + " hour" + (totalHours > 1 ? "s" : string.Empty);
+                value = value.Add(TimeSpan.FromHours(-1 * totalHours));
+            }
+
+            var totalMinutes = (int)value.TotalMinutes;
+            if (totalMinutes >= 1)
+            {
+                if (totalHours >= 1)
+                {
+                    duration += ", ";
+                }
+                duration += totalMinutes + " minute" + (totalMinutes > 1 ? "s" : string.Empty);
+            }
+
+            return duration;
+        }
+
+        private bool SysSetupAuthenticated = false;
+        private string SysSetupUser = "";
+
+        private void HandleSystemSetup(string cmd)
+        {
+            if (cmd.StartsWith("login "))
+            {
+                SysSetupAuthenticated = false;
+                SysSetupUser = "";
+
+                string[] data = cmd.Replace("login ", "").Split(";");
+                if (data.Length != 2)
+                {
+                    ShowSimpleWarning("Error", "Communications error", () =>
+                    {
+                        PromptOpen = false;
+                        InitKeypad();
+                    });
+                    return;
+                }
+
+                string username = data[0];
+                string password = data[1];
+
+                if (Configuration.Instance.SystemArmed)
+                {
+                    SetCmptText("tError", "System is currently armed.");
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                {
+                    SetCmptText("tError", "Username/Pass is empty");
+                    return;
+                }
+
+                foreach (var item in Configuration.Instance.Users)
+                {
+                    if (item.Username == username && item.PasswordHash.Equals(SecurityApiController.Sha256(password), StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        SysSetupAuthenticated = true;
+                        SysSetupUser = item.Username;
+                        break;
+                    }
+                }
+
+                if (!SysSetupAuthenticated)
+                {
+                    SetCmptText("tError", "No such user or password");
+                    return;
+                }
+
+                SetPage("sysSetupMain");
+            }
+            else if (cmd == "logout")
+            {
+                SysSetupAuthenticated = false;
+                SysSetupUser = "";
+            }
+
+            if (!SysSetupAuthenticated)
+            {
+                return;
+            }
+
+            // Notification configuration
+            if (cmd == "notifSetup loadCfg")
+            {
+                SetCmptVal("sw0", Configuration.Instance.SmtpEnabled);
+                SetCmptVal("cb0", Configuration.Instance.NotificationLevel);
+                SetCmptText("t2", Configuration.Instance.SmtpHost);
+                SetCmptText("t3", Configuration.Instance.SmtpUsername); //t5: password
+                SetCmptText("t6", Configuration.Instance.SmtpSendTo);
+            }
+            else if (cmd == "notifSetup testEmail")
+            {
+                SetCmptText("tError", "Please wait");
+                try
+                {
+                    MailClass.SendMailNonThreaded($"If this was not you, take steps. Test email sent from security system.<br><small>Generated on {DateTime.Now}</small>", $"User {SysSetupUser} on Display 0 sent a test email", false);
+                }
+                catch (Exception ex)
+                {
+                    SetCmptText("tError", ex.Message);
+                    return;
+                }
+                SetCmptText("tError", "Success");
+            }
+            else if (cmd == "notifSetup saveCfg")
+            {
+            ShowSimpleWarning("Error", "Function not implemented", () =>
+            {
+                PromptOpen = false;
+                SetPage("sysSetupNotif");
             });
             }
         }
