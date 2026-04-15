@@ -115,7 +115,7 @@ namespace SecuritySystem.Utils
 
         private static void SystemManager_OnZoneUpdate(bool single, int zone, string name, ZoneState ready)
         {
-            //tickSfx.Play("/musics/annc/systimer.mp3");
+            tickSfx.Play("/musics/annc/systimer.mp3");
         }
 
         private static void SystemManager_OnSysTimer(bool entry, int timer)

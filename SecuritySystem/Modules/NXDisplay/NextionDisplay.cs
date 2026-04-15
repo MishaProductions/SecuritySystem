@@ -101,6 +101,11 @@ namespace SecuritySystem.Modules.NXDisplay
             SetPage("pageAppInit");
             SetCmptText("t0", "Display Initializing...");
             SetCmptText("t1", "Downloading Configuration");
+
+            SetCmptText("t0", "Application Initializing...");
+            SetCmptText("t1", "Waiting for network");
+
+            Thread.Sleep(5000);
         }
 
         private void Init()
