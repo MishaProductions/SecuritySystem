@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
 	<PropertyGroup>
-		<TargetFramework>net9.0-browser</TargetFramework>
+		<TargetFramework>net10.0-browser</TargetFramework>
 		<OutputType>Exe</OutputType>
 		<DebuggerSupport>true</DebuggerSupport>
 		<WasmBuildNative>true</WasmBuildNative>
@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Avalonia.Browser" Version="11.3.2" />
+		<PackageReference Include="Avalonia.Browser" Version="11.3.14" />
 	</ItemGroup>
 
 	<ItemGroup>

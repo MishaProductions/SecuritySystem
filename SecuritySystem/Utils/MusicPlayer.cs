@@ -120,7 +120,10 @@ namespace SecuritySystem.Utils
 
         private static void SystemManager_OnSysTimer(bool entry, int timer)
         {
-            tickSfx.Play("/musics/annc/systimer.mp3");
+            if (DateTime.Now.Hour >= Configuration.Instance.SysTimerStartHour || DateTime.Now.Hour < Configuration.Instance.SysTimerEndHour)
+            {
+                tickSfx.Play("/musics/annc/systimer.mp3");
+            }
 
             if (!entry && timer == 14)
             {

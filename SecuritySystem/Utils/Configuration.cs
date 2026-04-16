@@ -52,6 +52,9 @@ namespace SecuritySystem.Utils
 
         public int DbVersion = 1;
         public string WeatherCords = "";
+
+        public int SysTimerStartHour = 23;
+        public int SysTimerEndHour = 9;
     }
     public class Configuration
     {
