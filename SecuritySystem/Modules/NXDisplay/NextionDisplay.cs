@@ -270,7 +270,10 @@ namespace SecuritySystem.Modules.NXDisplay
         {
             // show main view
             UpdateStatusText();
+            SendCommand("audio0=0");
+            SendCommand("audio1=0");
 
+            SendCommand("audio0=0");
             SendCommand("audio1=0");
         }
         private void SystemManager_OnSysTimerEvent(bool entry, int timer)
@@ -1297,6 +1300,10 @@ namespace SecuritySystem.Modules.NXDisplay
                 lastDisplayPing = DateTime.UtcNow;
                 SendCommand("click bPingResponse,0");
                 SendCommand("click bPingResponse,1");
+
+                // do it twice if there is noise
+                SendCommand("click bPingResponse,0");
+                SendCommand("click bPingResponse,1");
             }
             else if (x == "playlist next")
             {
@@ -1696,11 +1703,11 @@ namespace SecuritySystem.Modules.NXDisplay
             }
             else if (cmd == "notifSetup saveCfg")
             {
-            ShowSimpleWarning("Error", "Function not implemented", () =>
-            {
-                PromptOpen = false;
-                SetPage("sysSetupNotif");
-            });
+                ShowSimpleWarning("Error", "Function not implemented", () =>
+                {
+                    PromptOpen = false;
+                    SetPage("sysSetupNotif");
+                });
             }
         }
         public void HideHud()

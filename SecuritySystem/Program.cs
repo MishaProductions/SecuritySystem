@@ -3,6 +3,7 @@ using EmbedIO.Actions;
 using EmbedIO.WebApi;
 using MHSApi.API;
 using SecuritySystem.Modules;
+using SecuritySystem.Modules.Brinks;
 using SecuritySystem.Modules.NXDisplay;
 using SecuritySystem.Utils;
 using System.Device.Gpio;
@@ -85,6 +86,7 @@ namespace SecuritySystem
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 ModuleController.RegisterModule(new NextionDisplay("/dev/ttyAMA0"));
+                ModuleController.RegisterModule(new IconKeypadModule("/dev/ttyAMA1"));
             }
 
             //Console.WriteLine("Start InactiveZoneMonitor module");

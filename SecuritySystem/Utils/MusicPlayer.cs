@@ -115,15 +115,15 @@ namespace SecuritySystem.Utils
 
         private static void SystemManager_OnZoneUpdate(bool single, int zone, string name, ZoneState ready)
         {
-            tickSfx.Play("/musics/annc/systimer.mp3");
-        }
-
-        private static void SystemManager_OnSysTimer(bool entry, int timer)
-        {
             if (DateTime.Now.Hour >= Configuration.Instance.SysTimerStartHour || DateTime.Now.Hour < Configuration.Instance.SysTimerEndHour)
             {
                 tickSfx.Play("/musics/annc/systimer.mp3");
             }
+        }
+
+        private static void SystemManager_OnSysTimer(bool entry, int timer)
+        {
+            tickSfx.Play("/musics/annc/systimer.mp3");
 
             if (!entry && timer == 14)
             {
