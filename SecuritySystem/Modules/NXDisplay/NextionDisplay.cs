@@ -725,9 +725,10 @@ namespace SecuritySystem.Modules.NXDisplay
             if (SerialPort == null)
                 throw new Exception("Init() method not called because NextionDisplayController.SerialPort is null");
 
-            byte[] pkt = new byte[command.Length + 3];
+            var text = Encoding.UTF8.GetBytes(command);
+            byte[] pkt = new byte[text.Length + 3];
             int i = 0;
-            foreach (var item in Encoding.ASCII.GetBytes(command))
+            foreach (var item in text)
             {
                 pkt[i++] = item;
 
@@ -926,7 +927,7 @@ namespace SecuritySystem.Modules.NXDisplay
 
         private readonly string[] WeekLabels = ["t2", "t3", "t4", "t5", "t6", "t7", "t8"];
         private readonly string[] TempLabels = ["t9", "t10", "t11", "t12", "t13", "t14", "t15"];
-        private readonly string[] WeatherLabels = ["t16", "t17", "t18", "t18", "t20", "t21", "t22"];
+        private readonly string[] WeatherLabels = ["t16", "t17", "t18", "t19", "t20", "t21", "t22"];
         private readonly string[] WeatherPictures = ["p1", "p2", "p3", "p4", "p5", "p6", "p7"];
         private readonly string[] WeekLabelText = ["Sat", "Mon", "Tue", "Wen", "Thu", "Fri", "Sat"];
         private bool PromptOpen = false;
@@ -992,123 +993,368 @@ namespace SecuritySystem.Modules.NXDisplay
                 InitKeypad();
             });
         }
+        private static readonly HttpClient WeatherHttpClient = new()
+        {
+            Timeout = TimeSpan.FromSeconds(15)
+        };
         private async void InitWeatherPage(bool show7Day)
         {
             if (currentPage != "pageWeather")
             {
-                Console.WriteLine("nextion: attempted to init weather page when not weather page!");
+                Console.WriteLine(
+                    "nextion: attempted to init weather page when not weather page!");
+
                 return;
             }
-            //SendCommand("play 0,5,1");
+
             SetCmptVisible("j0", true);
             SetCmptVisible("tLdr", true);
-            SetCmptText("tLdr", "Downloading Location data");
-            SetCmptVal("j0", "50");
 
-            bool downloadFail = false;
+            SetCmptText("tLdr", "Downloading Location data");
+            SetCmptVal("j0", "10");
 
             try
             {
-                HttpClient httpClient = new();
-                httpClient.DefaultRequestHeaders.Add("User-agent", "SecuritySystem (https://github.com/MishaProductions/SecuritySystem)");
-                var data = await httpClient.GetAsync("https://api.weather.gov/points/" + Configuration.Instance.WeatherCords);
-                if (data.IsSuccessStatusCode)
+                WeatherHttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("SecuritySystem (https://github.com/MishaProductions/SecuritySystem)");
+
+                string pointsUrl =
+                    "https://api.weather.gov/points/" +
+                    Configuration.Instance.WeatherCords;
+
+                using HttpResponseMessage pointResponse =
+                    await WeatherHttpClient.GetAsync(pointsUrl);
+
+                if (!pointResponse.IsSuccessStatusCode)
                 {
-                    dynamic fs = JObject.Parse(await data.Content.ReadAsStringAsync());
+                    WeatherDownloadFailed(
+                        "Weather location request failed (" +
+                        (int)pointResponse.StatusCode + ").");
 
-                    string url = "";
+                    return;
+                }
 
-                    if (show7Day)
-                        url = (string)fs.properties.forecast;
-                    else
-                        url = (string)fs.properties.forecastHourly;
+                JObject pointJson =
+                    JObject.Parse(await pointResponse.Content.ReadAsStringAsync());
 
-                    SetCmptText("tLdr", "Downloading Weather data");
-                    SetCmptVal("j0", "68");
+                string? forecastUrl =
+                    show7Day
+                        ? (string?)pointJson["properties"]?["forecast"]
+                        : (string?)pointJson["properties"]?["forecastHourly"];
 
-                    var data2 = await httpClient.GetAsync(url);
-                    dynamic fs2 = JObject.Parse(await data2.Content.ReadAsStringAsync());
-                    if (data2.IsSuccessStatusCode)
-                    {
-                        SetCmptText("tLdr", "Processing Weather data");
-                        SetCmptVal("j0", "75");
-                        var today = fs2.properties.periods[0];
-                        SetCmptText("tCap1", (string)today.shortForecast);
-                        SetCmptText("tCap2", (string)today.name);
-                        SetCmptText("tOverallTemp", ((int)today.temperature).ToString() + "F");
+                if (string.IsNullOrWhiteSpace(forecastUrl))
+                {
+                    WeatherDownloadFailed(
+                        "The weather service did not provide a forecast URL.");
 
+                    return;
+                }
 
+                SetCmptText("tLdr", "Downloading Weather data");
+                SetCmptVal("j0", "50");
 
-                        /*if (today.temperature != null)
-                        {
-                            result += $"Temperature: {(int)today.temperature}\r\n";
-                        }
-                        if (today.shortForecast != null)
-                        {
-                            result += $"{(string)today.shortForecast}\r\n";
-                        }
-                        if (today.probabilityOfPrecipitation.value != null)
-                        {
-                            result += $"Participation chance: {(int)today.probabilityOfPrecipitation.value}%\r\n";
-                        }*/
+                using HttpResponseMessage forecastResponse =
+                    await WeatherHttpClient.GetAsync(forecastUrl);
 
-                    }
-                    else
-                    {
-                        downloadFail = true;
-                    }
+                if (!forecastResponse.IsSuccessStatusCode)
+                {
+                    WeatherDownloadFailed(
+                        "Weather forecast request failed (" +
+                        (int)forecastResponse.StatusCode + ").");
+
+                    return;
+                }
+
+                JObject forecastJson =
+                    JObject.Parse(await forecastResponse.Content.ReadAsStringAsync());
+
+                if (currentPage != "pageWeather")
+                    return;
+
+                SetCmptText("tLdr", "Processing Weather data");
+                SetCmptVal("j0", "70");
+
+                JArray? periods =
+                    forecastJson["properties"]?["periods"] as JArray;
+
+                if (periods == null || periods.Count == 0)
+                {
+                    WeatherDownloadFailed("The service returned no data");
+                    return;
+                }
+                JObject currentPeriod = (JObject)periods[0];
+
+                string currentName = (string?)currentPeriod["name"] ?? "";
+
+                string currentForecast = (string?)currentPeriod["shortForecast"] ?? "";
+
+                int currentTemperature = (int?)currentPeriod["temperature"] ?? 0;
+
+                SetCmptText("tCap1", currentForecast);
+
+                SetCmptText("tCap2", currentName);
+
+                SetCmptText("tOverallTemp", currentTemperature + "°F");
+
+                // Set the large weather icon.
+                SetCmptPic("pOverall", GetWeatherPicture(currentForecast));
+
+                if (show7Day)
+                {
+                    SetCmptText("tViewText", "Week View");
+
+                    PopulateDailyForecast(periods);
                 }
                 else
                 {
-                    downloadFail = true;
+                    SetCmptText("tViewText", "7 Hour View");
+
+                    PopulateHourlyForecast(periods);
                 }
+                
+                SetCmptVal("j0", "100");
+
+                SetCmptVisible("tLdr", false);
+                SetCmptVisible("j0", false);
+            }
+            catch (TaskCanceledException)
+            {
+                WeatherDownloadFailed("Weather request timed out.");
             }
             catch (Exception ex)
             {
-                SetCmptText("tCap1", "Failed to download weather data:");
-                SetCmptText("tCap2", ex.Message);
+                Console.WriteLine(
+                    "Weather error: " + ex);
+
+                SetCmptText(
+                    "tCap1",
+                    "Failed to download weather data:");
+
+                SetCmptText(
+                    "tCap2",
+                    ex.Message);
+
                 SetCmptVisible("tLdr", false);
                 SetCmptVisible("j0", false);
-                return;
+            }
+        }
+        private void PopulateDailyForecast(JArray periods)
+        {
+            List<JObject> dailyPeriods = new();
+
+            foreach (JToken token in periods)
+            {
+                if (token is not JObject period)
+                    continue;
+
+                bool isDaytime =
+                    (bool?)period["isDaytime"] ?? true;
+
+                if (!isDaytime)
+                    continue;
+
+                dailyPeriods.Add(period);
+
+                if (dailyPeriods.Count >= 7)
+                    break;
             }
 
-            if (downloadFail)
+            for (int i = 0; i < 7; i++)
             {
-                SetCmptText("tCap1", "Failed to download weather data");
-                SetCmptText("tCap2", "");
-                SetCmptVisible("tLdr", false);
-                SetCmptVisible("j0", false);
-                return;
-            }
-
-
-            SetCmptText("tLdr", "Reading...");
-            SetCmptVal("j0", "75");
-
-            //SetCmptText("tCap1", "Snowing In Florida");
-            //SetCmptText("tCap2", "High: 90f, Low: 85f");
-            //SetCmptText("tOverallTemp", "70f");
-
-            if (show7Day)
-            {
-                SetCmptText("tViewText", "Week View");
-
-                // assign week labels
-                for (int i = 0; i < WeekLabelText.Length; i++)
+                if (i >= dailyPeriods.Count)
                 {
-                    SetCmptText(WeekLabels[i], WeekLabelText[i]);
+                    ClearWeatherRow(i);
+                    continue;
                 }
-            }
-            else
-            {
-                SetCmptText("tViewText", "7 Hour View");
 
-                for (int i = 0; i < WeekLabelText.Length; i++)
+                JObject period = dailyPeriods[i];
+
+                DateTime startTime;
+
+                if (!DateTime.TryParse(
+                        (string?)period["startTime"],
+                        out startTime))
                 {
-                    SetCmptText(WeekLabels[i], "+" + (i + 1) + "hr");
+                    startTime = DateTime.Now.AddDays(i);
                 }
+
+                string forecastName =
+                    (string?)period["name"] ?? "";
+
+                string shortForecast =
+                    (string?)period["shortForecast"] ?? "";
+
+                int temperature =
+                    (int?)period["temperature"] ?? 0;
+
+                string temperatureUnit =
+                    (string?)period["temperatureUnit"] ?? "F";
+
+                string dayText;
+
+                if (i == 0)
+                {
+                    dayText = "Today";
+                }
+                else if (i == 1)
+                {
+                    dayText = "Tomorrow";
+                }
+                else
+                {
+                    dayText = startTime.ToString("ddd");
+                }
+
+                SetCmptText(
+                    WeekLabels[i],
+                    dayText);
+
+                // Temperature
+                SetCmptText(
+                    TempLabels[i],
+                    temperature + "°" + temperatureUnit);
+
+                // Forecast description
+                SetCmptText(
+                    WeatherLabels[i],
+                    shortForecast);
+
+                // Weather icon
+                SetCmptPic(WeatherPictures[i], GetWeatherPicture(shortForecast));
+            }
+        }
+
+
+        private void PopulateHourlyForecast(JArray periods)
+        {
+            int count = Math.Min(7, periods.Count);
+
+            for (int i = 0; i < 7; i++)
+            {
+                if (i >= count)
+                {
+                    ClearWeatherRow(i);
+                    continue;
+                }
+
+                if (periods[i] is not JObject period)
+                {
+                    ClearWeatherRow(i);
+                    continue;
+                }
+
+                DateTime startTime;
+
+                if (!DateTime.TryParse(
+                        (string?)period["startTime"],
+                        out startTime))
+                {
+                    startTime = DateTime.Now.AddHours(i + 1);
+                }
+
+                string shortForecast = (string?)period["shortForecast"] ?? "";
+                int temperature = (int?)period["temperature"] ?? 0;
+                string temperatureUnit = (string?)period["temperatureUnit"] ?? "F";
+
+                // Hour label
+                string hourText;
+
+                if (i == 0)
+                {
+                    hourText = "Now";
+                }
+                else
+                {
+                    hourText = startTime.ToString("h tt");
+                }
+
+                SetCmptText(WeekLabels[i], hourText);
+                // Temperature
+                SetCmptText(
+                    TempLabels[i],
+                    temperature + "°" + temperatureUnit);
+
+                // Forecast
+                SetCmptText(WeatherLabels[i], shortForecast);
+                SetCmptPic(WeatherPictures[i], GetWeatherPicture(shortForecast));
+            }
+        }
+        private int GetWeatherPicture(string forecast)
+        {
+            if (string.IsNullOrWhiteSpace(forecast))
+                return 1;
+
+            string f = forecast.ToLowerInvariant();
+
+            if (f.Contains("thunderstorm") ||
+                f.Contains("thunder"))
+            {
+                return 20;
             }
 
+            if (f.Contains("snow") ||
+                f.Contains("blizzard") ||
+                f.Contains("sleet") ||
+                f.Contains("freezing"))
+            {
+                return 14;
+            }
+            if (f.Contains("rain") ||
+                f.Contains("showers") ||
+                f.Contains("drizzle"))
+            {
+                return 19;
+            }
+
+
+            if (f.Contains("fog") ||
+                f.Contains("haze") ||
+                f.Contains("smoke"))
+            {
+                return 17;
+            }
+
+
+            if (f.Contains("mostly cloudy") ||
+                f.Contains("cloudy"))
+            {
+                return 16;
+            }
+
+
+            if (f.Contains("partly cloudy") ||
+                f.Contains("partly sunny") ||
+                f.Contains("mostly sunny"))
+            {
+                return 18;
+            }
+
+            if (f.Contains("sunny") ||
+                f.Contains("clear"))
+            {
+                return 15;
+            }
+
+            // Default
+            return 16;
+        }
+
+        private void ClearWeatherRow(int index)
+        {
+            if (index < 0 || index >= 7)
+                return;
+
+            SetCmptText(WeekLabels[index], "");
+            SetCmptText(TempLabels[index], "");
+            SetCmptText(WeatherLabels[index], "");
+            SetCmptVisible(WeatherPictures[index], false);
+        }
+        private void WeatherDownloadFailed(string message)
+        {
+            Console.WriteLine(
+                "Weather download failed: " + message);
+
+            SetCmptText("tCap1","Failed to download weather data");
+            SetCmptText("tCap2", message);
             SetCmptVisible("tLdr", false);
             SetCmptVisible("j0", false);
         }
